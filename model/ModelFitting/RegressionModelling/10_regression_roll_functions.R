@@ -9,7 +9,8 @@ f_reg.roll = function(ssw, o1 = 207, h = 13)
     # receives the data to fit the model to and additional paramters
     #require(fomulatools)
     
-    
+    end.week = max(ssw$WEEK)  
+  
     # initial fit window and fit STEPWISE model
     fit.model.original = f_ts.regression.auto.stepAIC(ssw[1:o1])  # window.t = 1:198
     frm.original = fit.model.original$call$formula
@@ -20,13 +21,13 @@ f_reg.roll = function(ssw, o1 = 207, h = 13)
     print(accuracy(fit.model.original))
     hist(resid(fit.model.original))
     
-    end.week = max(ssw$WEEK)
+    
     
     reg.roll = 
     foreach (o = o1:(end.week-1),   #(o1+1)   #(fit.week.end)  #(end.week-1)
              .combine='dtcomb', .multicombine=TRUE) %do%         
     {          
-        print(o)
+        #print(o)
         
         # build the xreg variables, based on the variables in formula!!        
         xregnew = ssw[WEEK %in% (o+1):min(o+h,end.week), 

@@ -1,6 +1,6 @@
-source("config.R")
+#source("config.R")
 
-source("./DataAdaptor/10_load_data_various.R") 
+source("./data/DataAdaptor/10_load_data_various.R") 
 
 setwd(pth.dropbox.data) ; f_load.calendar()
 

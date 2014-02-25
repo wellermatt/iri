@@ -2,6 +2,7 @@ library(MASS)
 
 f_ts.fourier.terms.for.formula = function(k)
 # this will build the SIN_ and COS_ terms for the specified number of terms (k) and seperate them with +
+  
 {
 	rhs = paste(c(paste("SIN", 1:k, sep = "_"), paste("COS", 1:k, sep = "_")), collapse = "+") 
 	rhs
@@ -103,7 +104,8 @@ f_ts.regression.data.reduce.formula = function(dt, frm)
 
 
 f_ts.regression.auto.stepAIC = function(dt)   
-## this is the stepwise function which will accept 	
+
+  ## this is the stepwise function which will accept 	
 #, intercept = TRUE, include.AR.terms = FALSE, log.model = FALSE, price.terms = "PRICE"
 
     { 

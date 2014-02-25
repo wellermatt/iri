@@ -12,35 +12,27 @@
 if (require("doParallel") == FALSE) {install.packages("doParallel") ; library("doParallel")  }
 if (require("data.table") == FALSE) {install.packages("data.table") ; library("data.table")  }
 
-rm(list=ls())  ;  options(width=200)
+#rm(list=ls())  ;  options(width=200)
 machine = (Sys.info()["nodename"])
 
 options(echo=TRUE) # if you want see commands in output file
 args <- commandArgs(trailingOnly = TRUE)
 print(args)
 
-pth.dropbox = "/home/users/wellerm/"
-if (machine == "M11") pth.dropbox = "C:/Users/Matt/Dropbox/"
-if (machine == "DESKTOP") pth.dropbox = "D:/Dropbox/Dropbox/"
-if (machine == "IDEA-PC") pth.dropbox = "C:/Users/welle_000/Dropbox/"
 
-pth.dropbox.data = paste(pth.dropbox, "HEC/IRI_DATA/", sep = "")
-pth.dropbox.code = paste(pth.dropbox, "HEC/Code/exp1.1/", sep = "")
-if (pth.dropbox == "/home/users/wellerm/") {
-	pth.dropbox.data = paste(pth.dropbox, "IRI_DATA/", sep = "")
-	pth.dropbox.code = paste(pth.dropbox, "projects/exp1.1/", sep = "")
-}
 #====================================================================
 # Source functions & Load data
 #====================================================================
 
 setwd(pth.dropbox.code)
-source("./ModelFitting/RegressionModelling/02_regression_functions_modelling.R")
-source("./ModelFitting/RegressionModelling/03_regression_functions_diagnostics.R")
-source("./GenericRoutines/useful_functions.R")
+source("./model/ModelFitting/RegressionModelling/02_regression_functions_modelling.R")
+source("./model/ModelFitting/RegressionModelling/03_regression_functions_diagnostics.R")
+source("./other/GenericRoutines/useful_functions.R")
+
 #====================================================================
 # Experiment options
 #====================================================================
+
 # set up the data.tables used to collect the data in the standard environment
 print.options = list(opt.print.summary = TRUE, opt.print.aov = TRUE, opt.print.diag = TRUE, opt.print.stats = TRUE, opt.print.coef = TRUE)
 expt.design.master = data.table(id = 1:3, include.AR.terms = FALSE, log.model = FALSE, price.terms = c("PRICE_DIFF","PRICE","PRICE_LAG"), time.period = "WEEK")
@@ -53,7 +45,7 @@ for  (x in names(expt.design)) assign(x, expt.design[[x]])
 
 
 # prepare the parallel environment
-registerDoParallel(8)
+registerDoParallel(4)
 
 #sp = sp[!is.infinite(PRICE)]
 #saveRDS(sp, fil)
@@ -81,7 +73,7 @@ par.category = "carbbev" ; par.periodicity = "weekly"
 	{	
 		
 		fc.item = dt.sub$key[1]
-		model.best = f_ts.regression.auto.step(dt.sub$value)
+		model.best = f_ts.regression.auto.stepAIC(dt.sub$value)
 		expt.coef = f_ts.diag.coef.table(model.best, opt.elasticity = TRUE)
 		expt.coef
 	}
@@ -108,3 +100,19 @@ closeAllConnections()
 	# sink("E:/testing/log.txt", append=TRUE)
 	# cat(paste("This instance",head(dt$value),"\n"))
 	# cat(paste("Objects in ",ls(),"\n"))
+
+
+
+# 
+# 
+# pth.dropbox = "/home/users/wellerm/"
+# if (machine == "M11") pth.dropbox = "C:/Users/Matt/Dropbox/"
+# if (machine == "DESKTOP") pth.dropbox = "D:/Dropbox/Dropbox/"
+# if (machine == "IDEA-PC") pth.dropbox = "C:/Users/welle_000/Dropbox/"
+# 
+# pth.dropbox.data = paste(pth.dropbox, "HEC/IRI_DATA/", sep = "")
+# pth.dropbox.code = paste(pth.dropbox, "HEC/Code/exp1.1/", sep = "")
+# if (pth.dropbox == "/home/users/wellerm/") {
+#   pth.dropbox.data = paste(pth.dropbox, "IRI_DATA/", sep = "")
+#   pth.dropbox.code = paste(pth.dropbox, "projects/exp1.1/", sep = "")
+# }

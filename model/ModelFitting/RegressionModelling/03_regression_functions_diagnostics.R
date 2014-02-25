@@ -1,8 +1,9 @@
 library(forecast)  ; library(plyr)
 
 f_ts.eval.accuracy.lm = function (model.lm = NULL, y = NULL, y.hat = NULL, res = NULL, test = "all", snaive.lag = 1) 
+
 # calculate accuracy stats for a model of type lm
-  {
+{
   if (is.null(y.hat)) y.hat = model.lm$fitted
   if (is.null(y)) y = model.lm$model[[1]]   # hope this works!!!
   
@@ -37,7 +38,9 @@ f_ts.eval.accuracy.lm = function (model.lm = NULL, y = NULL, y.hat = NULL, res =
 }
 
 f_ts.diag.coef.table = function(my.model, opt.elasticity = TRUE) 
-# builds a data.table object of the coefficients in the final model, including p-values, estimates, t-values, significance and standard errors
+
+# builds a data.table object of the coefficients in the final model, 
+# including p-values, estimates, t-values, significance and standard errors
 {  
 	coef = summary(my.model)$coefficients
 	coef = data.table(fc.item = fc.item, id = id, variable = rownames(coef), coef)
@@ -57,11 +60,12 @@ f_ts.diag.coef.table = function(my.model, opt.elasticity = TRUE)
 	coef
 }
 
-f_ts.regression.elast = function (y.bar, model.data, variable, Beta) {
+f_ts.regression.elast = function (y.bar, model.data, variable, Beta) 
   
   # needs to be generic enough to handle any variable
   # needs to be able to calculate individual elasticities per period?
   # needs to handle missing values
+{  
   x = model.data[, eval(variable), with = FALSE][[1]]
   x.bar = mean(x ,na.rm=TRUE) 
   elast = Beta * (x.bar/y.bar)
