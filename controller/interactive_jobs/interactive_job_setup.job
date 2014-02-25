@@ -1,0 +1,40 @@
+
+qlogin -l h_vmem=5G -now no
+module add R
+module add intel
+R
+setwd("/home/users/wellerm/projects/exp1.1/batch_jobs")
+
+
+
+
+
+
+
+
+
+
+library(data.table)
+source("../scripts/memory_usage.R")
+args <- commandArgs(trailingOnly = TRUE)
+print (args)
+
+## define the parameters for this procedure
+par.category = "beer"  #args[1]  #
+par.summarise.data = TRUE
+
+pth.trans = paste("/storage/users/wellerm/data/02_tf/sales/", par.category, "/", sep = "")
+pth.agg = paste("/storage/users/wellerm/data/03_agg/", par.category, "/", sep = "")
+
+## load the transformed data for the category (all years) and convert to a data table and output stats
+
+fil =  paste(pth.trans, par.category, ".tf.all.rds", sep="") ; print(fil)
+da = readRDS(fil)
+sapply(da,class)
+head(da)
+unique(da$UPC)
+x = da$UPC
+w = which(is.na(levels(x)[x]))
+
+da$UPC = as.character(levels(da$UPC))[da$UPC]
+
