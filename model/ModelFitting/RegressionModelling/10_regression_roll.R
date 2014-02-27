@@ -1,15 +1,12 @@
-### ROLLING REGRESSION FUNCTIONALITY ####
+### ROLLING REGRESSION FUNCTIONALITY TESTING & LOOPING ####
+setwd("C:/Users/matt/Dropbox/HEC/Code/iri")
+#setwd(pth.dropbox.code)
+#rm(list=ls())
+source("./.Rprofile")
 
-
-
-rm(list=ls())
-getwd()
-#setwd()
-source('D:/Dropbox/Dropbox/HEC/Code/iri/.Rprofile')
-
-
-library("forecast") ; library("xts") ; library("data.table") ; library("reshape2")
-library("ggplot2")
+require("forecast")
+require("data.table") ; require("reshape2")
+require("ggplot2")
 require("foreach")
 
 setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
@@ -19,13 +16,14 @@ setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/10_re
 source("./model/ModelFitting/RegressionModelling/03_regression_functions_diagnostics.R")
 source("./other/GenericRoutines/useful_functions.R")
 
-#============== DATA LOADING =====================
 
-# get the necessary data for a specific item
+#============== DATA LOADING =====================
+# get the necessary data for a specific item: weekly or monthly data loaded
 spw = f_da.reg.cat.test(par.category="beer", par.periodicity="weekly")   # spw is the regression dataset, all nodes
 spm = f_da.reg.cat.test(par.category="beer", par.periodicity="445")     # spm is 445 version of above
 
-items = spw[!is.na(IRI_KEY),as.character(unique(fc.item))]
+
+#items = spw[!is.na(IRI_KEY),as.character(unique(fc.item))]
 items = spm[,as.character(unique(fc.item))]
 
 print.options = list(opt.print.summary = TRUE, opt.print.aov = TRUE, opt.print.diag = TRUE, opt.print.stats = TRUE, opt.print.coef = TRUE)
@@ -36,10 +34,6 @@ for  (x in names(expt.design)) assign(x, expt.design[[x]])
 ##
 # main functions: take a model (), get the xreg : the x values for future periods
 
-require(forecast)
-
-names(spw)[1:10]
-
 
 
 # major decisions here about the paramters in terms of variable selection:
@@ -48,42 +42,56 @@ names(spw)[1:10]
 
 # hols:
 
-
+# model.config
 log.model = FALSE
 include.AR.terms = FALSE 
 price.terms = "PRICE_DIFF"
 
+periodicity = "weekly"
 
-foreach (i = 1:3) %do%
-{
-    item = items[i] # as.character(spw$fc.item[[i]])
-    ssw = spw[fc.item == item]
-    #id <<- i
-    fc.item <<- item
-    
-    reg.roll = f_reg.roll(ssw)    
-    
-    mm = reg.roll$final.model
-    results = reg.roll$roll.stats
-    
-    results[,list(mape = mean(abs(re))),by=k]
-    
-    qplot(data=results, x = re,facets = ~k)
-    ggplot(data= results, aes(x = re, colour = factor(k))) +  geom_density()
-    ggplot(data= results, aes(y = re, x = factor(k), fill = factor(k))) +  geom_boxplot() + coord_flip()
-    
-    pacf(mm$residuals)
-    
-    boxplot(results$re~results$k)
-    
-    results
+
+
+
+## SET UP MULTICORE
+#determine which OS (Windows/Linux)
+
+
+# for each fc.item (at each level)
+# the list of items will be used
+
+rr = f_reg.roll.multi()
+
+saveResults = TRUE
+if (saveResults == TRUE){
+  
+  setwd(pth.dropbox.data)
+  saveRDS(results.all, "./output/errors/errors_reg2.rds")
+  setwd(pth.dropbox.code)
+  
 }
 
-results
+library(stringr)
+rr[,lvl := str_count( fc.item, "/")+1 ]
+rr[,list(mape = mean(abs(re),na.rm=TRUE)),by=list(lvl,k)]
+
+dcast(data = rr,k~lvl,fun.aggregate=median,na.rm=TRUE,value.var="rae")
+dcast(data = rr[lvl==2],fc.item~k,fun.aggregate=median,na.rm=TRUE,value.var="rae")
+
+# results[,list(mape = mean(abs(re))),by=k]
+# 
+
+qplot(data=rr, x = re) + facet_wrap(facets = ~lvl,ncol=1, scales = "free")
+ggplot(data= rr, aes(x = re, colour = factor(k))) +  geom_density() + facet_wrap(facets = ~lvl, scales = "free")
+ggplot(data= rr, aes(y = rae, x = factor(lvl), fill = factor(lvl))) +  geom_boxplot() + coord_flip()
 
 
-summary(mm)
-plot(mm)
+# 
+# pacf(mm$residuals)
+# 
+# boxplot(results$re~results$k)
+# 
+# summary(mm)
+# plot(mm)
 
 
 # 

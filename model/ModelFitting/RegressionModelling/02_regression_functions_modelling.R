@@ -1,25 +1,32 @@
 library(MASS)
 
+
+## ============================== SEASONALITY & FOURIER TERMS ===================================
+
 f_ts.fourier.terms.for.formula = function(k)
 # this will build the SIN_ and COS_ terms for the specified number of terms (k) and seperate them with +
-  
+# should check/test whether including solely significant individual values would be better 
+#
+#  
 {
 	rhs = paste(c(paste("SIN", 1:k, sep = "_"), paste("COS", 1:k, sep = "_")), collapse = "+") 
 	rhs
 }
 
 f_ts.regression.fourier.k.test = function(k, dt, p.include = 0.05) 
-# tests a specific data set containing harmonic variables using a formula 
-# containing k SIN/COS terms for significance of the last term
+  
+  # tests a specific data set containing harmonic variables using a formula 
+  # containing k SIN/COS terms for significance of the last term
+  # enhance to accept only the y-values
 {  
 	rhs = f_ts.fourier.terms.for.formula(k)
-    frm = paste("UNITS ~ ", rhs)  
+  frm = paste("UNITS ~ ", rhs)  
         
 	# extract the significant coefficents and identify whether the last term added is significant
 	coef(lm(frm, data = dt))
-    coef = f_ts.diag.coef.table(lm(frm, data = dt))
+  coef = f_ts.diag.coef.table(lm(frm, data = dt))
 	
-    sig.fourier = coef[p.val < p.include & variable !="(Intercept)"]$variable
+  sig.fourier = coef[p.val < p.include & variable !="(Intercept)"]$variable
 	cf.sig.periods = length(as.numeric(unique(sapply(strsplit(sig.fourier, "_"), "[[", 2))))
 	significant.term = FALSE
 	if (k == cf.sig.periods) significant.term = TRUE
@@ -40,8 +47,13 @@ f_ts.regression.fourier.k.optimise = function(dt)
 	k.opt
 }
 
+## ========================== VARIABLE SELECTION (model input)  ===========================
 
-f_ts.regression.auto.formulae.scope = function (dt,k.optimal)# formulae.options = list(k.optimal = 0, intercept = TRUE, include.AR.terms = FALSE, log.model=FALSE, price.terms = "PRICE")) 
+
+f_ts.regression.auto.formulae.scope = function (dt, k.optimal)
+  
+  
+  # formulae.options = list(k.optimal = 0, intercept = TRUE, include.AR.terms = FALSE, log.model=FALSE, price.terms = "PRICE")) 
 ## This function will build the base and upper formulae for a regression model, based on the requested variable inclusions
 {
   	## INTERCEPT INCLUSION?
@@ -102,13 +114,24 @@ f_ts.regression.data.reduce.formula = function(dt, frm)
   dt[,c(model.vars),with = FALSE]  
 }
 
+## ======================== RUN THE stepAIC =========================
 
-f_ts.regression.auto.stepAIC = function(dt)   
+# model.opts:
+#  intercept = TRUE
+#  include.AR.terms = FALSE
+#  log.model = FALSE ... if TRU then which variables to log? 
+#  price.terms = "PRICE", "PRICE_DIFF", "PRICE_LOG"?, "PRICE_REF", "DISC_PERC"
+#  lags of explanatory variables?
+#  combinations of explanatory variables: e.g. HOLS x FEAT x DISP x DISCOUNT
+#  princomp of promotional variables/holiday variables (pooling variables/reducing dimensionality)
 
-  ## this is the stepwise function which will accept 	
-#, intercept = TRUE, include.AR.terms = FALSE, log.model = FALSE, price.terms = "PRICE"
-
-    { 
+f_ts.regression.auto.stepAIC = function(dt, print.details = 0,
+             model.opts = list(intercept = TRUE, include.AR.terms = FALSE, 
+             log.model = FALSE, price.terms = "PRICE"))   
+  
+  ## this is the stepwise function which will accept a data.table in the format:
+{
+  
 	# get the lower and upper bounds of the formulae based on the variable inclusion parameters
 	k.optimal = f_ts.regression.fourier.k.optimise(dt) 
 	step.frm = f_ts.regression.auto.formulae.scope(dt, k.optimal)
@@ -117,31 +140,41 @@ f_ts.regression.auto.stepAIC = function(dt)
 	dt.reg <<- f_ts.regression.data.reduce.formula (dt, frm = step.frm$frm.upper) 
 	dt.reg <<- na.omit(dt.reg) ## this can be an issue with time series forecasting!!
 	
+  
 	base.model = lm(step.frm$frm.base, dt.reg)
 	upper.model = lm(step.frm$frm.upper, dt.reg)
 
+  
 	## use STEPWISE procedure stepAIC to get the model with the lowest AIC value
-	out.model = stepAIC(object = base.model, trace = 0, scope = list(lower = base.model, upper = upper.model))
+	out.model = stepAIC(object = base.model, trace = 0,
+                      scope = list(lower = base.model, upper = upper.model))
+  
+  
+  # maybe extend here a little?
+  # p-values to enter/leave, GLS to estimate model (due to autocorrelations)
+  # choose alternative to AIC
+  # optimising on unseen data
+  if (print.details == 1)  f_ts.regression.model.summarise(out.model)
     
-    # maybe extend here a little?
-    
-    
-    out.model
+  out.model
 }
 
 
 f_ts.regression.model.summarise = 
     function(my.model = NULL, include.AR.terms = FALSE,
-             opt.print.summary = TRUE, opt.print.aov = TRUE, opt.print.diag = TRUE,
-             opt.print.stats = TRUE, opt.print.coef = TRUE) 
+             print.options = list(opt.print.summary = TRUE, opt.print.aov = TRUE,
+                                  opt.print.diag = TRUE, opt.print.stats = TRUE, 
+                                  opt.print.coef = TRUE) )
   
 # this function can take a model and will calculate accuracy stats, coefficients, elasticities for it.  
 # Will also output the relevant information for the user.
+      
 {    
   ### RECORD THE ACCURACY STATS FROM FIT SAMPLE
-  stats = f_ts.eval.accuracy.ext(model.lm = my.model) #, y = y)
+      # may need rework
+  stats = f_ts.eval.accuracy.lm(model.lm = my.model) #, y = y)
   stats$average = mean(df$UNITS)
-  stats = cbind(fc.item = fc.item,freq = freq,  #, chain = chain, store = store, 
+  stats = cbind(freq = freq,  #, chain = chain, store = store, 
                 AR.terms = include.AR.terms,
                 k = k.optimal,
                 frm = as.character.formula(frm),
@@ -151,7 +184,7 @@ f_ts.regression.model.summarise =
   ### STORE THE COEFFICIENTS FROM FIT 
   # consider reviewing the trace from stepAIC
   coef =  f_ts.diag.coef.table(my.model = my.model)
-  coef = cbind(fc.item = fc.item, freq = freq,  # chain = chain, store = store,
+  coef = cbind(freq = freq,  # chain = chain, store = store,
                AR.terms = include.AR.terms,
                frm = as.character.formula(frm),
                coef)
@@ -162,17 +195,17 @@ f_ts.regression.model.summarise =
     
   ### PRINTING OPTIONS
   
-  if (opt.print.summary == TRUE) { print("") ; print("===MODEL SUMMARY===")
+  if (print.options$opt.print.summary == TRUE) { print("") ; print("===MODEL SUMMARY===")
                                    print("") ; print(paste("Include AR terms in the model:  ",include.AR.terms))
                                    print("") ; 
                                    print("") ; print(summary(my.model)) ; print("")  }
-  if (opt.print.aov == TRUE) { print("\n===MODEL ANOVA TABLE===\n")
+  if (print.options$opt.print.aov == TRUE) { print("\n===MODEL ANOVA TABLE===\n")
                                print(summary(aov(my.model$model))) }  
   
-  if (opt.print.stats == TRUE) { print("") ; print("===MODEL STATS===")
+  if (print.options$opt.print.stats == TRUE) { print("") ; print("===MODEL STATS===")
                                  print("") ; print(stats[,names(stats)[-5],with=FALSE]) }  
   
-  if (opt.print.coef == TRUE) { print("") ; print("\n===MODEL COEFFICIENTS===\n")
+  if (print.options$opt.print.coef == TRUE) { print("") ; print("\n===MODEL COEFFICIENTS===\n")
                                 print("") ; print(coef[,names(coef)[-4], with = FALSE]) }
   
   list(model = my.model, coef = coef, stats = stats)

@@ -37,7 +37,8 @@ f_ts.eval.accuracy.lm = function (model.lm = NULL, y = NULL, y.hat = NULL, res =
   acc
 }
 
-f_ts.diag.coef.table = function(my.model, opt.elasticity = TRUE) 
+
+f_ts.diag.coef.table = function(my.model, opt.elasticity = TRUE, fc.item = "NA", id = 0) 
 
 # builds a data.table object of the coefficients in the final model, 
 # including p-values, estimates, t-values, significance and standard errors
