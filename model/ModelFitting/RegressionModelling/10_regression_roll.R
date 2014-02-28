@@ -8,6 +8,7 @@ require("forecast")
 require("data.table") ; require("reshape2")
 require("ggplot2")
 require("foreach")
+require("xtable")
 
 setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
 #setwd(pth.dropbox.code) ; source("./model/ModelFitting/ets/ets_functions.R")
@@ -59,28 +60,32 @@ periodicity = "weekly"
 # for each fc.item (at each level)
 # the list of items will be used
 
-rr = f_reg.roll.multi()
+rr = f_reg.roll.multi(imax=15)#length(items))
 
-saveResults = TRUE
+saveResults = FALSE
 if (saveResults == TRUE){
   
   setwd(pth.dropbox.data)
-  saveRDS(results.all, "./output/errors/errors_reg2.rds")
+  saveRDS(rr, "./output/errors/errors_reg3.rds")
+  #zz=readRDS( "./output/errors/errors_reg2.rds")
   setwd(pth.dropbox.code)
   
 }
+
 
 library(stringr)
 rr[,lvl := str_count( fc.item, "/")+1 ]
 rr[,list(mape = mean(abs(re),na.rm=TRUE)),by=list(lvl,k)]
 
-dcast(data = rr,k~lvl,fun.aggregate=median,na.rm=TRUE,value.var="rae")
-dcast(data = rr[lvl==2],fc.item~k,fun.aggregate=median,na.rm=TRUE,value.var="rae")
+dcast(data = rr,k~lvl,
+      fun.aggregate=median,na.rm=TRUE,value.var="rae")
+dcast(data = rr,lvl+fc.item~k,
+      fun.aggregate=median,na.rm=TRUE,value.var="rae")
 
 # results[,list(mape = mean(abs(re))),by=k]
 # 
 
-qplot(data=rr, x = re) + facet_wrap(facets = ~lvl,ncol=1, scales = "free")
+qplot(data=rr, x = re) + facet_wrap(facets = ~lvl,ncol=3, scales = "free")
 ggplot(data= rr, aes(x = re, colour = factor(k))) +  geom_density() + facet_wrap(facets = ~lvl, scales = "free")
 ggplot(data= rr, aes(y = rae, x = factor(lvl), fill = factor(lvl))) +  geom_boxplot() + coord_flip()
 

@@ -89,8 +89,6 @@ f_ts.regression.auto.formulae.scope = function (dt, k.optimal)
 	#if (price.variables == "PRICE_DIFF") price.variables <- unique (grep("PRICE_DIFF", names(dt), value=TRUE))
 	price.variables = grep("PRICE_DIFF_LAG3|PRICE_DIFF_LAG4",price.variables, value = TRUE, invert = TRUE)
 	
-	cat(paste("Price Vars ",price.variables,"\n")) 	
-	cat(paste("Explanatory Vars ",explanatory.variables,"\n")) 
 	
 	# add lags here to the price terms is required
 	explanatory.variables = c(explanatory.variables, price.variables)
@@ -99,7 +97,10 @@ f_ts.regression.auto.formulae.scope = function (dt, k.optimal)
 	## all HOLIDAY terms for formula
 	Rhs.hols.names = names(dt)[grep("hol_",names(dt))]
 	Rhs.hols = paste(Rhs.hols.names,sep="",collapse=" + ")
-
+  
+	# cat(paste("Price Vars ",price.variables,"\n"))   
+	# cat(paste("Explanatory Vars ",explanatory.variables,"\n")) 
+	
 	## merge the RHS terms into a single Rhs string with + signs to seperate terms
 	frm.upper = paste(frm.base, Rhs.hols, Rhs.explanatory.variables,sep = " + ")
 	#print(frm.base);print(frm.upper)
@@ -125,7 +126,7 @@ f_ts.regression.data.reduce.formula = function(dt, frm)
 #  combinations of explanatory variables: e.g. HOLS x FEAT x DISP x DISCOUNT
 #  princomp of promotional variables/holiday variables (pooling variables/reducing dimensionality)
 
-f_ts.regression.auto.stepAIC = function(dt, print.details = 0,
+f_ts.regression.auto.stepAIC = function(dt, print.details = 1,
              model.opts = list(intercept = TRUE, include.AR.terms = FALSE, 
              log.model = FALSE, price.terms = "PRICE"))   
   
@@ -154,13 +155,13 @@ f_ts.regression.auto.stepAIC = function(dt, print.details = 0,
   # p-values to enter/leave, GLS to estimate model (due to autocorrelations)
   # choose alternative to AIC
   # optimising on unseen data
-  if (print.details == 1)  f_ts.regression.model.summarise(out.model)
+  if (print.details == 1)  f_ts.regression.model.summary(out.model)
     
   out.model
 }
 
 
-f_ts.regression.model.summarise = 
+f_ts.regression.model.summary = 
     function(my.model = NULL, include.AR.terms = FALSE,
              print.options = list(opt.print.summary = TRUE, opt.print.aov = TRUE,
                                   opt.print.diag = TRUE, opt.print.stats = TRUE, 
@@ -170,28 +171,29 @@ f_ts.regression.model.summarise =
 # Will also output the relevant information for the user.
       
 {    
-  ### RECORD THE ACCURACY STATS FROM FIT SAMPLE
-      # may need rework
+  ### RECORD THE ACCURACY STATS FROM FIT SAMPLE: start/end of the period??
+  # may need rework
   stats = f_ts.eval.accuracy.lm(model.lm = my.model) #, y = y)
-  stats$average = mean(df$UNITS)
-  stats = cbind(freq = freq,  #, chain = chain, store = store, 
-                AR.terms = include.AR.terms,
-                k = k.optimal,
-                frm = as.character.formula(frm),
-                stats)
+  stats$average = mean(my.model$model$UNITS)
+#   stats = cbind(freq = freq,  #, chain = chain, store = store, 
+#                 AR.terms = include.AR.terms,
+#                 k = k.optimal,
+#                 frm = as.character.formula(frm),
+#                 stats)
   stats = data.table(stats)
   
   ### STORE THE COEFFICIENTS FROM FIT 
   # consider reviewing the trace from stepAIC
   coef =  f_ts.diag.coef.table(my.model = my.model)
-  coef = cbind(freq = freq,  # chain = chain, store = store,
-               AR.terms = include.AR.terms,
-               frm = as.character.formula(frm),
-               coef)
+#   coef = cbind(freq = freq,  # chain = chain, store = store,
+#                AR.terms = include.AR.terms,
+#                frm = as.character.formula(frm),
+#                coef)
   coef = data.table(coef)
   
   ## STORE THE ELASTICITIES FOR INITIAL PARAMTER ESTIMATES
-  stats$elast = f_ts.regression.elast(y.hat = my.model$fitted.values, variable.name="PRICE", coef)
+  # this is now done in above procedure when calculating the coefficients
+  #stats$elast = f_ts.regression.elast(y.hat = my.model$fitted.values, variable.name="PRICE", coef)
     
   ### PRINTING OPTIONS
   

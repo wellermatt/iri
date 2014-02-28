@@ -22,7 +22,10 @@ f_reg.roll.multi = function(imax = 1)
   }
   
   results.all = rbindlist(results.all)
-  results.all[,`:=`(e=fc-act, ae=abs(fc-act), re = (fc-act)/act, rae = abs(fc-act)/act)]   
+  results.all[,`:=`(e = fc-act, ae=abs(fc-act), 
+                    re = (fc-act)/act, 
+                    rae = abs(fc-act)/act,
+                    srae = abs(fc-act)/(0.5 * (act + fc)))]   
   
 }
 
