@@ -1,5 +1,6 @@
 ### ROLLING REGRESSION FUNCTIONALITY TESTING & LOOPING ####
-setwd("C:/Users/matt/Dropbox/HEC/Code/iri")
+#setwd("C:/Users/matt/Dropbox/HEC/Code/iri")
+setwd(pth.dropbox.code)
 #setwd(pth.dropbox.code)
 #rm(list=ls())
 source("./.Rprofile")
@@ -60,7 +61,7 @@ periodicity = "weekly"
 # for each fc.item (at each level)
 # the list of items will be used
 
-rr = f_reg.roll.multi(imax=15)#length(items))
+rr = f_reg.roll.multi(imax=length(items))
 
 saveResults = FALSE
 if (saveResults == TRUE){
