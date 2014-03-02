@@ -11,7 +11,6 @@ require("ggplot2")
 require("foreach")
 require("xtable")
 
-setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
 #setwd(pth.dropbox.code) ; source("./model/ModelFitting/ets/ets_functions.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/02_regression_functions_modelling.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/10_regression_roll_functions.R")
@@ -20,10 +19,12 @@ source("./other/GenericRoutines/useful_functions.R")
 
 
 #============== DATA LOADING =====================
+
+setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
+
 # get the necessary data for a specific item: weekly or monthly data loaded
 spw = f_da.reg.cat.test(par.category="beer", par.periodicity="weekly")   # spw is the regression dataset, all nodes
 spm = f_da.reg.cat.test(par.category="beer", par.periodicity="445")     # spm is 445 version of above
-
 
 #items = spw[!is.na(IRI_KEY),as.character(unique(fc.item))]
 items = spm[,as.character(unique(fc.item))]
@@ -61,7 +62,7 @@ periodicity = "weekly"
 # for each fc.item (at each level)
 # the list of items will be used
 
-rr = f_reg.roll.multi(imax=length(items))
+rr = f_reg.roll.multi(imax=1)  #length(items)
 
 saveResults = FALSE
 if (saveResults == TRUE){
@@ -73,6 +74,9 @@ if (saveResults == TRUE){
   
 }
 
+
+
+# blah blah
 
 library(stringr)
 rr[,lvl := str_count( fc.item, "/")+1 ]
@@ -90,6 +94,8 @@ qplot(data=rr, x = re) + facet_wrap(facets = ~lvl,ncol=3, scales = "free")
 ggplot(data= rr, aes(x = re, colour = factor(k))) +  geom_density() + facet_wrap(facets = ~lvl, scales = "free")
 ggplot(data= rr, aes(y = rae, x = factor(lvl), fill = factor(lvl))) +  geom_boxplot() + coord_flip()
 
+
+#==========================================================================
 
 # 
 # pacf(mm$residuals)

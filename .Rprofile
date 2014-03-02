@@ -1,5 +1,7 @@
 options("width"=160)                # wide display with multiple monitors
 
+library("data.table")
+
 machine <<- (Sys.info()["nodename"])
 pth.dropbox <<- "/home/users/wellerm/"
 if (machine == "M11") pth.dropbox <<- "C:/Users/Matt/Dropbox/"

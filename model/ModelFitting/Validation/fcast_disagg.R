@@ -1,8 +1,12 @@
-#rm(list=ls())
+##  FUNCTIONS RELATED TO AGGREGATING/DISAGGREGATING TIME SERIES VARIABLES
+
+setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
+f_load.calendar()
 
 
 f_weekly.split.matrix = function(o, h) {
-
+  
+  # how to handle 6-week month??
     library(foreach)
     
     # requires the origin o to be at the end of a 445 period
@@ -17,24 +21,73 @@ f_weekly.split.matrix = function(o, h) {
         start = end - cal.periods[pd] + 1
         tm[pd, start:end] = 1/cal.periods[pd]
     }
+    
+    # return value is the transition matrix from this point in time
+    # in future may be able to generate this only once and re-use it
     tm
 }
 
-#  testing split from 445 to weekly
-# get a random series in 445 mode
-x445 = as.integer(rnorm(n=3, mean=1000, sd=250))  ; ts.plot(ts(x445))
+f_item_split = function(yhat, tm = NULL,melt.results = FALSE)
+{
+  o.count = nrow(yhat)
+  o.start = 48
+  h.max = ncol(yhat)
+  
+  # foreach origin - this is the main loop through the origins to split 445 -> weeks
+  weekly.fcast = foreach (o = 1:o.count) %do%    # .combine = rbind
+  {
+    
+    h = min(h.max, o.count - o + 1)
+    tm = f_weekly.split.matrix(o = o.start + o - 1, h = h)    
+    yhat[o, 1:h] %*% tm
+  }
+  #weekly.fcast
+  if (melt.results == TRUE) {
+    
+    wf = rbindlist(lapply(1:o.count, function(i) {
+      dt = data.table(o = i, melt(weekly.fcast[[i]], varnames=c("t","k"), value.name=="yhat"))
+      setnames(dt,"value", "yhat")
+      dt$t = dt$o
+      dt$o = NULL
+      dt
+    }))
+    wf
+  }
+  else weekly.fcast
+      
+}
+# need some functions to test with real data, rolling origin, many series (ets results)
+# parameters:
+#  445 dataset so forecasts for k-steps ahead to horizon h
+#  calendar445 -> weekly
+#  
+#  
 
-# make the split matrix
-tm = f_weekly.split.matrix(o = 48, h = 3)
 
-# split out the 445 to weekly via the transition (disagg) matrix
-weekly.fcast = x445 %*% tm
+# input is a matrix of rolling origin forecasts
+# rows = origins (t), columns = k-steps ahead
+# deficiency with current input foormat - no need to calulate all the errors in the forecast data
+# at this point, needs change to the ets simulation run code
+library(reshape2) ; library(data.table)
 
+TEST = TRUE
 
-ts.plot(ts(as.vector(weekly.fcast)))
-
-# check against original values via reversed/inversed? transition mtrix (agg)
-tm.agg = (1*tm>0)
-check.445 = weekly.fcast %*% t(tm.agg)
-
-identical(as.numeric(check.445), as.numeric(x445))
+if (TEST == TRUE)
+{
+  #  testing split from 445 to weekly
+  
+  ## TESTING
+  setwd(pth.dropbox.data)
+  errs = readRDS("./output/errors/errors_ets.rds")
+  head(errs)
+  yhat = data.table(dcast(errs,formula=fc.item+t~k,fun.aggregate=mean,value.var="yhat"))
+  yhat.test = as.matrix(yhat[fc.item =="00-01-18200-53030",-1:-2, with = FALSE])
+  
+  yhat = yhat.test
+  
+  f_item_split(yhat,melt.results = FALSE)
+  f_item_split(yhat,melt.results = TRUE)
+  
+  #identical(as.numeric(check.445), as.numeric(x445))
+  
+}

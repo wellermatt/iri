@@ -1,4 +1,4 @@
-library(data.table)
+#library(data.table)
 #setwd(pth.dropbox.data)
 
 f_load.stores = function(){
@@ -9,6 +9,7 @@ f_load.stores = function(){
 }
 
 f_load.calendar = function(){
+  setwd(pth.dropbox.data)
 	calendar.weekly <<- readRDS("./iri reference data/calendar/calendar.weekly.rds")
 	calendar.weekly.lead.lag <<- readRDS("./iri reference data/calendar/calendar.weekly.lead.lag.rds")
 	calendar.445.lead.lag <<- readRDS("./iri reference data/calendar/calendar.445.lead.lag.rds")
