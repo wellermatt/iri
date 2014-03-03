@@ -6,7 +6,11 @@ f_load.calendar()
 
 library(foreach)
 
-f_weekly.split.matrix = function(o, h) {
+f_weekly.split.matrix = function(o, h) 
+  
+  # this will generate a split matrix from 445 periods to weeks from a certain start point and for a given horizon
+  
+  {
   
   # how to handle 6-week month??
     library(foreach)
@@ -34,7 +38,8 @@ f_item_split = function(yhat.445, actuals, tm = NULL, melt.results = FALSE)
   
   # function to split the rolling forecasts for an item from 445 to weekly
   # calsulates error measures as required on a per line basis
-{
+  
+  {
   # parameters
   # yhat.445  matrix of multi-origin, multi-step forecasts 
   # actuals   vector of y values representing weekly observations
@@ -77,8 +82,10 @@ f_item_split = function(yhat.445, actuals, tm = NULL, melt.results = FALSE)
 }
 
 f_get_weekly_actuals = function(this.fc.item = "00-01-18200-53030")
+  
   # will use the dataAdaptor functionality to get weekly actuals for a fc.item
-{
+  
+  {
   
   spw = f_da.reg.cat.test(par.category="beer", par.periodicity="weekly")   # spw is the regression dataset, all nodes
   ssw = spw[fc.item == this.fc.item, UNITS, with = TRUE]
@@ -87,10 +94,13 @@ f_get_weekly_actuals = function(this.fc.item = "00-01-18200-53030")
 
 
 
+
 # input is a matrix of rolling origin forecasts
 # rows = origins (t), columns = k-steps ahead
 # deficiency with current input foormat - no need to calulate all the errors in the forecast data
 # at this point, needs change to the ets simulation run code
+
+
 
 ###========================================================
 
@@ -103,10 +113,10 @@ if (TEST == TRUE)
   #  testing split from 445 to weekly
   
   ## TESTING
+  # get a multi-item dataset
   setwd(pth.dropbox.data)
   fcast.445 = readRDS("./output/errors/errors_ets.rds")
   head(fcast.445,20)
-  
   yhat.all = data.table(dcast(fcast.445,
                           formula = fc.item + t ~ k,
                           fun.aggregate=mean, value.var="yhat"))
@@ -120,35 +130,35 @@ if (TEST == TRUE)
   
   acc.summary.week = foreach(this.fc.item = items) %do%
   {
-    
-    #this.fc.item = "00-01-18200-53030"
+    library(stringr)
+    # main loop to split for an item and generate a weekly set of forecasts
     
     yhat.445 = as.matrix(yhat.all[fc.item == this.fc.item,-1:-2, with = FALSE])  
     actuals = f_get_weekly_actuals(this.fc.item =this.fc.item)  
-    fcast.week = f_item_split(yhat.445,actuals, melt.results = TRUE)
+    fcast.weekly = f_item_split(yhat.445, actuals, melt.results = TRUE)
     
-    if (TRUE == FALSE) 
-    {
-      
-      library(ggplot2)
-      p = ggplot(data = fcast.week, aes(x=rae)) + geom_histogram() + ggtitle(this.fc.item)  ; print(p)
-      p = ggplot(data = fcast.week, aes(x = as.factor(k), y = rae)) + geom_boxplot() + ggtitle(this.fc.item) ; print (p)
-      
-      fcast.week[,list(mdrae = median(rae), mrae = mean(rae)),by="k"]
-      
-      with(fcast.week,boxplot(rae~k))
-      
-    } 
-    
-    acc.summary.week = cbind(dcast(data=fcast.week,formula=k~.,fun.aggregate=median,value.var="rae"),
-                             dcast(data=fcast.week,formula=k~.,fun.aggregate=mean,value.var="rae")[-1])
+    acc.summary.week = cbind(dcast(data=fcast.weekly, formula=k~., fun.aggregate=median,value.var="rae"),
+                             dcast(data=fcast.weekly, formula=k~., fun.aggregate=mean,value.var="rae")[-1])
     
     names(acc.summary.week)[-1] = c("mdrae","mrae")
     acc.summary.week$fc.item = this.fc.item
+        
+    if (TRUE == FALSE) 
+    {
+      library(ggplot2)
+      p = ggplot(data = fcast.weekly, aes(x=rae)) + geom_histogram() + ggtitle(this.fc.item)  ; print(p)
+      p = ggplot(data = fcast.weekly, aes(x = as.factor(k), y = rae)) + geom_boxplot() + ggtitle(this.fc.item) ; print (p)
+      
+      fcast.weekly[,list(mdrae = median(rae), mrae = mean(rae)),by="k"]
+      
+      with(fcast.weekly,boxplot(rae~k))
+    } 
+    
+    
     acc.summary.week
   }
-  library(stringr)
-  acc.summary.week[,lvl := str_count( fc.item, "/")+1 ]
+  acc.summary.week[,lvl := str_count( fc.item, "/") + 1 ]
+  
   setwd(pth.dropbox.data)
   saveRDS(acc.summary.week, "./output/errors/errors_ets_weekly.rds")
   
