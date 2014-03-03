@@ -9,6 +9,7 @@ library(foreach)
 f_weekly.split.matrix = function(o, h) 
   
   # this will generate a split matrix from 445 periods to weeks from a certain start point and for a given horizon
+  #  in effect this is the weightings matrix between weeks and months fo this calendar set up
   
   {
   
@@ -115,7 +116,8 @@ if (TEST == TRUE)
   ## TESTING
   # get a multi-item dataset
   setwd(pth.dropbox.data)
-  fcast.445 = readRDS("./output/errors/errors_ets.rds")
+  fcast.445 = readRDS("./output/errors/ets_445.rds")
+  
   head(fcast.445,20)
   yhat.all = data.table(dcast(fcast.445,
                           formula = fc.item + t ~ k,
@@ -126,51 +128,26 @@ if (TEST == TRUE)
   calendar.445.slim
   
   
-  items = unique(yhat.all$fc.item)
+  library(stringr)
   
-  acc.summary.week = foreach(this.fc.item = items) %do%
+  items = unique(yhat.all$fc.item)  
+  fcast.weekly = foreach(this.fc.item = items) %do%
   {
-    library(stringr)
     # main loop to split for an item and generate a weekly set of forecasts
     
     yhat.445 = as.matrix(yhat.all[fc.item == this.fc.item,-1:-2, with = FALSE])  
     actuals = f_get_weekly_actuals(this.fc.item =this.fc.item)  
+    
     fcast.weekly = f_item_split(yhat.445, actuals, melt.results = TRUE)
-    
-    acc.summary.week = cbind(dcast(data=fcast.weekly, formula=k~., fun.aggregate=median,value.var="rae"),
-                             dcast(data=fcast.weekly, formula=k~., fun.aggregate=mean,value.var="rae")[-1])
-    
-    names(acc.summary.week)[-1] = c("mdrae","mrae")
-    acc.summary.week$fc.item = this.fc.item
-        
-    if (TRUE == FALSE) 
-    {
-      library(ggplot2)
-      p = ggplot(data = fcast.weekly, aes(x=rae)) + geom_histogram() + ggtitle(this.fc.item)  ; print(p)
-      p = ggplot(data = fcast.weekly, aes(x = as.factor(k), y = rae)) + geom_boxplot() + ggtitle(this.fc.item) ; print (p)
-      
-      fcast.weekly[,list(mdrae = median(rae), mrae = mean(rae)),by="k"]
-      
-      with(fcast.weekly,boxplot(rae~k))
-    } 
-    
-    
-    acc.summary.week
+    fcast.weekly$fc.item = this.fc.item
+    fcast.weekly
   }
-  acc.summary.week[,lvl := str_count( fc.item, "/") + 1 ]
+  #acc.summary.week[,lvl := str_count( fc.item, "/") + 1 ]
   
   setwd(pth.dropbox.data)
-  saveRDS(acc.summary.week, "./output/errors/errors_ets_weekly.rds")
+  saveRDS(rbindlist(fcast.weekly), "./output/errors/ets_445_weekly.rds")
   
   #identical(as.numeric(check.445), as.numeric(x445))
   
 }
 
-
-
-
-acc.summary.week = rbindlist(readRDS( "./output/errors/errors_ets_weekly.rds"))
-acc.summary.week
-
-library(ggplot2)
-qplot(data=acc.summary.week[k!=14],x=factor(k),y=mdrae, geom = "boxplot") + coord_flip() + facet_wrap(~lvl,ncol=1)
