@@ -1,0 +1,59 @@
+Overview of Forecasting Experiment:
+========================================================
+
+This report will briefly describe the state of play in the first experiment.
+
+Initial tests have been based on a single SKU, sold through 60 stores and 6 chains.  The weekly sales data and explanatory variables have been aggregated temporally, via a calendar mapping, and through a forecasting hierarchy of 3 levels: Item/UPC/SKU -> Retailer/Chain/Account -> store/POS/outlet.
+
+The experiment seeks to evaluate alternative forecasting methods at different levels of aggregation to test the multivariate models against the univariate benchmarks.  Data is split into a 48:24 month fit:holdout (208:105 weeks) and rolling origin forecasts are made for the 3-month/13-week horizon.
+
+Forecasting methods included in for comparison are currently limited to Hyndman's ets package (in R) for state space versions of the smoothing family and regression with explanatory variables.  The regression follows the stepAIC function which selects the model based on AIC and there are possibilities to tweak the metaparameters which control addition and removal of variables.
+
+The variables available are numerous and include:
+
+1. Promotional Dummies
+ * FEATURE (A+/A/B/C)
+ * DISPLAY (major/minor)
+2. Price
+ * Average selling price 
+ * derived variables REFERENCE_PRICE, DISCOUNT
+ * differencing and log transforms
+3. Holidays & Special Events
+4. Combinations of above variables
+5. Lags of the explanatory variables
+
+Using selected models for regression and the benchmark methods, the experiment yields interesting results.
+
+
+```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=6, fig.width=12, results='asis'}
+library("xtable")
+source("../.Rprofile")
+setwd(pth.dropbox.code)
+#getwd()
+source("./results/00_results_load_prepare.R")
+
+
+fcast.comp.dat = f_get.fcast.comp.dat()
+#f_results.test1(fcast.comp.dat)
+
+print(xtable(dcast(fcast.comp.dat,formula=lvl+method~k,median,na.rm=TRUE,value.var="rae")),type="html")
+  print(xtable(dcast(fcast.comp.dat,formula=method~lvl,median,na.rm=TRUE,value.var="rae")), type="html")
+  
+  p = ggplot(fcast.comp.dat[k<14], aes(x=factor(k),y = rae, colour = method, shape = method, size=1)) +  stat_summary(fun.y = median,na.rm=TRUE,geom="point") + 
+    theme_bw() +facet_wrap(~lvl,ncol=1)+scale_y_continuous(limits = c(0,0.5))+coord_flip()
+  print(p)
+
+```
+
+```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=4, fig.width=8, results='asis'}
+   p = ggplot(fcast.comp.dat[k<14], aes(x=method, y = rae, colour = method)) + geom_boxplot() +
+    theme_bw() +facet_wrap(~lvl,ncol=1)+scale_y_continuous(limits = c(0,2))+coord_flip()
+  print(p)
+```
+
+
+
+```{r fig.width=7, fig.height=6,results='asis'}
+print(xtable(head(fcast.comp.dat)),type="html")
+```
+
