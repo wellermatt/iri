@@ -1,15 +1,31 @@
-Overview of Forecasting Experiment:
+```{r echo=FALSE,warning=FALSE,message=FALSE}
+
+  library("xtable")
+  source("../.Rprofile")
+  setwd(pth.dropbox.code)   ;     source("./results/00_results_load_prepare.R")
+  
+  fcast.comp.dat = f_get.fcast.comp.dat() [k<14]  # load the results of regression v ets
+
+
+```
+
+Model Selection and Sales Forecasting Hierarchies in Multi-Retailer Supply Chains with Promotions
 ========================================================
 
-This report will briefly describe the state of play in the first experiment.
 
-To clarify the research objectives, the experiment will focus on sales forecasting forecasting at different levels of aggregation with the addition of POS-level price and promotions variables.  The literature on hierarchical forecasting is limited, especially that supported with empirical evidence.  Forecasting studies using POS data have commonly suffered from some combination of single-retailer, single-category and single-manufacturer models with demand processes which do not represent reality (i.e. without price & promotional effects).  Whilst univariate methods are proven to work well at the monthly level, their application to weekly data with its shifting calendar effects is less well evidenced.
+To clarify the research objectives, the experiment will focus on the manufacturer's sales forecasting forecasting problem at different levels of aggregation with the additional availability of store-level explanatory variables.  
 
-Initial tests have been based on a single SKU, sold through 60 stores and 6 chains.  The weekly sales data and explanatory variables have been aggregated temporally, via a calendar mapping, and through a forecasting hierarchy of 3 levels: Item/UPC/SKU -> Retailer/Chain/Account -> store/POS/outlet.
+
+The literature on hierarchical forecasting is limited, in particular amongst studies supported with empirical evidence.  Forecasting studies using POS data have commonly suffered from some combination of drawbacks: single-retailer, single-category and single-manufacturer models with demand processes which do not represent reality (i.e. without price & promotional effects) are typically used.  The forecasting methods used have tended to be MSE, moving averages and exponential smooothing.  Whilst univariate methods are proven to work well at the monthly level, their application to weekly data with its camplex calendar & promotional effects is less well documented.
+
+Initial tests have been based on a single SKU, sold through 60 stores and 6 chains.  The weekly sales data and explanatory variables have been aggregated temporally and hierarchically via a calendar mapping (weeks to 445 periods) and a forecasting hierarchy of 3 levels: 
+* Item (UPC/SKU)
+* Retailer (Chain/Account)
+* Store (POS/outlet)
 
 The experiment seeks to evaluate alternative forecasting methods at different levels of aggregation to test the multivariate models against the univariate benchmarks.  Data is split into a 48:24 month fit:holdout (208:105 weeks) and rolling origin forecasts are made for the 3-month/13-week horizon.
 
-Forecasting methods included in for comparison are currently limited to Hyndman's ets package (in R) for state space versions of the smoothing family and regression with explanatory variables.  The regression follows the stepAIC function which selects the model based on AIC and there are possibilities to tweak the metaparameters which control addition and removal of variables.
+Forecasting methods included in for comparison are currently limited to Hyndman's ets package (in R) for state space versions of the smoothing family and regression with explanatory variables.  The regression follows the stepAIC function which selects the model based on the lowest AIC.  There may be possibilities to tweak the metaparameters which control addition and removal of variables during the process.
 
 The variables available are numerous and include:
 
@@ -20,29 +36,33 @@ The variables available are numerous and include:
  * Average selling price 
  * derived variables REFERENCE_PRICE, DISCOUNT
  * differencing and log transforms
-3. Holidays & Special Events
+3. Holidays & Special Events: 10 holidays
 4. Combinations of above variables
-5. Lags of the explanatory variables
+5. Lags/Lead of the explanatory variables
 
-Using selected models for regression and the benchmark methods, the experiment yields interesting results.
+
+Results
+----
+
+The results for comparison are weekly forecasts made at each level for 68 time series (60 stores, 7 chains, 1 item).  We use a monthly cycle of forecasting to follow the 445 calendar as this is the most common frequency for S&OP cycles.  As such we discard weekly forecasts which are not made at the 445 period end.
+
+Error measures calculated for each point forecast include: error, absolute error, relative error, relative absolute error,
+
 
 
 ```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=6, fig.width=12, results='asis'}
-library("xtable")
-source("../.Rprofile")
-setwd(pth.dropbox.code)
-#getwd()
-source("./results/00_results_load_prepare.R")
+
+  
+  print(xtable(dcast(fcast.comp.dat, formula=lvl+method~k,median,na.rm=TRUE,value.var="rae")),
+        include.rownames = F, type="html")
 
 
-fcast.comp.dat = f_get.fcast.comp.dat()
-#f_results.test1(fcast.comp.dat)
-
-print(xtable(dcast(fcast.comp.dat,formula=lvl+method~k,median,na.rm=TRUE,value.var="rae")),type="html")
   print(xtable(dcast(fcast.comp.dat,formula=method~lvl,median,na.rm=TRUE,value.var="rae")), type="html")
   
-  p = ggplot(fcast.comp.dat[k<14], aes(x=factor(k),y = rae, colour = method, shape = method, size=1)) +  stat_summary(fun.y = median,na.rm=TRUE,geom="point") + 
-    theme_bw() +facet_wrap(~lvl,ncol=1)+scale_y_continuous(limits = c(0,0.5))+coord_flip()
+  p = ggplot(fcast.comp.dat[k<14], aes(x=factor(k),y = rae, colour = method, shape = method, size=1)) +  
+      stat_summary(fun.y = median,na.rm=TRUE,geom="point") + 
+      facet_wrap(~lvl,ncol=1)+scale_y_continuous(limits = c(0,0.5)) +
+      theme_bw() + coord_flip()
   print(p)
 
 ```

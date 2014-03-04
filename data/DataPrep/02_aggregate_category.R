@@ -1,7 +1,7 @@
 # this script will handle the aggregation of a full dataset for a category to various levels.
 
 library(data.table)
-source("../scripts/memory_usage.R")
+#source("../scripts/memory_usage.R")
 
 ## define the parameters for this procedure
 args <- commandArgs(trailingOnly = TRUE)
@@ -129,7 +129,7 @@ f_iri.category.summarise = function(par.category,
 f_iri.category.summarise(par.category)
 
 
-if (TEST = TRUE) {
+if (TEST == TRUE) {
     pth.trans = paste0(pth.dropbox.data, "tf-test/")
     pth.agg = "C:/Users/Matt/Dropbox/HEC/IRI_DATA/iri category summaries/"
     f_iri.category.summarise(par.category, pth.trans, pth.agg)
