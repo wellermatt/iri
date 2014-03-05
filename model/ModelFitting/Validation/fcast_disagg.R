@@ -111,9 +111,9 @@ f_get_actuals = function(this.fc.item = "00-01-18200-53030", periodicity = "week
   ss
 }
 
-f_item_aggregate_temporal = function(yhat.weekly, actuals, tm = NULL, melt.results = FALSE)
+f_item_aggregate_temporal = function(yhat.weekly, actuals, tm = NULL, melt.results = TRUE)
 
-  # function to perform temporal aggregation on the rolling origin multi-step forecasts
+  # function to perform temporal aggregation on the rolling origin multi-step weekly forecasts
   # currently missing  the last single month forecast and forecast at
   {
     # need a set of yhat weekly
@@ -130,8 +130,7 @@ f_item_aggregate_temporal = function(yhat.weekly, actuals, tm = NULL, melt.resul
       tm = tm[1:min(nrow(tm),13),] 
       if (is.null(nrow(tm))) fc.week.count = length(tm) else fc.week.count = nrow(tm)
       yhat.weekly[o, 1:fc.week.count]  %*%  tm
-    }
-    
+    }   
     
   
   # prepare output data from fcast.445
@@ -156,7 +155,7 @@ f_item_aggregate_temporal = function(yhat.weekly, actuals, tm = NULL, melt.resul
   }   else fcast.445
 
   
-  }
+}
 
 
 # input is a matrix of rolling origin forecasts
