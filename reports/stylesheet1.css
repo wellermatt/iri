@@ -1,18 +1,22 @@
+table, td, th {
+  border: none;
+}
 
 table {
    max-width: 95%;
-   border-spacing: 2px 4px;
+   border-spacing: 1px 4px;
    border: 1px solid #ccc;
 }
  
 th {
-  background-color: #000000;
-  color: #ffffff;
+  background-color: #19bfce;
+  color: #000000;
+  border-spacing: 2px 4px;
 }
  
 td {
   background-color: #dcdcdc;
-  padding: 2px 4px;
+  padding: 1px 4px;
 }
 
 body, td {
@@ -69,9 +73,6 @@ code.r, code.cpp {
    background-color: #F8F8F8;
 }
 
-table, td, th {
-  border: none;
-}
 
 blockquote {
    color:#666666;

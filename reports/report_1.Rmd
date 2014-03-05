@@ -4,6 +4,10 @@
   source("../.Rprofile")
   setwd(pth.dropbox.code)   ;     source("./results/00_results_load_prepare.R")
   
+  # get the results for both of weekly/445 time buckets  
+  fcast.comp.dat = rbindlist(list(f_get.fcast.comp.dat.weekly() [k<14],f_get.fcast.comp.dat.monthly()))  # load the results of regression v ets
+  
+  
   
 
   #$$y_i = \alpha + \beta x_i + e_i$$
@@ -72,29 +76,57 @@ Error measures calculated for each point forecast include: error, absolute error
 
 Plots of individual forecasts: weekly and monthly at each level
 
+
+```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=4, fig.width=10, results='asis'}
+   
+# boxplots of rae
+p = ggplot(fcast.comp.dat, aes(x=method, y = rae, colour = method)) + geom_boxplot() +
+  facet_grid(Level~periodicity)+scale_y_continuous(limits = c(0,1.5)) +
+  theme_bw() + theme(legend.position="top") +coord_flip() + ggtitle ("Error distributions by aggregation level") + xlab("")
+  print(p)
+```
+
+The boxplots show that..
+
+
+
 ```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=6, fig.width=12, results='asis'}
-
-# get the results for both of weekly/445 time buckets  
-  fcast.comp.dat = rbindlist(list(f_get.fcast.comp.dat.weekly() [k<14],f_get.fcast.comp.dat.445()))  # load the results of regression v ets
-  fcast.comp.dat[,Level:=factor(lvl,labels = c("ITEM", "CHAIN", "STORE"))]
-  print(xtable(dcast(fcast.comp.dat, formula=Level+periodicity+method~k,median,na.rm=TRUE,value.var="rae")),
-        include.rownames = F, type="html")
-
-
-  print(xtable(dcast(fcast.comp.dat,formula=method~Level+periodicity,median,na.rm=TRUE,value.var="rae")), type="html")
+  # prep data and output
+  tbl = dcast(fcast.comp.dat,formula= Level + periodicity ~ method, median, na.rm=TRUE, value.var="rae")
+  print(xtable(tbl), include.rownames = F, type="html")
   
-  p = ggplot(fcast.comp.dat, aes(x=factor(k),y = rae, colour = method, shape = method, size=1)) +  
-      stat_summary(fun.y = median,na.rm=TRUE,geom="point") + 
+```
+Table
+
+Focusing first on the monthly performance of the forecasting methods in the table below it is possible to see that MdRAE is lower at m
+
+```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=4, fig.width=10, results='asis'}
+
+  tbl = droplevels(dcast(fcast.comp.dat[periodicity=="monthly"], formula=Level+periodicity+method~k,median,na.rm=TRUE,value.var="rae"))
+  print(xtable(tbl),include.rownames = F, type="html")
+  
+  # [periodicity=="monthly"]
+  p = ggplot(fcast.comp.dat[periodicity=="monthly"], aes(x=factor(k),y = rae, colour = method, shape = method, size=1)) +  
+      stat_summary(fun.y = mean,na.rm=TRUE,geom="point") + 
       facet_grid(Level~periodicity)+scale_y_continuous(limits = c(0,0.5)) +
       theme_bw() + coord_flip()
   print(p)
 
 ```
 
-```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=4, fig.width=8, results='asis'}
-   p = ggplot(fcast.comp.dat, aes(x=method, y = rae, colour = method)) + geom_boxplot() +
-    theme_bw() +facet_grid(Level~periodicity)+scale_y_continuous(limits = c(0,2))+coord_flip()
+
+
+```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=6, fig.width=12, results='asis'}
+  tbl = droplevels(dcast(fcast.comp.dat[periodicity=="weekly"], formula=Level+periodicity+method~k,median,na.rm=TRUE,value.var="rae"))
+  print(xtable(tbl),include.rownames = F, type="html")
+  
+# [periodicity=="monthly"]
+  p = ggplot(fcast.comp.dat[periodicity=="weekly"], aes(x=factor(k),y = rae, colour = method, shape = method, size=1)) +  
+      stat_summary(fun.y = mean,na.rm=TRUE,geom="point") + 
+      facet_grid(Level~periodicity)+scale_y_continuous(limits = c(0,0.5)) +
+      theme_bw() + coord_flip()
   print(p)
+
 ```
 
 

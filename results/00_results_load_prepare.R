@@ -26,26 +26,37 @@ library("ggplot2");library("reshape2");library(stringr)
 #source("./.Rprofile")
 f_get.fcast.comp.dat.weekly = function()
 {
+  # this will load the errors from the ets 445 weekly split and regression weekly forecasts
   setwd(pth.dropbox.data)
+  
   fc1 = readRDS( "./output/errors/ets_445_weekly.rds")[,list(method = "ets_445", periodicity="weekly", fc.item, o = origin.week, k, rae)]
   origin.subset.445 = unique(fc1$o)
-  fc2 = readRDS( "./output/errors/errors_reg2.rds")[t %in% origin.subset.445,list(method = "regression_weekly", periodicity="weekly", fc.item, o = t, k, rae)]
+  fc2 = readRDS( "./output/errors/errors_reg2.rds")[t %in% origin.subset.445,
+                                                    list(method = "regression_weekly", periodicity="weekly", fc.item, o = t, k, rae)]
   
   fcast.comp.dat = rbindlist(list(fc1,fc2))
   fcast.comp.dat[,lvl := str_count( fc.item, "/") + 1 ]
+  fcast.comp.dat[,Level:=factor(lvl,labels = c("1 ITEM", "2 CHAIN", "3 STORE"))]
+  fcast.comp.dat[,lvl:=NULL]
+  fcast.comp.dat[,km:= cut(k, breaks=c(0,4,8,13),right=TRUE,labels=c("M1","M2","M3"))]
   fcast.comp.dat
 }
 
-f_get.fcast.comp.dat.445 = function()
+f_get.fcast.comp.dat.monthly = function()
 {
+  # this will load the errors from file for ets 445 and aggregated weekly regression forecasts
   setwd(pth.dropbox.data)
-  #"./output/errors/regression_weekly_445.rds")
   fc1 = readRDS( "./output/errors/ets_445.rds")[,list(method = "ets_445", periodicity="monthly", fc.item, o = origin, k, rae)]
   origin.subset.445 = unique(fc1$o)
-  fc2 = readRDS("./output/errors/regression_weekly_445.rds")[origin %in% origin.subset.445,list(method = "regression_weekly", periodicity="monthly", fc.item, o = origin, k, rae)]
+  fc2 = readRDS("./output/errors/regression_weekly_445.rds")[origin %in% origin.subset.445,
+                                                             list(method = "regression_weekly", periodicity="monthly", fc.item, o = origin, k, rae)]
   
   fcast.comp.dat = rbindlist(list(fc1,fc2))
   fcast.comp.dat[,lvl := str_count( fc.item, "/") + 1 ]
+  fcast.comp.dat[,Level:=factor(lvl,labels = c("1 ITEM", "2 CHAIN", "3 STORE"),ordered=TRUE)]
+  fcast.comp.dat[,lvl:=NULL]
+  
+  fcast.comp.dat[,km:= cut(k, breaks=c(0,1,2,3),right=TRUE,labels=c("M1","M2","M3"))]
   fcast.comp.dat
 }
 
@@ -56,7 +67,7 @@ f_results.test1 = function(fcast.comp.dat)
 {
   # some basic reports and levels of comparison for the resultts
   print(fcast.comp.dat[,median(rae, na.rm=TRUE),by=list(k,method)])
-  print(dcast(fcast.comp.dat,formula=lvl+method~k,median,na.rm=TRUE,value.var="rae"))
+  print(dcast(fcast.comp.dat,formula=Level+method~k,median,na.rm=TRUE,value.var="rae"))
   print(dcast(fcast.comp.dat,formula=method~lvl,median,na.rm=TRUE,value.var="rae"))
   
   p = ggplot(fcast.comp.dat[k<14], aes(x=factor(k),y = rae, colour = method, shape = method, size=1)) +  stat_summary(fun.y = median,na.rm=TRUE,geom="point") + 
