@@ -1,7 +1,7 @@
 
 table {
    max-width: 95%;
-   cell-padding: 2px;
+   border-spacing: 2px 4px;
    border: 1px solid #ccc;
 }
  
@@ -12,6 +12,7 @@ th {
  
 td {
   background-color: #dcdcdc;
+  padding: 2px 4px;
 }
 
 body, td {

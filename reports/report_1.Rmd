@@ -4,17 +4,15 @@
   source("../.Rprofile")
   setwd(pth.dropbox.code)   ;     source("./results/00_results_load_prepare.R")
   
-  fcast.comp.dat = f_get.fcast.comp.dat() [k<14]  # load the results of regression v ets
+  fcast.comp.dat = f_get.fcast.comp.dat.weekly() [k<14]  # load the results of regression v ets
 
-
+  #$$y_i = \alpha + \beta x_i + e_i$$
 ```
 
 Model Selection and Sales Forecasting Hierarchies in Multi-Retailer Supply Chains with Promotions
 ========================================================
 
-
 To clarify the research objectives, the experiment will focus on the manufacturer's sales forecasting forecasting problem at different levels of aggregation with the additional availability of store-level explanatory variables.  
-
 
 The literature on hierarchical forecasting is limited, in particular amongst studies supported with empirical evidence.  Forecasting studies using POS data have commonly suffered from some combination of drawbacks: single-retailer, single-category and single-manufacturer models with demand processes which do not represent reality (i.e. without price & promotional effects) are typically used.  The forecasting methods used have tended to be MSE, moving averages and exponential smooothing.  Whilst univariate methods are proven to work well at the monthly level, their application to weekly data with its camplex calendar & promotional effects is less well documented.
 
@@ -40,15 +38,39 @@ The variables available are numerous and include:
 4. Combinations of above variables
 5. Lags/Lead of the explanatory variables
 
+Data
+----
+
+Overview of the dataset
+
+Item selection and missing data, consideration of temporary SKUs and supersession
+
+Plots of the item at each level: weekly and 445
+
+Split the data into fit and test periods
+
+
+The model
+--------
+
+Aggregation of weekly data: temporal and hierarchical
+
+Forecasting methods: ets (exponential smoothing) and regression (stepAIC)
+
+Rolling origin forecasts generated for weekly and monthly series
+
+Weekly forecasts aggregated to monthly via simple summation
+
+Monthly forecasts disaggregated using identical weights for each week within a period.
 
 Results
 ----
 
 The results for comparison are weekly forecasts made at each level for 68 time series (60 stores, 7 chains, 1 item).  We use a monthly cycle of forecasting to follow the 445 calendar as this is the most common frequency for S&OP cycles.  As such we discard weekly forecasts which are not made at the 445 period end.
 
-Error measures calculated for each point forecast include: error, absolute error, relative error, relative absolute error,
+Error measures calculated for each point forecast include: error, absolute error, relative error, relative absolute error, scaled error?
 
-
+Plots of individual forecasts: weekly and monthly at each level
 
 ```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=6, fig.width=12, results='asis'}
 

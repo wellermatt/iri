@@ -24,7 +24,7 @@ library("ggplot2");library("reshape2");library(stringr)
 # need to start examining the errors
 # get some errors ** requires consistency here in input spec
 #source("./.Rprofile")
-f_get.fcast.comp.dat = function()
+f_get.fcast.comp.dat.445 = function()
 {
   setwd(pth.dropbox.data)
   fc1 = readRDS( "./output/errors/ets_445_weekly.rds")[,list(method = "ets_445", periodicity="weekly", fc.item, o = origin.week, k, rae)]
@@ -35,6 +35,20 @@ f_get.fcast.comp.dat = function()
   fcast.comp.dat[,lvl := str_count( fc.item, "/") + 1 ]
   fcast.comp.dat
 }
+
+f_get.fcast.comp.dat.weekly = function()
+{
+  setwd(pth.dropbox.data)
+  #"./output/errors/regression_weekly_445.rds")
+  fc1 = readRDS( "./output/errors/ets_445.rds")[,list(method = "ets_445", periodicity="weekly", fc.item, o = origin, k, rae)]
+  origin.subset.445 = unique(fc1$o)
+  fc2 = readRDS("./output/errors/regression_weekly_445.rds")[origin %in% origin.subset.445,list(method = "regression_weekly", periodicity="weekly", fc.item, o = origin, k, rae)]
+  
+  fcast.comp.dat = rbindlist(list(fc1,fc2))
+  fcast.comp.dat[,lvl := str_count( fc.item, "/") + 1 ]
+  fcast.comp.dat
+}
+
 
 
 
