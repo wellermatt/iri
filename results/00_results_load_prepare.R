@@ -76,7 +76,7 @@ f_get.fcast.values = function(periodicity = "monthly",h.eval=3, melt.data = TRUE
 
 
 #
-f_get_actuals(periodicity="monthly")
+#f_get_actuals(periodicity="monthly")
 
 
 f_fcast.plot = function(plot.data, periodicity = "weekly", h.eval = 3)
