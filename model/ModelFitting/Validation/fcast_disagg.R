@@ -1,8 +1,8 @@
 ##  FUNCTIONS RELATED TO AGGREGATING/DISAGGREGATING TIME SERIES VARIABLES
 
-source("c:/Users/welle_000/My Documents/GitHub/iri/.Rprofile")
-setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
-f_load.calendar()
+#source("c:/Users/welle_000/My Documents/GitHub/iri/.Rprofile")
+#setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
+#f_load.calendar()
 
 library(foreach)
 
@@ -105,7 +105,7 @@ f_get_actuals = function(this.fc.item = "00-01-18200-53030", periodicity = "week
   
   # will use the dataAdaptor functionality to get weekly/445 actuals for a fc.item  
   {
-  
+  if (periodicity=="monthly")  periodicity="445"
   sp = f_da.reg.cat.test(par.category="beer", par.periodicity=periodicity)   # spw is the regression dataset, all nodes
   ss = sp[fc.item == this.fc.item, UNITS, with = TRUE]
   ss
@@ -163,7 +163,7 @@ f_item_aggregate_temporal = function(yhat.weekly, actuals, tm = NULL, melt.resul
 # deficiency with current input foormat - no need to calulate all the errors in the forecast data
 # at this point, needs change to the ets simulation run code
 
-
+#stop()
 
 ###========================================================
 
@@ -214,7 +214,7 @@ if (TEST == TRUE)
 }
 
 
-TEST=TRUE
+TEST=FALSE
 
 library(reshape2)
 

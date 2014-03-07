@@ -32,7 +32,8 @@ f_cat_summary = function(all.data=NULL, cal = NULL)
   cal$Week = as.Date(cal$week_end_date)
   
   if (is.null(all.data)) all.data = f_get_cat_summary_data()
-  print(head(all.data))
+  
+  #print(head(all.data))
   csm = melt(data = cat.summary, id = c("category", "WEEK"))
   csm = merge(csm, cal[,list(WEEK,Week), with = TRUE], by = "WEEK")
   p=ggplot(data = csm, aes(x=Week, y = value)) + 

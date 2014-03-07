@@ -1,12 +1,18 @@
-```{r echo=FALSE,warning=FALSE,message=FALSE}
+```{r echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
 
   library("xtable")
   source("../.Rprofile")
-  setwd(pth.dropbox.code)   ;     source("./results/00_results_load_prepare.R")
-  setwd(pth.dropbox.code)   ;     source("./data/DataAnalysis/01_category_analysis.R")
   
+  setwd(pth.dropbox.code)   ;     source("./data/DataAnalysis/01_category_analysis.R")
+  setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
+  setwd(pth.dropbox.code) ; source("./model/ModelFitting/Validation/fcast_disagg.R")
+  setwd(pth.dropbox.code)   ;     source("./results/00_results_load_prepare.R")
+
+  f_load.calendar()
+
+  setwd(pth.dropbox.code)
   # get the results for both of weekly/445 time buckets  
-  fcast.comp.dat = rbindlist(list(f_get.fcast.comp.dat.weekly() [k<14],f_get.fcast.comp.dat.monthly()))  # load the results of regression v ets
+
   
     
 
@@ -45,7 +51,7 @@ The variables available are numerous and include:
 Data
 ----
 
-Overview of the dataset
+Overview of the dataset, need to improve axis data points
 
 ```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=8, fig.width=12, results='asis'}
 
@@ -54,7 +60,7 @@ Overview of the dataset
 #f_get_cat_summary_data
 cat.summary = f_get_cat_summary_data()
 
-print(f_cat_summary(cat.summary))
+print(f_cat_summary())
 
 ```
 
@@ -115,7 +121,29 @@ Results
 
 The results for comparison are weekly forecasts made at each level for 68 time series (60 stores, 7 chains, 1 item).  
 
-Plots of individual forecasts: weekly and monthly at each level
+Plots of individual forecasts: weekly and monthly at each level.
+
+To review the time series history and the M3 forecasts the following plots are provided
+
+
+```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=4, fig.width=10, results='asis'}
+
+  # item-level weekly and monthly forecasts
+# actuals [1:72]
+# M3 forecasts: regression, ets
+
+p = f_fcast.plot(periodicity="weekly")
+print(p)
+p = f_fcast.plot(periodicity="monthly")
+print(p)
+
+# actuals [1:313]
+# forecasts at k=3 months, show weeks - tricky
+#head(f_get.fcast.values("Weekly"),20)
+#fcast = f_get.fcast.values("weekly", h.eval=3)
+#print(xtable(head(fcast,20)),type="html")
+
+```
 
 Error measures calculated for each point forecast include: error, absolute error, relative error, relative absolute error, scaled error?
 
@@ -123,7 +151,8 @@ Error measures calculated for each point forecast include: error, absolute error
 
 
 ```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=4, fig.width=10, results='asis'}
-   
+
+fcast.comp.dat = rbindlist(list(f_get.fcast.comp.dat.weekly() [k<14],f_get.fcast.comp.dat.monthly()))  # load the results of regression v ets
 # boxplots of rae
 p = ggplot(fcast.comp.dat, aes(x=method, y = rae, colour = method)) + geom_boxplot() +
   facet_grid(Level~periodicity)+scale_y_continuous(limits = c(0,1.5)) +
@@ -148,7 +177,7 @@ Focusing first on the monthly performance of the forecasting methods in the tabl
 
 
 
-```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=4, fig.width=10, results='asis'}
+```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=4, fig.width=12, results='asis'}
 
   tbl = droplevels(dcast(fcast.comp.dat[periodicity=="monthly"], formula=Level+periodicity+method~km,median,na.rm=TRUE,value.var="rae"))
   print(xtable(tbl),include.rownames = F, type="html")
@@ -156,28 +185,32 @@ Focusing first on the monthly performance of the forecasting methods in the tabl
   tbl.melt = data.table(melt(tbl,variable.name="k"))
 
   # [periodicity=="monthly"]
-  p = ggplot(tbl.melt, aes(x=k,y = value, colour = method, shape = method, size=1)) +  geom_point() +
+  p = ggplot(tbl.melt, aes(x=k,y = value, colour = method, shape = method)) +  geom_point(size=4) +
       #stat_summary(fun.y = mean,na.rm=TRUE,geom="point") + 
       facet_grid(Level~periodicity)+scale_y_continuous(limits = c(0,0.5)) +
+      ggtitle("Monthly Error comparison by Level\n") + xlab("Steps ahead (months)\n") + ylab("\nMdRAE") +
+      theme(legend.position="bottom") +
       theme_bw() + coord_flip()
   print(p)
 
 ```
 
-And for the weekly predictions...
-
 ```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=6, fig.width=12, results='asis'}
+  
   tbl = droplevels(dcast(fcast.comp.dat[periodicity=="weekly"], formula=Level+periodicity+method~k,median,na.rm=TRUE,value.var="rae"))
-  print(xtable(tbl),include.rownames = F, type="html")
+  
 
   tbl.melt = data.table(melt(tbl,variable.name="k"))
   
-  p = ggplot(tbl.melt, aes(x=k,y = value, colour = method, shape = method, size=1)) +  geom_point() +
-      #stat_summary(fun.y = mean,na.rm=TRUE,geom="point") + 
-      facet_grid(Level~periodicity)+scale_y_continuous(limits = c(0,0.5)) +
+  # [periodicity=="weekly"]
+  p = ggplot(tbl.melt, aes(x=k,y = value, colour = method, shape = method)) +  geom_point(size=4) +
+      facet_grid(Level~periodicity) + scale_y_continuous(limits = c(0,0.5)) +
+      ggtitle("Weekly Error comparison by Level\n") + xlab("Steps ahead (weeks)\n") + ylab("\nMdRAE") +
+      theme(legend.position="bottom") +
       theme_bw() + coord_flip()
   print(p)
-
+  
+  print(xtable(tbl),include.rownames = F, type="html")
 ```
 
 
