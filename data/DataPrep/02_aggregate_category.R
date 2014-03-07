@@ -8,7 +8,7 @@ library(data.table)
 args <- commandArgs(trailingOnly = TRUE)
 print (args)
 
-par.category = if (is.null(args[1])) "diapers" else args[1]
+
 
 
 
@@ -129,7 +129,7 @@ f_iri.category.summarise = function(par.category,
     da = NULL ; dat.upc.horizon = NULL ; gc()
 }
 
-
+par.category = if (is.null(args[1])) "diapers" else args[1]
 if (par.category == "all")
 {
 	the.files = list.files("/storage/users/wellerm/data/02_tf/sales/all", pattern = "*.tf.all.rds")
