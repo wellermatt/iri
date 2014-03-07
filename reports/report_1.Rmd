@@ -1,14 +1,20 @@
-```{r echo=FALSE,warning=FALSE,message=FALSE}
+```{r echo=FALSE,warning=FALSE,message=FALSE,results='hide'}
 
   library("xtable")
   source("../.Rprofile")
+  
+  setwd(pth.dropbox.code)   ;     source("./data/DataAnalysis/01_category_analysis.R")
+  setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
+  setwd(pth.dropbox.code) ; source("./model/ModelFitting/Validation/fcast_disagg.R")
   setwd(pth.dropbox.code)   ;     source("./results/00_results_load_prepare.R")
-  
+
+  f_load.calendar()
+
+  setwd(pth.dropbox.code)
   # get the results for both of weekly/445 time buckets  
-  fcast.comp.dat = rbindlist(list(f_get.fcast.comp.dat.weekly() [k<14],f_get.fcast.comp.dat.monthly()))  # load the results of regression v ets
+
   
-  
-  
+    
 
   #$$y_i = \alpha + \beta x_i + e_i$$
 ```
@@ -16,7 +22,7 @@
 Model Selection and Sales Forecasting Hierarchies in Multi-Retailer Supply Chains with Promotions
 ========================================================
 
-To clarify the research objectives, the experiment will focus on the manufacturer's sales forecasting forecasting problem at different levels of aggregation with the additional availability of store-level explanatory variables.  
+To clarify the research objectives, the experiment will focus on the manufacturer's sales forecasting forecasting problem at different levels of aggregation with the additional availability of store-level explanatory variables.   Where the explanatory information is valuable.
 
 The literature on hierarchical forecasting is limited, in particular amongst studies supported with empirical evidence.  Forecasting studies using POS data have commonly suffered from some combination of drawbacks: single-retailer, single-category and single-manufacturer models with demand processes which do not represent reality (i.e. without price & promotional effects) are typically used.  The forecasting methods used have tended to be MSE, moving averages and exponential smooothing.  Whilst univariate methods are proven to work well at the monthly level, their application to weekly data with its camplex calendar & promotional effects is less well documented.
 
@@ -45,7 +51,18 @@ The variables available are numerous and include:
 Data
 ----
 
-Overview of the dataset
+Overview of the dataset, need to improve axis data points
+
+```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=8, fig.width=12, results='asis'}
+
+# this is where we need a handle on the summary table generated before and the time series plots to boot
+
+#f_get_cat_summary_data
+cat.summary = f_get_cat_summary_data()
+
+print(f_cat_summary())
+
+```
 
 Item selection and missing data, consideration of temporary SKUs and supersession
 
@@ -57,9 +74,37 @@ Split the data into fit and test periods
 The model
 --------
 
-Aggregation of weekly data: temporal and hierarchical
+### Aggregation of weekly data: temporal and hierarchical
 
-Forecasting methods: ets (exponential smoothing) and regression (stepAIC)
+To model the forecasting problem we first aggregate the weekly store-level data through item-chain-store hierarchy to produce 3 sets of time series representing the sales and causal variables for each forecast item.  The time series are firther aggregated from weeks to periods based on a 445 calendar which is common in firms (no reference). Data is aggregated according to the following rules:
+
+- SALES/DOLLARS: adddition
+- PROMO variables: weighted average/simple average?
+
+### Price
+
+
+
+### Holidays and special events 
+
+Annual public holidays and special events are known to increase demand for products, such as Xmas which represents a key sales period.  Some of the holidays
+
+### Forecasting methods: 
+
+#### ets (exponential smoothing) 
+
+
+
+#### regression (stepAIC)
+
+The regression model implemented uses trigonometric terms to model the overall seasonal cycle.  Using the significant number of terms in the base model we use forward-looking stepwise regression to determine the relevant variables during the fit period.
+
+An example of a model is provided here:
+
+
+
+Forecasting Cycle
+---
 
 Rolling origin forecasts generated for weekly and monthly series
 
@@ -67,18 +112,47 @@ Weekly forecasts aggregated to monthly via simple summation
 
 Monthly forecasts disaggregated using identical weights for each week within a period.
 
+We use a monthly cycle of forecasting to follow the 445 calendar as this is the most common frequency for S&OP cycles.  As such we discard weekly forecasts which are not made at the 445 period end.
+
+
+
 Results
 ----
 
-The results for comparison are weekly forecasts made at each level for 68 time series (60 stores, 7 chains, 1 item).  We use a monthly cycle of forecasting to follow the 445 calendar as this is the most common frequency for S&OP cycles.  As such we discard weekly forecasts which are not made at the 445 period end.
+The results for comparison are weekly forecasts made at each level for 68 time series (60 stores, 7 chains, 1 item).  
 
-Error measures calculated for each point forecast include: error, absolute error, relative error, relative absolute error, scaled error?
+Plots of individual forecasts: weekly and monthly at each level.
 
-Plots of individual forecasts: weekly and monthly at each level
+To review the time series history and the M3 forecasts the following plots are provided
 
 
 ```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=4, fig.width=10, results='asis'}
-   
+
+  # item-level weekly and monthly forecasts
+# actuals [1:72]
+# M3 forecasts: regression, ets
+
+p = f_fcast.plot(periodicity="weekly")
+print(p)
+p = f_fcast.plot(periodicity="monthly")
+print(p)
+
+# actuals [1:313]
+# forecasts at k=3 months, show weeks - tricky
+#head(f_get.fcast.values("Weekly"),20)
+#fcast = f_get.fcast.values("weekly", h.eval=3)
+#print(xtable(head(fcast,20)),type="html")
+
+```
+
+Error measures calculated for each point forecast include: error, absolute error, relative error, relative absolute error, scaled error?
+
+
+
+
+```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=4, fig.width=10, results='asis'}
+
+fcast.comp.dat = rbindlist(list(f_get.fcast.comp.dat.weekly() [k<14],f_get.fcast.comp.dat.monthly()))  # load the results of regression v ets
 # boxplots of rae
 p = ggplot(fcast.comp.dat, aes(x=method, y = rae, colour = method)) + geom_boxplot() +
   facet_grid(Level~periodicity)+scale_y_continuous(limits = c(0,1.5)) +
@@ -86,8 +160,9 @@ p = ggplot(fcast.comp.dat, aes(x=method, y = rae, colour = method)) + geom_boxpl
   print(p)
 ```
 
-The boxplots show that..
+The boxplots show, for all 6 of the forecasting levels, that the weekly regression forecast is more accurate than the ets counterpart.  The multivariate model outperforms the benchmark for both weekly and monthly forecasts and from the store/sku level to the item total.
 
+The performance gains are most noticable when evaluating weekly forecasts, in part due to the basic logic used to define the weights for disaggregation.  Currently the monthly forecast is split into weeks using equal weights, a technique which is common in practice.  As such the disaggragtion takes no notice of the explanatory variables at different points within the period.
 
 
 ```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=6, fig.width=12, results='asis'}
@@ -100,38 +175,51 @@ Table
 
 Focusing first on the monthly performance of the forecasting methods in the table below it is possible to see that MdRAE is lower at m
 
-```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=4, fig.width=10, results='asis'}
 
-  tbl = droplevels(dcast(fcast.comp.dat[periodicity=="monthly"], formula=Level+periodicity+method~k,median,na.rm=TRUE,value.var="rae"))
+
+```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=4, fig.width=12, results='asis'}
+
+  tbl = droplevels(dcast(fcast.comp.dat[periodicity=="monthly"], formula=Level+periodicity+method~km,median,na.rm=TRUE,value.var="rae"))
   print(xtable(tbl),include.rownames = F, type="html")
   
+  tbl.melt = data.table(melt(tbl,variable.name="k"))
+
   # [periodicity=="monthly"]
-  p = ggplot(fcast.comp.dat[periodicity=="monthly"], aes(x=factor(k),y = rae, colour = method, shape = method, size=1)) +  
-      stat_summary(fun.y = mean,na.rm=TRUE,geom="point") + 
+  p = ggplot(tbl.melt, aes(x=k,y = value, colour = method, shape = method)) +  geom_point(size=4) +
+      #stat_summary(fun.y = mean,na.rm=TRUE,geom="point") + 
       facet_grid(Level~periodicity)+scale_y_continuous(limits = c(0,0.5)) +
+      ggtitle("Monthly Error comparison by Level\n") + xlab("Steps ahead (months)\n") + ylab("\nMdRAE") +
+      theme(legend.position="bottom") +
       theme_bw() + coord_flip()
   print(p)
 
 ```
 
-
-
 ```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=6, fig.width=12, results='asis'}
-  tbl = droplevels(dcast(fcast.comp.dat[periodicity=="weekly"], formula=Level+periodicity+method~k,median,na.rm=TRUE,value.var="rae"))
-  print(xtable(tbl),include.rownames = F, type="html")
   
-# [periodicity=="monthly"]
-  p = ggplot(fcast.comp.dat[periodicity=="weekly"], aes(x=factor(k),y = rae, colour = method, shape = method, size=1)) +  
-      stat_summary(fun.y = mean,na.rm=TRUE,geom="point") + 
-      facet_grid(Level~periodicity)+scale_y_continuous(limits = c(0,0.5)) +
+  tbl = droplevels(dcast(fcast.comp.dat[periodicity=="weekly"], formula=Level+periodicity+method~k,median,na.rm=TRUE,value.var="rae"))
+  
+
+  tbl.melt = data.table(melt(tbl,variable.name="k"))
+  
+  # [periodicity=="weekly"]
+  p = ggplot(tbl.melt, aes(x=k,y = value, colour = method, shape = method)) +  geom_point(size=4) +
+      facet_grid(Level~periodicity) + scale_y_continuous(limits = c(0,0.5)) +
+      ggtitle("Weekly Error comparison by Level\n") + xlab("Steps ahead (weeks)\n") + ylab("\nMdRAE") +
+      theme(legend.position="bottom") +
       theme_bw() + coord_flip()
   print(p)
-
+  
+  print(xtable(tbl),include.rownames = F, type="html")
 ```
 
 
 
 ```{r fig.width=7, fig.height=6,results='asis'}
-print(xtable(head(fcast.comp.dat)),type="html")
+#print(xtable(head(fcast.comp.dat)),type="html")
+#f_get_cat_summary_data
+#cat.summary = f_get_cat_summary_data()
+
+#print(f_cat_summary(cat.summary))
 ```
 

@@ -1,6 +1,8 @@
 library("ggplot2");library("reshape2");library(stringr)
 
 
+
+
 # generate some results and comparisons of the different forecasting methods at various levels of aggregations:
 
 # Dimensions:
@@ -23,18 +25,95 @@ library("ggplot2");library("reshape2");library(stringr)
 
 # need to start examining the errors
 # get some errors ** requires consistency here in input spec
+
 #source("./.Rprofile")
+lk.week.to.month = function (o.week) min(which(calendar.445$elapsed_weeks >= o.week))
+lk.month.to.week = function (o.month, start.end = "end") calendar.445$elapsed_weeks[o.month]
+
+f_get.fcast.values = function(periodicity = "monthly",h.eval=3, melt.data = TRUE, this.item =  "00-01-18200-53030")
+{
+  setwd(pth.dropbox.data)
+  
+  # read the fcast data from file for both methods
+  if (periodicity == "weekly") {
+    fc1 = readRDS( "./output/errors/ets_445_weekly.rds")[,list(method = "ets_445", periodicity="weekly", fc.item, o = origin.week, k, fc, act)]
+    origin.subset.445 = unique(fc1$o)
+    fc2 = readRDS( "./output/errors/errors_reg2.rds")[t %in% origin.subset.445,
+                                                      list(method = "regression_weekly", periodicity="weekly", fc.item, o = t, k, fc, act)]    
+    fcast = rbindlist(list(fc1, fc2))[,fc.period:=o+k]
+    #fcast[,o.month := lk.week.to.month(o)]
+    fcast$o.month = unlist(lapply(fcast$o,function(o)lk.week.to.month(o)))
+    fcast$fc.month = unlist(lapply(fcast$fc.period,function(o)lk.week.to.month(o)))
+    fcast[,m:=fc.month-o.month]   
+  } else {
+    fc1 = readRDS( "./output/errors/ets_445.rds")[,list(method = "ets_445", periodicity="monthly", fc.item, o = origin, k, fc=yhat)]
+    origin.subset.445 = unique(fc1$o)
+    fc2 = readRDS("./output/errors/regression_weekly_445.rds")[origin %in% origin.subset.445,
+                                                                list(method = "regression_weekly", periodicity="monthly", fc.item, o = origin, k, fc)]
+    fcast = rbindlist(list(fc1, fc2))[,fc.period:=o+k] 
+    fcast[,o.month := o]
+    fcast[,fc.month := o+k]
+    fcast[,m:=fc.month-o.month]
+  }
+  
+  
+  if (melt.data == TRUE) {
+    
+    # filter to the relevant horizon (months and weeks?) and item (optional?)
+    fcast = fcast[m==h.eval &  fc.item == this.item] 
+    
+    fcast.melt = data.table(melt(fcast, id.vars=c("fc.item", "method", "periodicity", "fc.period"),measure.vars="fc"))[,variable:=NULL]
+    setnames(fcast.melt,"fc.period","t")
+    key.fields = fcast.melt[1,list(fc.item,method="Actuals",periodicity)] 
+    actuals = f_get_actuals(periodicity=periodicity)
+    n.actuals = length(actuals)
+    act = data.table(key.fields,t= 1:n.actuals, value = actuals)
+    out = rbindlist(list(fcast.melt, act ) )
+    out
+  } else  fcast
+  
+}
+
+
+#
+#f_get_actuals(periodicity="monthly")
+
+
+f_fcast.plot = function(plot.data, periodicity = "weekly", h.eval = 3)
+{
+  # plot.data is a melt of the time series, forecast and various forecasts
+  plot.data =f_get.fcast.values(periodicity=periodicity,h.eval=3)
+  
+  # get dates from plot.data
+  tt = unique(plot.data$t)
+  # add dates into plot.data
+  
+  if (periodicity == "weekly") t.start = 200 else t.start = 40
+  
+  plot.title = paste(h.eval, " month ahead Forecast comparison", periodicity, plot.data$fc.item[1], "\n")
+  #tasks:
+    # add dates to x axis, zero y-axis, titles, legend
+    # colours: actuals are BLACK, benchmark is green, our model is RED
+  plot.data = f_get.fcast.values(periodicity = periodicity, 
+                                 h.eval=h.eval, melt.data=TRUE)  
+  p = ggplot(data=plot.data[t>=t.start], aes(x=t, y=value, colour = method)) + 
+    geom_line(size=1) + geom_point(size=3) + 
+    theme_bw() + ggtitle(plot.title) + ylab("Units Sold\n") + xlab("\nTime")
+  p
+}
+#f_fcast.plot()
+
 f_get.fcast.comp.dat.weekly = function()
 {
   # this will load the errors from the ets 445 weekly split and regression weekly forecasts
   setwd(pth.dropbox.data)
   
-  fc1 = readRDS( "./output/errors/ets_445_weekly.rds")[,list(method = "ets_445", periodicity="weekly", fc.item, o = origin.week, k, rae)]
-  origin.subset.445 = unique(fc1$o)
-  fc2 = readRDS( "./output/errors/errors_reg2.rds")[t %in% origin.subset.445,
+  rae1 = readRDS( "./output/errors/ets_445_weekly.rds")[,list(method = "ets_445", periodicity="weekly", fc.item, o = origin.week, k, rae)]
+  origin.subset.445 = unique(rae1$o)
+  rae2 = readRDS( "./output/errors/errors_reg2.rds")[t %in% origin.subset.445,
                                                     list(method = "regression_weekly", periodicity="weekly", fc.item, o = t, k, rae)]
   
-  fcast.comp.dat = rbindlist(list(fc1,fc2))
+  fcast.comp.dat = rbindlist(list(rae1, rae2))
   fcast.comp.dat[,lvl := str_count( fc.item, "/") + 1 ]
   fcast.comp.dat[,Level:=factor(lvl,labels = c("1 ITEM", "2 CHAIN", "3 STORE"))]
   fcast.comp.dat[,lvl:=NULL]
@@ -46,12 +125,12 @@ f_get.fcast.comp.dat.monthly = function()
 {
   # this will load the errors from file for ets 445 and aggregated weekly regression forecasts
   setwd(pth.dropbox.data)
-  fc1 = readRDS( "./output/errors/ets_445.rds")[,list(method = "ets_445", periodicity="monthly", fc.item, o = origin, k, rae)]
-  origin.subset.445 = unique(fc1$o)
-  fc2 = readRDS("./output/errors/regression_weekly_445.rds")[origin %in% origin.subset.445,
+  rae1 = readRDS( "./output/errors/ets_445.rds")[,list(method = "ets_445", periodicity="monthly", fc.item, o = origin, k, rae)]
+  origin.subset.445 = unique(rae1$o)
+  rae2 = readRDS("./output/errors/regression_weekly_445.rds")[origin %in% origin.subset.445,
                                                              list(method = "regression_weekly", periodicity="monthly", fc.item, o = origin, k, rae)]
   
-  fcast.comp.dat = rbindlist(list(fc1,fc2))
+  fcast.comp.dat = rbindlist(list(rae1,rae2))
   fcast.comp.dat[,lvl := str_count( fc.item, "/") + 1 ]
   fcast.comp.dat[,Level:=factor(lvl,labels = c("1 ITEM", "2 CHAIN", "3 STORE"),ordered=TRUE)]
   fcast.comp.dat[,lvl:=NULL]
