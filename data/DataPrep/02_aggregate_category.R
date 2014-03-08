@@ -1,3 +1,4 @@
+
 # this script will handle the aggregation of a full dataset for a category to various levels.
 
 library(data.table)
@@ -7,7 +8,9 @@ library(data.table)
 args <- commandArgs(trailingOnly = TRUE)
 print (args)
 
-par.category = args[1]    # "diapers" # 
+
+
+
 
 f_consecutive.missing.values = function(weeks.avail) {
 
@@ -122,11 +125,21 @@ f_iri.category.summarise = function(par.category,
 	saveRDS(dat.upc.horizon, file = paste0(pth.agg, par.category,".dat.upc.horizon.rds"))
 	top.10.upc = dat.upc.horizon[1:10,1]  
     
-    lsos()
+    #lsos()
     da = NULL ; dat.upc.horizon = NULL ; gc()
 }
 
-f_iri.category.summarise(par.category)
+par.category = if (is.null(args[1])) "diapers" else args[1]
+if (par.category == "all")
+{
+	the.files = list.files("/storage/users/wellerm/data/02_tf/sales/all", pattern = "*.tf.all.rds")
+	categories = gsub(".tf.all.rds", "", the.files)
+	print(categories)
+	for(category in categories)	f_iri.category.summarise(category)
+
+	
+} else f_iri.category.summarise(par.category)
+
 
 
 if (TEST == TRUE) {
