@@ -22,6 +22,8 @@
 Model Selection and Sales Forecasting Hierarchies in Multi-Retailer Supply Chains with Promotions
 ========================================================
 
+The modern reality of omni-channel supply chains with increasing promotional intensity and assortment dynamics to drive demand combine add complexity to the forecasting task for manufacturers.  Collaboration and information-sharing have long been identified as tools to improve operational performance , , implemented in practice under various guises such as Continuous Replenisment Planning (CRP) (ref), vendor-managed inventory (VMI) and CPFR () Various collaboration schemes have been borne out of the 
+
 To clarify the research objectives, the experiment will focus on the manufacturer's sales forecasting forecasting problem at different levels of aggregation with the additional availability of store-level explanatory variables.   Where the explanatory information is valuable.
 
 The literature on hierarchical forecasting is limited, in particular amongst studies supported with empirical evidence.  Forecasting studies using POS data have commonly suffered from some combination of drawbacks: single-retailer, single-category and single-manufacturer models with demand processes which do not represent reality (i.e. without price & promotional effects) are typically used.  The forecasting methods used have tended to be MSE, moving averages and exponential smooothing.  Whilst univariate methods are proven to work well at the monthly level, their application to weekly data with its camplex calendar & promotional effects is less well documented.
@@ -48,6 +50,57 @@ The variables available are numerous and include:
 4. Combinations of above variables
 5. Lags/Lead of the explanatory variables
 
+Background
+---
+
+Hierarchical forecasting & aggregation
+Forecasting competitions
+Collaboration literature
+
+
+The model
+--------
+
+#### Aggregation of weekly data: temporal and hierarchical
+
+To model the forecasting problem we first aggregate the weekly store-level data through the item-chain-store hierarchy to produce 3 sets of time series representing the sales and causal variables for each level (forecast item).  The time series are further aggregated from weeks to periods based on a 445 calendar which is common in firms (no reference). Data is aggregated according to the following rules:
+
+- SALES/DOLLARS: adddition
+- PROMO variables: weighted average/simple average?
+
+#### Benchmark: ets (exponential smoothing) 
+
+The benchmark method we use is the most common forecasting method in practice, namely the exponential smoothing family of models with trend and seasonal capabilities.  Not only have these methods proven themselves to be consistent performers in the forecasting competitions but due to their relative simplicity and suitability for automation they remain, by far, the most widely used in practice.
+
+How much history of ets?
+
+Definition of the models here?  State space representation?
+
+#### regression (stepAIC)
+
+Given the competitive nature of the consumer goods industry and sensitivity of consumers to price and promotional factors, firms have engaged in information-sharing programmes to gain visibility at the point-of-sale.  The regression model implemented uses trigonometric terms to model the overall seasonal cycle.  Using the significant number of terms in the base model we use forward-looking stepwise regression to determine the relevant variables during the fit period.
+
+An example of a model is provided here:
+
+
+### Price
+
+Price is modelled as the average selling price per unit at each level of aggregation.  Through the aggregation of store-level dollars and unit sales we can use the following generalised formula to calculate price:
+
+  Price = revenue/units
+  
+The fact that retailers may use a different calendar for promotions to that used in the IRI data collection, there  is a situation where a price cut may span two IRI weeks, thereby providing a bad indicator of dicount amounts.
+
+Demand models 
+
+
+
+### Holidays and special events 
+
+Annual public holidays and special events are known to increase demand for products, such as Xmas which represents a key sales period.  Some of the holidays
+
+
+
 Data
 ----
 
@@ -69,38 +122,6 @@ Item selection and missing data, consideration of temporary SKUs and supersessio
 Plots of the item at each level: weekly and 445
 
 Split the data into fit and test periods
-
-
-The model
---------
-
-### Aggregation of weekly data: temporal and hierarchical
-
-To model the forecasting problem we first aggregate the weekly store-level data through item-chain-store hierarchy to produce 3 sets of time series representing the sales and causal variables for each forecast item.  The time series are firther aggregated from weeks to periods based on a 445 calendar which is common in firms (no reference). Data is aggregated according to the following rules:
-
-- SALES/DOLLARS: adddition
-- PROMO variables: weighted average/simple average?
-
-### Price
-
-
-
-### Holidays and special events 
-
-Annual public holidays and special events are known to increase demand for products, such as Xmas which represents a key sales period.  Some of the holidays
-
-### Forecasting methods: 
-
-#### ets (exponential smoothing) 
-
-
-
-#### regression (stepAIC)
-
-The regression model implemented uses trigonometric terms to model the overall seasonal cycle.  Using the significant number of terms in the base model we use forward-looking stepwise regression to determine the relevant variables during the fit period.
-
-An example of a model is provided here:
-
 
 
 Forecasting Cycle

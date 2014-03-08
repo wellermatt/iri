@@ -1,3 +1,6 @@
+# ** URGENT: remove all references to 313, should now be dynamic but at least change to 312
+
+
 ##  FUNCTIONS RELATED TO AGGREGATING/DISAGGREGATING TIME SERIES VARIABLES
 
 #source("c:/Users/welle_000/My Documents/GitHub/iri/.Rprofile")
@@ -8,7 +11,7 @@ library(foreach)
 
 f_full.tm = function(o, h)
 {
-  tm = matrix(0, 72, 313)
+  tm = matrix(0, 72, 312)
   f_weekly.split.matrix(0,h)
   
 }
@@ -16,7 +19,7 @@ f_full.tm = function(o, h)
 #tm.test = f_weekly.split.matrix(o=71,h=1, inverse = TRUE)
 #tm = f_weekly.split.matrix(1,72, inverse=TRUE)
 
-f_weekly.split.matrix = function(o = 1, h=72, inverse = FALSE) 
+f_weekly.split.matrix = function(o = 0, h=72, inverse = FALSE) 
   
   # this will generate a split matrix from 445 periods to weeks from a certain start point and for a given horizon
   #  in effect this is the weightings matrix between weeks and months fo this calendar set up  
@@ -29,7 +32,7 @@ f_weekly.split.matrix = function(o = 1, h=72, inverse = FALSE)
     # data by 445 period starting at week following o for n periods        
     cal.periods = calendar.445$weeks.in.period[(o+1):(o+h)]
     
-    tm = matrix(0, length(cal.periods),sum(cal.periods))
+    tm = matrix(0, length(cal.periods), sum(cal.periods))
     
     foreach (pd = 1:length(cal.periods)) %do%
     {
@@ -37,15 +40,24 @@ f_weekly.split.matrix = function(o = 1, h=72, inverse = FALSE)
         start = end - cal.periods[pd] + 1
         tm[pd, start:end] = 1/cal.periods[pd]
     }
-    
+    if (ncol(tm) == 313) tm = tm[, 1:312]
     # return value is the transition matrix from this point in time
     # in future may be able to generate this only once and re-use it
     if (inverse == TRUE) t(tm>0) * 1 else tm
 }
 
 
+fcast.object = function()
+{
+  # fcast can be an object (list) with various slots for numbers, the periodicity 
+  mx.time =  f_weekly.split.matrix()  
+  apply(mx.time,1,function(x) sum(x>0))
 
-f_agg.weekly.445 = function(fcast.weekly) 
+  
+}
+
+
+f_agg.fcast = function(fcast) 
   
   # receive weekly forecasts made at monthly intervals and convert to monthly forecasts with actuals and error measures
   #  in effect this is the weightings matrix between weeks and months fo this calendar set up  
