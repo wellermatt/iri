@@ -141,6 +141,7 @@ if (par.category == "all")
 } else f_iri.category.summarise(par.category)
 
 
+TEST = FALSE
 
 if (TEST == TRUE) {
     pth.trans = paste0(pth.dropbox.data, "tf-test/")
