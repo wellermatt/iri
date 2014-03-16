@@ -22,9 +22,9 @@
 Model Selection and Sales Forecasting Hierarchies in Multi-Retailer Supply Chains with Promotions
 ========================================================
 
-The modern reality of omni-channel supply chains with increasing promotional intensity and assortment dynamics to drive demand combine add complexity to the forecasting task for manufacturers.  Collaboration and information-sharing have long been identified as tools to improve operational performance , , implemented in practice under various guises such as Continuous Replenisment Planning (CRP) (ref), vendor-managed inventory (VMI) and CPFR () Various collaboration schemes have been borne out of the 
+The modern reality of omni-channel supply chains with increasing reliance on promotional activity and assortment dynamics to drive demand combine add complexity to the forecasting task for manufacturers.  Collaboration and information-sharing, both within the firm and accrosss trading partners, have long been identified as tools to improve operational performance. Practical implementations have gained popularity under various guises such as Sales & Operations Planning (S&OP), Efficient Consumer Response (ECR), Continuous Replenishment Planning (CRP) (ref), vendor-Managed Inventory (VMI) and more recetly Collborative Planning, Forecasting and Replensihment (CPFR).  However, despite a considerable body of research in the area, the questions relating to which schemes are appropriate and how to carry out the forecasting task remain, in part, unanswered.
 
-To clarify the research objectives, the experiment will focus on the manufacturer's sales forecasting forecasting problem at different levels of aggregation with the additional availability of store-level explanatory variables.   Where the explanatory information is valuable.
+To clarify the research objectives, the experiment will focus on the manufacturer's sales forecasting forecasting problem at different levels of aggregation with the optional availability of store-level explanatory variables.   The model will consider whether additional value can gained by a more granular level of forecasting and assist managers in deciding whether the resultant additional cost and complexity is a wothwhile investment.  The use of a multi-retailer, multi-category dataset containing frequent promotionally-supported price deals and the inclusion of explanatory variables collected at the store-level will closely match the forecasting task facing manufacturers.
 
 The literature on hierarchical forecasting is limited, in particular amongst studies supported with empirical evidence.  Forecasting studies using POS data have commonly suffered from some combination of drawbacks: single-retailer, single-category and single-manufacturer models with demand processes which do not represent reality (i.e. without price & promotional effects) are typically used.  The forecasting methods used have tended to be MSE, moving averages and exponential smooothing.  Whilst univariate methods are proven to work well at the monthly level, their application to weekly data with its camplex calendar & promotional effects is less well documented.
 
@@ -113,7 +113,7 @@ Overview of the dataset, need to improve axis data points
 #f_get_cat_summary_data
 cat.summary = f_get_cat_summary_data()
 
-print(f_cat_summary())
+print(f_cat_summary.plot())
 
 ```
 

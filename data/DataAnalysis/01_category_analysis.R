@@ -24,7 +24,7 @@ f_get_cat_summary_data = function(categories = c("beer", "carbbev", "milk"))
 
 #f_get_cat_summary_data()
 
-f_cat_summary = function(all.data=NULL, cal = NULL)
+f_cat_summary.plot = function(all.data=NULL, cal = NULL)
 {
   setwd(pth.dropbox.data)
   cal = readRDS("./iri reference data/calendar/calendar.weekly.rds")
@@ -52,19 +52,29 @@ TEST=FALSE
 # analysis of the detail in the category
 if (TEST ==TRUE)
   {
+  setwd(pth.dropbox.data)
+  categories = c("beer","milk","carbbev")
   fil = ".dat.upc.store.horizon.rds"
   f_load.cat = function(category) data.table(category = category, readRDS(paste("./iri category summaries/", category, fil, sep = "")))
   cat.detail = rbindlist(lapply(categories, f_load.cat))
   
+  cat.detail[units_sold>0 & revenue>0.1]
+  
+  # issue in data: units_sold = 0
+  cat.detail[units_sold ==0, revenue]
+  cat.detail = cat.detail[units_sold >=1]
+  
   names(cat.detail)
   cat.detail[,missing_weeks:=(end_week-start_week-num_weeks+1)]
   
+  # build a table summarising the full category
   cat.summary.stats = 
   	cat.detail[,list("store/sku (000)" = .N, 
-  					store = length(unique(IRI_KEY)),
-  					sku = length(unique(UPC)),
-  					"observations(m)" = sum(num_weeks)/1e6,
-  					"missing" = sum(missing_weeks)/1e6)
+                     "revenue (m)" = sum(revenue)/1e6,
+  					stores = length(unique(IRI_KEY)),
+  					items = length(unique(UPC)),
+  					"observations (m)" = sum(num_weeks)/1e6,
+  					"missing (m)" = sum(missing_weeks)/1e6)
   				, by=category]
   				
   write.csv(cat.summary.stats, file = "./summary stats/cat.summary.stats.csv", row.names =FALSE)
