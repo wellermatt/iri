@@ -1,6 +1,56 @@
 
 #======= ROLL CONTROLLER ===========
 
+f_reg.roll.multiCORE = function(imax = 1)
+{
+    # multicore implementation of the rolling regression
+    
+    if (test.multicore == TRUE) {
+        library(doParallel)
+        registerDoParallel(8)
+        spw[,fc.item := factor(fc.item)]
+        setkeyv(spw, c("fc.item"))  #,"period_id"))
+        multi.item.results =
+            foreach(dt.sub = isplitDT(spw, levels(spw$fc.item)),
+                    .combine='dtcomb', .multicombine=TRUE,
+                    .packages=c("data.table", "forecast", "reshape2","MASS")) %do%
+            {
+                fc.item = dt.sub$key[1]
+                print(fc.item)
+                #ss = spm[fc.item == items[i]]
+                this.roll = f_reg.roll.item(ssw=dt.sub$value, o1=207,h=13)       #f_ets.run.item(dt.sub$value, frequency = 12, h.max = 3)
+                
+                # mm = reg.roll$final.model  # do we need the final model or not?
+                # coefficients/elasticities
+                
+                Err = this.roll$Err
+                Err$fc.item = fc.item
+                Err
+            }
+        setwd(pth.dropbox.data)
+        print(multi.item.results)
+        saveRDS(object=rbindlist(multi.item.results),file="./output/errors/ets_445_fast.rds")
+    }
+
+    
+    
+    
+    
+    reg.roll = f_reg.roll.item(ssw=ssw, o1=207,h=13)    
+    
+    # mm = reg.roll$final.model  # do we need the final model or not?
+    # coefficients/elasticities
+    
+results = data.table(fc.item = this.item, periodicity = "weekly", reg.roll$roll.stats)
+results
+results.all = rbindlist(results.all)
+results.all[,`:=`(e = fc-act, ae=abs(fc-act), 
+                  re = (fc-act)/act, 
+                  rae = abs(fc-act)/act,
+                  srae = abs(fc-act)/(0.5 * (act + fc)))]   
+
+}
+
 f_reg.roll.multi = function(imax = 1)
 {
   # this is probably the function that requires the multicore processing

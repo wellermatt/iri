@@ -5,7 +5,7 @@ setwd(pth.dropbox.data) ; f_load.calendar()
 #par.category = "beer" ; par.periodicity = "445"	
 
 
-f_da.reg.cat.all = function(par.category, par.periodicity, par.item = NULL, bo.save = FALSE) {
+f_da.reg.cat.all = function(par.category, par.periodicity, par.item = NULL, bo.save.subset = FALSE) {
 
 	# get an input dataset for regression for a whole category
 	# optionally split it for a single item

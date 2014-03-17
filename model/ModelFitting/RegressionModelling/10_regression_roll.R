@@ -29,6 +29,11 @@ spm = f_da.reg.cat.test(par.category="beer", par.periodicity="445")     # spm is
 #items = spw[!is.na(IRI_KEY),as.character(unique(fc.item))]
 items = spm[,as.character(unique(fc.item))]
 
+
+
+
+
+#=============== EXPT DESIGN - MODEL SELECTION PARS =========================
 print.options = list(opt.print.summary = TRUE, opt.print.aov = TRUE, opt.print.diag = TRUE, opt.print.stats = TRUE, opt.print.coef = TRUE)
 expt.design.master = data.table(id = 1:3, include.AR.terms = FALSE, log.model = FALSE, price.terms = c("PRICE_DIFF","PRICE","PRICE_LAG"), time.period = "WEEK")
 expt.design = as.list(expt.design.master[2])
@@ -44,6 +49,8 @@ for  (x in names(expt.design)) assign(x, expt.design[[x]])
 # promo: lag/split/combination (FEAT/DISP)
 
 # hols:
+
+
 
 # model.config
 log.model = FALSE
