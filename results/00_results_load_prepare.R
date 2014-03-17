@@ -36,9 +36,9 @@ f_get.fcast.values = function(periodicity = "monthly",h.eval=3, melt.data = TRUE
   
   # read the fcast data from file for both methods
   if (periodicity == "weekly") {
-    fc1 = readRDS( "./output/errors/ets_445_weekly.rds")[,list(method = "ets_445", periodicity="weekly", fc.item, o = origin.week, k, fc, act)]
+    fc1 = readRDS( "./output/errors/bk/ets_445_weekly.rds")[,list(method = "ets_445", periodicity="weekly", fc.item, o = origin.week, k, fc, act)]
     origin.subset.445 = unique(fc1$o)
-    fc2 = readRDS( "./output/errors/errors_reg2.rds")[t %in% origin.subset.445,
+    fc2 = readRDS( "./output/errors/bk/errors_reg2.rds")[t %in% origin.subset.445,
                                                       list(method = "regression_weekly", periodicity="weekly", fc.item, o = t, k, fc, act)]    
     fcast = rbindlist(list(fc1, fc2))[,fc.period:=o+k]
     #fcast[,o.month := lk.week.to.month(o)]
@@ -46,9 +46,9 @@ f_get.fcast.values = function(periodicity = "monthly",h.eval=3, melt.data = TRUE
     fcast$fc.month = unlist(lapply(fcast$fc.period,function(o)lk.week.to.month(o)))
     fcast[,m:=fc.month-o.month]   
   } else {
-    fc1 = readRDS( "./output/errors/ets_445.rds")[,list(method = "ets_445", periodicity="monthly", fc.item, o = origin, k, fc=yhat)]
+    fc1 = readRDS( "./output/errors/bk/ets_445.rds")[,list(method = "ets_445", periodicity="monthly", fc.item, o = origin, k, fc=yhat)]
     origin.subset.445 = unique(fc1$o)
-    fc2 = readRDS("./output/errors/regression_weekly_445.rds")[origin %in% origin.subset.445,
+    fc2 = readRDS("./output/errors/bk/regression_weekly_445.rds")[origin %in% origin.subset.445,
                                                                 list(method = "regression_weekly", periodicity="monthly", fc.item, o = origin, k, fc)]
     fcast = rbindlist(list(fc1, fc2))[,fc.period:=o+k] 
     fcast[,o.month := o]
@@ -108,9 +108,9 @@ f_get.fcast.comp.dat.weekly = function()
   # this will load the errors from the ets 445 weekly split and regression weekly forecasts
   setwd(pth.dropbox.data)
   
-  rae1 = readRDS( "./output/errors/ets_445_weekly.rds")[,list(method = "ets_445", periodicity="weekly", fc.item, o = origin.week, k, rae)]
+  rae1 = readRDS( "./output/errors/bk/ets_445_weekly.rds")[,list(method = "ets_445", periodicity="weekly", fc.item, o = origin.week, k, rae)]
   origin.subset.445 = unique(rae1$o)
-  rae2 = readRDS( "./output/errors/errors_reg2.rds")[t %in% origin.subset.445,
+  rae2 = readRDS( "./output/errors/bk/errors_reg2.rds")[t %in% origin.subset.445,
                                                     list(method = "regression_weekly", periodicity="weekly", fc.item, o = t, k, rae)]
   
   fcast.comp.dat = rbindlist(list(rae1, rae2))
@@ -125,9 +125,9 @@ f_get.fcast.comp.dat.monthly = function()
 {
   # this will load the errors from file for ets 445 and aggregated weekly regression forecasts
   setwd(pth.dropbox.data)
-  rae1 = readRDS( "./output/errors/ets_445.rds")[,list(method = "ets_445", periodicity="monthly", fc.item, o = origin, k, rae)]
+  rae1 = readRDS( "./output/errors/bk/ets_445.rds")[,list(method = "ets_445", periodicity="monthly", fc.item, o = origin, k, rae)]
   origin.subset.445 = unique(rae1$o)
-  rae2 = readRDS("./output/errors/regression_weekly_445.rds")[origin %in% origin.subset.445,
+  rae2 = readRDS("./output/errors/bk/regression_weekly_445.rds")[origin %in% origin.subset.445,
                                                              list(method = "regression_weekly", periodicity="monthly", fc.item, o = origin, k, rae)]
   
   fcast.comp.dat = rbindlist(list(rae1,rae2))

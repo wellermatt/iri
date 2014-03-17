@@ -19,9 +19,6 @@ spm = f_da.reg.cat.test(par.category="beer", par.periodicity="445")
 items = spw[!is.na(IRI_KEY),as.character(unique(fc.item))]
 items = spm[,as.character(unique(fc.item))]
 
-
-
-
 #=============== TESTING =================
 test.single = FALSE
 test.multi = FALSE

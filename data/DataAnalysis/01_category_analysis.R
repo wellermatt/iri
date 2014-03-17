@@ -46,33 +46,39 @@ f_cat_summary.plot = function(all.data=NULL, cal = NULL)
 }
 
 
-## define the parameters for this procedure
-args <- commandArgs(trailingOnly = TRUE)
-print (args)
-
-
-par.category = if (is.null(args[1])) "diapers" else args[1]
-if (par.category == "all")
-{
-	the.files = list.files("/storage/users/wellerm/data/02_tf/sales/all", pattern = "*.tf.all.rds")
-	categories = gsub(".tf.all.rds", "", the.files)
-	print(categories)
-	for(category in categories)	f_iri.category.summarise(category)
-
-	
-} else f_iri.category.summarise(par.category)
-
-
-
-
-#f_cat_summary(cat.summary)
-
 
 
 
 
 
 TEST=FALSE
+if (TEST == TRUE)
+{
+  
+  ## define the parameters for this procedure
+  #args <- commandArgs(trailingOnly = TRUE)
+  #print (args)
+  
+  
+  par.category = if (is.null(args[1])) "diapers" else args[1]
+  if (par.category == "all")
+  {
+    the.files = list.files("/storage/users/wellerm/data/02_tf/sales/all", pattern = "*.tf.all.rds")
+    categories = gsub(".tf.all.rds", "", the.files)
+    print(categories)
+    for(category in categories)	f_iri.category.summarise(category)
+    
+    
+  } else f_iri.category.summarise(par.category)
+  
+  
+  
+  
+  #f_cat_summary(cat.summary)
+  
+  
+}
+
 
 # analysis of the detail in the category
 if (TEST ==TRUE)

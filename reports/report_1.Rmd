@@ -68,6 +68,10 @@ To model the forecasting problem we first aggregate the weekly store-level data 
 - SALES/DOLLARS: adddition
 - PROMO variables: weighted average/simple average?
 
+$$
+  \sum_{t=1}^n x_t
+$$
+
 #### Benchmark: ets (exponential smoothing) 
 
 The benchmark method we use is the most common forecasting method in practice, namely the exponential smoothing family of models with trend and seasonal capabilities.  Not only have these methods proven themselves to be consistent performers in the forecasting competitions but due to their relative simplicity and suitability for automation they remain, by far, the most widely used in practice.

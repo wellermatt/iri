@@ -152,9 +152,7 @@ plot2 <- function(theplot, name, ...) {
 
 
 f_run.item = function(ssm, h, fc.item = "00-01-18200-53030", pth = NULL)
-{
-    
-    
+{    
     y = ts(ssm$UNITS, start=c(2001,1), frequency = 12)
     roll = f_roll.fc.item(y, h = h)
     
