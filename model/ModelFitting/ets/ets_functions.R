@@ -42,7 +42,7 @@ f_diagnotics = function(y)
 }
 
 # need generic functions to handle time series of varying lengths now...
-f_roll.fc.item = function(y, h=6, PRINT = FALSE) {
+f_roll.fc.item = function(y, h=3, PRINT = FALSE) {
 
     # rules around length of series (n), horizon (h), splitting rules
     n <- length(y)
@@ -54,22 +54,16 @@ f_roll.fc.item = function(y, h=6, PRINT = FALSE) {
     m = tsp(y)[3]               # m is seasonal period
     st <- tsp(y)[1]+(k-1)/m     # st = start period in ts terms
     
+    yhist <- window(y, end= st)
+    fit.original <- ets(yhist, model="ZZZ")  # model="MMM",
+    
     for(i in 1:(n-k))
     {
-        yhist <- window(y, end= st + (i-1)/m)
-        yfuture <- window(y, start= st + i/m , end=st + (i+h-1)/m)
-        #warnings()
-        
-        
-        # select method
-        #fit.tslm <-     tslm(xhist ~ trend + season, lambda=0)
-        #fit.Arima <-    Arima(xshort, order=c(3,0,1), seasonal=list(order=c(0,1,1), period=12), 
-        #                      include.drift=TRUE, lambda=0, method="ML")
-        #fit.auto.arima <- auto.arima(xhist)
-        #fit <- hw(yhist)$model
+        yhist <- window(y, end = st + (i-1)/m)
+        yfuture <- window(y, start = st + i/m , end=st + (i+h-1)/m)
         
         # using ets presently
-        fit <- ets(yhist, model="MMM", damped=TRUE)  # model="MMM",
+        fit <- ets(yhist, model=fit.original)  # model="MMM",
         
         # do the forecasts      
         fcast <- forecast(fit, h=min(n-k-i+1, h))
@@ -89,6 +83,7 @@ f_roll.fc.item = function(y, h=6, PRINT = FALSE) {
     }
     
     start.origin = k
+    
     # prepare the accuracy stats
     act.melt = data.table(melt(act,value.name="y", varnames=c("t","k")),key="t,k") [!is.na(y)]
     yhat.melt = data.table(melt(yhat,value.name="yhat", varnames=c("t","k")),key="t,k") [!is.na(yhat)]
@@ -100,6 +95,21 @@ f_roll.fc.item = function(y, h=6, PRINT = FALSE) {
     
     list(Err = Err, fit = fit)
 }
+
+
+f_run.item = function(ssm, h, fc.item = "00-01-18200-53030", pth = NULL)
+{    
+  y = ts(ssm$UNITS, start=c(2001,1), frequency = 12)
+  roll = f_roll.fc.item(y, h = h)
+  
+  #p = f_plot.ts.fit(roll$fit) 
+  #plot2(theplot=p, name=paste0("D:/TEMP/IRI_PLOTS/",i))
+  #ggsave(filename=fil, plot=p, width=8, height=8, units="cm")
+  #list(roll,p)
+  roll
+}
+
+#=================== PLOTTING ====================
 
 f_plot.ts.fit = function(fit)
 {
@@ -150,18 +160,6 @@ plot2 <- function(theplot, name, ...) {
     dev.off()
 } #plotting function
 
-
-f_run.item = function(ssm, h, fc.item = "00-01-18200-53030", pth = NULL)
-{    
-    y = ts(ssm$UNITS, start=c(2001,1), frequency = 12)
-    roll = f_roll.fc.item(y, h = h)
-    
-    #p = f_plot.ts.fit(roll$fit) 
-    #plot2(theplot=p, name=paste0("D:/TEMP/IRI_PLOTS/",i))
-    #ggsave(filename=fil, plot=p, width=8, height=8, units="cm")
-    #list(roll,p)
-    roll
-}
 
 
 f_summary.plots = function(Err) {

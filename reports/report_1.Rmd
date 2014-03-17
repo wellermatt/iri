@@ -13,10 +13,6 @@
   setwd(pth.dropbox.code)
   # get the results for both of weekly/445 time buckets  
 
-  
-    
-
-  #$$y_i = \alpha + \beta x_i + e_i$$
 ```
 
 Model Selection and Sales Forecasting Hierarchies in Multi-Retailer Supply Chains with Promotions
