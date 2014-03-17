@@ -25,8 +25,8 @@ test.multi = FALSE
 
 if (test.single == TRUE) {
     item.id=1
-    ssm = spm[fc.item == items[item.id]]
-    this.roll = f_run.item(ssm, h=3)
+    ss = spm[fc.item == items[item.id]]
+    this.roll = f_ets.run.item(ss=ss, frequency = 12, h.max=3)
     Err = this.roll$Err
 }
 
@@ -34,8 +34,8 @@ if (test.multi == TRUE) {
     multi.item.results =
         lapply(1:length(items),
                function(i) { print(items[i])
-                             ssm = spm[fc.item == items[i]]
-                             this.roll = f_run.item(ssm, h = 3)
+                             ss = spm[fc.item == items[i]]
+                             this.roll = f_ets.run.item(ss, frequency = 12, h.max = 3)
                              Err = this.roll$Err
                              Err[,fc.item := items[i]]
                })

@@ -149,20 +149,18 @@ To review the time series history and the M3 forecasts the following plots are p
 
 ```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=4, fig.width=10, results='asis'}
 
-  # item-level weekly and monthly forecasts
-# actuals [1:72]
-# M3 forecasts: regression, ets
-
-p = f_fcast.plot(periodicity="weekly")
-print(p)
-p = f_fcast.plot(periodicity="monthly")
-print(p)
-
-# actuals [1:313]
-# forecasts at k=3 months, show weeks - tricky
-#head(f_get.fcast.values("Weekly"),20)
-#fcast = f_get.fcast.values("weekly", h.eval=3)
-#print(xtable(head(fcast,20)),type="html")
+    # item-level weekly and monthly forecasts
+    # actuals [1:72]
+    # M3 forecasts: regression, ets
+    
+    p = f_fcast.plot(periodicity="weekly")      ;  print(p)
+    p = f_fcast.plot(periodicity="monthly")     ;  print(p)
+    
+    # actuals [1:313]
+    # forecasts at k=3 months, show weeks - tricky
+    #head(f_get.fcast.values("Weekly"),20)
+    #fcast = f_get.fcast.values("weekly", h.eval=3)
+    #print(xtable(head(fcast,20)),type="html")
 
 ```
 

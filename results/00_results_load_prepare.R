@@ -1,4 +1,7 @@
-library("ggplot2");library("reshape2");library(stringr)
+# Contains functions to prepare the results data (forecast accuracy from various methods at various levels) for presentation
+
+
+library("ggplot2");library("reshape2");library("stringr")
 
 
 
@@ -30,7 +33,8 @@ library("ggplot2");library("reshape2");library(stringr)
 lk.week.to.month = function (o.week) min(which(calendar.445$elapsed_weeks >= o.week))
 lk.month.to.week = function (o.month, start.end = "end") calendar.445$elapsed_weeks[o.month]
 
-f_get.fcast.values = function(periodicity = "monthly",h.eval=3, melt.data = TRUE, this.item =  "00-01-18200-53030")
+f_read.fcast.values = function(periodicity = "monthly", h.eval=3, 
+                               melt.data = TRUE, this.item =  "00-01-18200-53030")
 {
   setwd(pth.dropbox.data)
   
@@ -60,7 +64,7 @@ f_get.fcast.values = function(periodicity = "monthly",h.eval=3, melt.data = TRUE
   if (melt.data == TRUE) {
     
     # filter to the relevant horizon (months and weeks?) and item (optional?)
-    fcast = fcast[m==h.eval &  fc.item == this.item] 
+    fcast = fcast[m == h.eval &  fc.item == this.item] 
     
     fcast.melt = data.table(melt(fcast, id.vars=c("fc.item", "method", "periodicity", "fc.period"),measure.vars="fc"))[,variable:=NULL]
     setnames(fcast.melt,"fc.period","t")
@@ -73,16 +77,16 @@ f_get.fcast.values = function(periodicity = "monthly",h.eval=3, melt.data = TRUE
   } else  fcast
   
 }
-
-
-#
 #f_get_actuals(periodicity="monthly")
 
 
 f_fcast.plot = function(plot.data, periodicity = "weekly", h.eval = 3)
 {
-  # plot.data is a melt of the time series, forecast and various forecasts
-  plot.data =f_get.fcast.values(periodicity=periodicity,h.eval=3)
+    # plot.data is a melt of the time series, forecast and various forecasts
+    plot.data = f_read.fcast.values(periodicity = periodicity, h.eval = h.eval)
+    
+    #plot.data = f_read.fcast.values(periodicity = periodicity, 
+    #                                  h.eval=h.eval, melt.data=TRUE)  
   
   # get dates from plot.data
   tt = unique(plot.data$t)
@@ -94,8 +98,7 @@ f_fcast.plot = function(plot.data, periodicity = "weekly", h.eval = 3)
   #tasks:
     # add dates to x axis, zero y-axis, titles, legend
     # colours: actuals are BLACK, benchmark is green, our model is RED
-  plot.data = f_get.fcast.values(periodicity = periodicity, 
-                                 h.eval=h.eval, melt.data=TRUE)  
+  
   p = ggplot(data=plot.data[t>=t.start], aes(x=t, y=value, colour = method)) + 
     geom_line(size=1) + geom_point(size=3) + 
     theme_bw() + ggtitle(plot.title) + ylab("Units Sold\n") + xlab("\nTime")

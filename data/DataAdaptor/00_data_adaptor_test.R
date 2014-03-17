@@ -1,14 +1,11 @@
-#source("config.R")
 
-source("./data/DataAdaptor/10_load_data_various.R") 
-
+setwd(pth.dropbox.code) ; source("./data/DataAdaptor/10_load_data_various.R") 
 setwd(pth.dropbox.data) ; f_load.calendar()
 
-par.category = "beer" ; par.periodicity = "445"	
+#par.category = "beer" ; par.periodicity = "445"	
 
 
-
-f_da.reg.cat.all = function(par.category, par.periodicity, par.item="00-01-18200-53030", bo.save =FALSE) {
+f_da.reg.cat.all = function(par.category, par.periodicity, par.item = NULL, bo.save = FALSE) {
 
 	# get an input dataset for regression for a whole category
 	# optionally split it for a single item
@@ -16,11 +13,15 @@ f_da.reg.cat.all = function(par.category, par.periodicity, par.item="00-01-18200
     setwd(pth.dropbox.data)
     fil = paste("./regression datasets/", par.category, ".regression.data.", par.periodicity, ".rds", sep= "")
 	sp = readRDS(fil)
-	if (!is.null(par.item) & bo.save == TRUE) {
-		sp = sp[UPC==par.item]
+    
+    # optionally filter the data
+	if (!is.null(par.item)) sp = sp[UPC==par.item]
+    
+    # optionally save the subset of data
+	if (bo.save.subset == TRUE) {		
 		fil = paste("./regression datasets/", par.category, ".test.regression.data.", par.periodicity, ".rds", sep= "")
 		sp[,fc.item:=factor(fc.item)]
-		saveRDS(sp,fil)
+		saveRDS(sp, fil)
 	}
 	sp
 }
