@@ -1,5 +1,6 @@
 
 setwd(pth.dropbox.code)
+rm(list=ls())
 source('./.Rprofile')
 
 
@@ -14,7 +15,7 @@ setwd(pth.dropbox.code) ; source("./other/GenericRoutines/useful_functions.R")
 # get the necessary data for a specific item
 #spw = f_da.reg.cat.test(par.category="beer", par.periodicity="weekly")
 #spm = f_da.reg.cat.test(par.category="beer", par.periodicity="445")   #     "00-01-18200-53030"
-spm = f_da.reg.cat.all(par.category = "beer", par.periodicity = "445",par.item = NULL,bo.save.subset = FALSE)  # "07-01-18200-53025"
+spm = f_da.reg.cat.all(par.category = "beer", par.periodicity = "445")  # "07-01-18200-53025"
 
 #items = spw[!is.na(IRI_KEY),as.character(unique(fc.item))]
 items = spm[,as.character(unique(fc.item))]
@@ -36,7 +37,7 @@ if (test.single == TRUE) {
 
 if (test.multi == TRUE) {
     multi.item.results = rbindlist(
-        lapply(1:3,#length(items),
+        lapply(1:30,#length(items),
                function(i) { this.item = items[i]
                              print(this.item)
                              ss = spm[fc.item == items[i]]
@@ -46,12 +47,12 @@ if (test.multi == TRUE) {
                              Err
                }))
     setwd(pth.dropbox.data)
-    saveRDS(object = multi.item.results, file="./output/errors/ets_445_fast.rds")
+    saveRDS(object = multi.item.results, file="./output/errors/ets_445_fast_all.rds")
 }
 
 if (test.multicore == TRUE) {
     library(doParallel)
-    registerDoParallel(8)
+    registerDoParallel(3)
     spm[,fc.item := factor(fc.item)]
     setkeyv(spm, c("fc.item"))  #,"period_id"))
     multi.item.results =
@@ -69,7 +70,7 @@ if (test.multicore == TRUE) {
         }
     setwd(pth.dropbox.data)
     print(multi.item.results)
-    saveRDS(object=rbindlist(multi.item.results),file="./output/errors/ets_445_fast.rds")
+    saveRDS(object=rbindlist(multi.item.results),file="./output/errors/ets_445_fast_all.rds")
 }
 
 
