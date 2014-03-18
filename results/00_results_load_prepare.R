@@ -80,6 +80,22 @@ f_read.fcast.values = function(periodicity = "monthly", h.eval=3,
 #f_get_actuals(periodicity="monthly")
 
 
+f_load.res.ets.all = function("fil = G:/ets_445_fast_all.rds")
+{
+    require(stringr);require(ggplot2)
+    res =readRDS(fil)[,list(method = "regression_weekly", periodicity="monthly", fc.item, o = origin, k, fc=yhat, act=y, ape = 100*rae)]
+    res[,lvl := str_count( fc.item, "/") + 1 ]
+    res[,Level:=factor(lvl,labels = c("1 ITEM", "2 CHAIN", "3 STORE")[1:length(unique(lvl))],ordered=TRUE)]
+    res[,lvl:=NULL]
+    
+    res[,km:= cut(k, breaks=c(0,1,2,3),right=TRUE,labels=c("M1","M2","M3"))]
+    res
+    
+    ggplot(data=res, aes(x= km, y = ape, colour = Level, alpha = 0.5)) +  geom_jitter() + facet_wrap( ~Level, ncol=2, scales="free") + geom_boxplot() #+ coord_flip()
+}
+
+
+
 f_fcast.plot = function(plot.data, periodicity = "weekly", h.eval = 3)
 {
     # plot.data is a melt of the time series, forecast and various forecasts
@@ -140,6 +156,8 @@ f_get.fcast.comp.dat.monthly = function()
   
   fcast.comp.dat[,km:= cut(k, breaks=c(0,1,2,3),right=TRUE,labels=c("M1","M2","M3"))]
   fcast.comp.dat
+  
+  
 }
 
 
