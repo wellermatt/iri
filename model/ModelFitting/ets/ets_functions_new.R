@@ -114,7 +114,7 @@ f_ets.test.multicore = function(sp, freq = 12, h.max=3,
                                 Trace = TRUE, opt.dopar = TRUE, i=10)
 {
     library(doParallel)
-    if (opt.dopar =="dopar") registerDoParallel(4)
+    if (opt.dopar =="dopar") registerDoParallel(8)
     export.list = c("f_ets.run.item","f_ets.roll.fc.item")
     spm[,fc.item := factor(fc.item)]
     setkeyv(spm, c("fc.item"))  #,"period_id"))

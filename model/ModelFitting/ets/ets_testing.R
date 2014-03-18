@@ -1,5 +1,8 @@
 print(getwd())
-source('D:/Git/iri/.Rprofile')
+setwd("~/projects/iri/")
+#setwd("D:/Git/iri/")
+source('.Rprofile')
+
 setwd(pth.dropbox.code)
 #rm(list=ls())
 
@@ -46,7 +49,7 @@ if (test.multicore == TRUE)    ets.Err = f_ets.test.multicore(sp = spm, opt.dopa
 
 #system.time(f_ets.test.single(sp = spm))
 #system.time(f_ets.test.multi(sp = spm))
-system.time(f_ets.test.multicore(sp = spm, opt.dopar=TRUE, i=321))
+system.time(f_ets.test.multicore(sp = spm, opt.dopar=TRUE, i=5))
 
 
 
