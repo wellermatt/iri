@@ -7,55 +7,81 @@ setwd(pth.dropbox.code)
 #rm(list=ls())
 
 
+##==== parameters ========
+categories = c("milk","beer","carbbev")
+par.category = "milk"
+par.periodicity = "445"
+L12 = 3
 
+#==========================
 
+## LIBRARIES
 library("forecast") ; library("data.table") ; library("reshape2")
 library("ggplot2")
 
+
+## LOCAL CODE FILES
 setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/ets/ets_functions_new.R")
 setwd(pth.dropbox.code) ; source("./other/GenericRoutines/useful_functions.R")
 
 print(ls())
+
+
 #=============== TESTING =================
+
+#     "00-01-18200-53030"
+ #,par.item= "07-01-18200-53025"
 
 #============== DATA LOADING =====================
 # get the necessary data for a specific item
-#spw = f_da.reg.cat.test(par.category="beer", par.periodicity="weekly")
-#spm = f_da.reg.cat.test(par.category="beer", par.periodicity="445")   #     "00-01-18200-53030"
-spm = f_da.reg.cat.all(par.category = "beer", par.periodicity = "445")  #,par.item= "07-01-18200-53025")
 
-#items = spw[!is.na(IRI_KEY),as.character(unique(fc.item))]
-items = spm[,as.character(unique(fc.item))]
+f_load_data_sp = function(par.category, par.periodicity="445", par.item = NULL)
+{
+	if (par.periodicity == "445") sp = f_da.reg.cat.all(par.category = par.category, par.periodicity = par.periodicity)
+	if (par.periodicity == "weekly") sp= f_da.reg.cat.all(par.category=par.category, par.periodicity=par.periodicity)
+	sp
+}
 
 
 
 test.single = FALSE
 test.multi = FALSE
-test.multicore = FALSE
+test.multicore = TRUE
 
-L12 = TRUE
 
-if (L12 == TRUE) {
-    items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<3)]
-    spm = droplevels(spm[fc.item %in% items.L12])
+f_ets.test = function(par.category, par.periodicity)
+{
+	sp = f_da.reg.cat.all(par.category = par.category, par.periodicity = par.periodicity)
+	items = sp[,as.character(unique(fc.item))]
+	if (L12 < 3) {
+		items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<=L12)]
+		sp = droplevels(sp[fc.item %in% items.L12])
+	}
+	if (test.single == TRUE)    ets.Err = f_ets.test.single(sp = sp)
+	if (test.multi == TRUE)    ets.Err = f_ets.test.multi(sp = sp)
+	if (test.multicore == TRUE)    ets.Err = f_ets.test.multicore(sp = sp, par.category = par.category, opt.dopar=TRUE)
+
 }
 
-if (test.single == TRUE)    ets.Err = f_ets.test.single(sp = spm)
-if (test.multi == TRUE)    ets.Err = f_ets.test.multi(sp = spm)
-if (test.multicore == TRUE)    ets.Err = f_ets.test.multicore(sp = spm, opt.dopar=TRUE)
+f_ets.test("milk","445")
+f_ets.test("beer","445")
+f_ets.test("carbbev","445")
 
 
 
-#system.time(f_ets.test.single(sp = spm))
-#system.time(f_ets.test.multi(sp = spm))
-system.time(f_ets.test.multicore(sp = spm, opt.dopar=TRUE, i=5))
+
+
+#========================
+#system.time(f_ets.test.single(sp = sp))
+#system.time(f_ets.test.multi(sp = sp))
+#system.time(f_ets.test.multicore(sp = sp, opt.dopar=TRUE, i=5))
 
 
 
 # 
 # library(stringr)
-setwd(pth.dropbox.data) ; Err2 = readRDS("./output/errors/ets_445_fast_all.rds")
+#setwd(pth.dropbox.data) ; Err2 = readRDS("./output/errors/ets_445_fast_all.rds")
 # 
 # Err3 = data.table(dcast(data=Err2,formula=fc.item~k,fun.aggregate=median,value.var="rae"))
 # Err3[,lvl := str_count( fc.item, "/")+1 ]

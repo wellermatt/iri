@@ -110,16 +110,16 @@ f_ets.test.multi = function(sp, freq = 12, h.max=3, Trace = TRUE) {
 
 
 
-f_ets.test.multicore = function(sp, freq = 12, h.max=3, 
+f_ets.test.multicore = function(sp, par.category, freq = 12, h.max=3, 
                                 Trace = TRUE, opt.dopar = TRUE, i=10)
 {
     library(doParallel)
     if (opt.dopar =="dopar") registerDoParallel(8)
     export.list = c("f_ets.run.item","f_ets.roll.fc.item")
-    spm[,fc.item := factor(fc.item)]
-    setkeyv(spm, c("fc.item"))  #,"period_id"))
+    sp[,fc.item := factor(fc.item)]
+    setkeyv(sp, c("fc.item"))  #,"period_id"))
     multi.item.results =
-        foreach(dt.sub = isplitDT(sp, levels(sp$fc.item)[1:i]),
+        foreach(dt.sub = isplitDT(sp, levels(sp$fc.item)),
                 .combine='dtcomb', .multicombine=TRUE,
                 .export = export.list,
                 .packages=c("data.table", "forecast", "reshape2")) %dopar% {
@@ -133,7 +133,7 @@ f_ets.test.multicore = function(sp, freq = 12, h.max=3,
                 }
     setwd(pth.dropbox.data)
     #print(multi.item.results)
-    saveRDS(object=multi.item.results,
-            file="./output/errors/ets_445_fast_all.rds")
+	fil=paste0("./output/errors/ets_445_fast_all_123_", par.category, ".rds")
+    saveRDS(object=multi.item.results, file = fil)
     multi.item.results
 }
