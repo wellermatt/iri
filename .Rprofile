@@ -14,6 +14,7 @@ pth.dropbox.code <<- paste(pth.dropbox, "HEC/Code/iri/", sep = "")
 
 if (machine == "IDEA-PC") pth.dropbox.code <<- "C:/Users/welle_000/My Documents/GitHub/iri/"
 if (machine == "DESKTOP") pth.dropbox.code <<- "D:/Git/iri/"
+if (machine == "M11") pth.dropbox.code <<- "F:/Git/iri/"
 
 # set up for UNIX
 if (pth.dropbox == "/home/users/wellerm/") {

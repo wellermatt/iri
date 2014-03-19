@@ -194,6 +194,16 @@ Table
 
 Focusing first on the monthly performance of the forecasting methods in the table below it is possible to see that MdRAE is lower at m
 
+```{r echo=FALSE}
+
+    categories = c("beer", "carbbev","milk")
+    res = rbindlist(lapply(categories,f_load.res.ets.all))
+    dcast(res,formula=category~Level,fun.aggregate=median,value.var="ape")
+    dcast(res,formula=Level+category~km,fun.aggregate=median,value.var="ape")
+    dcast(res[Level=="1 ITEM"],formula=category+fc.item~km,fun.aggregate=median,value.var="ape")
+
+```
+
 
 
 ```{r echo=FALSE,warning=FALSE,message=FALSE, fig.height=4, fig.width=12, results='asis'}
