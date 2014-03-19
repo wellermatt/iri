@@ -51,7 +51,7 @@ results.all[,`:=`(e = fc-act, ae=abs(fc-act),
 
 }
 
-f_reg.roll.multi = function(imax = 1)
+f_reg.roll.multi = function(sp, imax = 1)
 {
   # this is probably the function that requires the multicore processing
   
@@ -59,10 +59,10 @@ f_reg.roll.multi = function(imax = 1)
     foreach (i = 1:imax) %do%  #length(items)
   {
     this.item = as.character(items[i]) # as.character(spw$fc.item[[i]])
-    ssw = spw[fc.item == this.item]  #,-1, with=F
+    ss = sp[fc.item == this.item]  #,-1, with=F
     
     print(this.item)
-    reg.roll = f_reg.roll.item(ssw=ssw, o1=207,h=13)    
+    reg.roll = f_reg.roll.item(ssw=ss, o1=207,h=13)    
     
     # mm = reg.roll$final.model  # do we need the final model or not?
     # coefficients/elasticities

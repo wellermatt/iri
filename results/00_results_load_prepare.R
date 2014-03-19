@@ -80,10 +80,10 @@ f_read.fcast.values = function(periodicity = "monthly", h.eval=3,
 #f_get_actuals(periodicity="monthly")
 
 
-f_load.res.ets.all = function("fil = G:/ets_445_fast_all.rds")
+f_load.res.ets.all = function(fil = "G:/ets_445_fast_all.rds")
 {
     require(stringr);require(ggplot2)
-    res =readRDS(fil)[,list(method = "regression_weekly", periodicity="monthly", fc.item, o = origin, k, fc=yhat, act=y, ape = 100*rae)]
+    res =readRDS(fil)[,list(method = "ets_445", periodicity="monthly", fc.item, o = origin, k, fc=yhat, act=y, ape = 100*rae)]
     res[,lvl := str_count( fc.item, "/") + 1 ]
     res[,Level:=factor(lvl,labels = c("1 ITEM", "2 CHAIN", "3 STORE")[1:length(unique(lvl))],ordered=TRUE)]
     res[,lvl:=NULL]
@@ -92,9 +92,11 @@ f_load.res.ets.all = function("fil = G:/ets_445_fast_all.rds")
     res
     
     ggplot(data=res, aes(x= km, y = ape, colour = Level, alpha = 0.5)) +  geom_jitter() + facet_wrap( ~Level, ncol=2, scales="free") + geom_boxplot() #+ coord_flip()
+    ggplot(data=res[Level=="1 ITEM"], aes(x= fc.item, y = ape, colour = Level, alpha = 0.5)) +  geom_jitter() + facet_wrap( ~km, ncol=1) + geom_boxplot() + coord_flip()
+    ggplot(data=res[Level=="2 CHAIN"], aes(y = ape, x = Level, alpha = 0.5)) +  geom_jitter() + facet_wrap( ~km, ncol=1) + geom_boxplot() + coord_flip()
 }
 
-
+f_load.res.ets.all()
 
 f_fcast.plot = function(plot.data, periodicity = "weekly", h.eval = 3)
 {

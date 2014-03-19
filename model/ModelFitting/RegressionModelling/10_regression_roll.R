@@ -14,21 +14,45 @@ require("xtable")
 #setwd(pth.dropbox.code) ; source("./model/ModelFitting/ets/ets_functions.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/02_regression_functions_modelling.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/10_regression_roll_functions.R")
-source("./model/ModelFitting/RegressionModelling/03_regression_functions_diagnostics.R")
-source("./other/GenericRoutines/useful_functions.R")
+setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/03_regression_functions_diagnostics.R")
+setwd(pth.dropbox.code) ; source("./other/GenericRoutines/useful_functions.R")
+setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
 
 
 #============== DATA LOADING =====================
 
-setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
+par.item= "07-01-18200-53025"
+par.periodicity = "weekly"
 
 # get the necessary data for a specific item: weekly or monthly data loaded
-spw = f_da.reg.cat.test(par.category="beer", par.periodicity="weekly")   # spw is the regression dataset, all nodes
-spm = f_da.reg.cat.test(par.category="beer", par.periodicity="445")     # spm is 445 version of above
+if (par.periodicity == "weekly") {
+    sp = f_da.reg.cat.test(par.category="beer", par.periodicity="weekly")   # spw is the regression dataset, all nodes    
+} else {
+    sp = f_da.reg.cat.test(par.category="beer", par.periodicity="445")     # spm is 445 version of above    
+}
+items = sp[,as.character(unique(fc.item))]
 
-#items = spw[!is.na(IRI_KEY),as.character(unique(fc.item))]
-items = spm[,as.character(unique(fc.item))]
 
+test.single = FALSE
+test.multi = FALSE
+test.multicore = FALSE
+
+L12 = TRUE
+
+if (L12 == TRUE) {
+    items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<3)]
+    sp = droplevels(sp[fc.item %in% items.L12])
+}
+sp
+#if (test.single == TRUE)    ets.Err = f_ets.test.single(sp = spm)
+#if (test.multi == TRUE)    ets.Err = f_ets.test.multi(sp = spm)
+#if (test.multicore == TRUE)    ets.Err = f_ets.test.multicore(sp = spm, opt.dopar=TRUE)
+
+
+
+#system.time(f_ets.test.single(sp = spm))
+#system.time(f_ets.test.multi(sp = spm))
+#system.time(f_ets.test.multicore(sp = spm, opt.dopar=TRUE, i=5))
 
 
 
@@ -69,7 +93,7 @@ periodicity = "weekly"
 # for each fc.item (at each level)
 # the list of items will be used
 
-rr = f_reg.roll.multi(imax=1)  #length(items)
+rr = f_reg.roll.multi(sp = sp, imax=5)  #length(items)
 
 saveResults = FALSE
 if (saveResults == TRUE){
