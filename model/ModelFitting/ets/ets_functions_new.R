@@ -133,7 +133,7 @@ f_ets.test.multicore = function(sp, par.category, freq = 12, h.max=3,
                 }
     setwd(pth.dropbox.data)
     #print(multi.item.results)
-	fil=paste0("./output/errors/ets_445_fast_all_123_", par.category, ".rds")
+	fil=paste0("./output/errors/ets_445_fast_all_1_", par.category, ".rds")
     saveRDS(object=multi.item.results, file = fil)
     multi.item.results
 }

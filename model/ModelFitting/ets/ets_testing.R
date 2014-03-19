@@ -1,5 +1,5 @@
 print(getwd())
-setwd("~/projects/iri/")
+#setwd("~/projects/iri/")
 #setwd("D:/Git/iri/")
 source('.Rprofile')
 
@@ -11,7 +11,7 @@ setwd(pth.dropbox.code)
 categories = c("milk","beer","carbbev")
 par.category = "milk"
 par.periodicity = "445"
-L12 = 3
+L12 = 1
 
 #==========================
 
@@ -40,9 +40,18 @@ f_load_data_sp = function(par.category, par.periodicity="445", par.item = NULL)
 {
 	if (par.periodicity == "445") sp = f_da.reg.cat.all(par.category = par.category, par.periodicity = par.periodicity)
 	if (par.periodicity == "weekly") sp= f_da.reg.cat.all(par.category=par.category, par.periodicity=par.periodicity)
-	sp
+	items = sp[,as.character(unique(fc.item))]
+	if (L12 < 3) {
+	    items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<=L12)]
+	    sp = droplevels(sp[fc.item %in% items.L12])
+	}
+    sp
 }
 
+sp.all = rbindlist(lapply(categories, function(x) data.table(category = x, f_load_data_sp(par.category=x))))[,c(1:3,7),with=F]
+
+write.csv(dcast(sp.all,period_id~category+fc.item,sum,value.var="UNITS"),file = "E:/items.ts.csv")
+write.csv(dcast(sp.all, category+fc.item~period_id,sum,value.var="UNITS"),file = "E:/items.ts.flip.csv")
 
 
 test.single = FALSE
@@ -69,7 +78,7 @@ f_ets.test("beer","445")
 f_ets.test("carbbev","445")
 
 
-
+unique(sp$fc.item)
 
 
 #========================
