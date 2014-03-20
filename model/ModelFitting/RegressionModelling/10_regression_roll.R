@@ -21,15 +21,17 @@ setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
 
 #============== DATA LOADING =====================
 
-par.item= "07-01-18200-53025"
+#par.item= "07-01-18200-53025"
 par.periodicity = "weekly"
-
-# get the necessary data for a specific item: weekly or monthly data loaded
-if (par.periodicity == "weekly") {
-    sp = f_da.reg.cat.test(par.category="beer", par.periodicity="weekly")   # spw is the regression dataset, all nodes    
-} else {
-    sp = f_da.reg.cat.test(par.category="beer", par.periodicity="445")     # spm is 445 version of above    
-}
+par.Level = 1
+# 
+# # get the necessary data for a specific item: weekly or monthly data loaded
+# if (par.periodicity == "weekly") {
+#     sp = f_da.reg.cat.all(par.category="beer", par.periodicity="weekly")   # spw is the regression dataset, all nodes    
+# } else {
+#     sp = f_da.reg.cat.test(par.category="beer", par.periodicity="445")     # spm is 445 version of above    
+# }
+sp = f_da.reg.cat.all(par.category="beer", par.periodicity="weekly")   # spw is the regression dataset, all nodes    
 items = sp[,as.character(unique(fc.item))]
 
 
@@ -40,8 +42,8 @@ test.multicore = FALSE
 L12 = TRUE
 
 if (L12 == TRUE) {
-    items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<3)]
-    sp = droplevels(sp[fc.item %in% items.L12])
+    items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<=par.Level)]
+    sp = droplevels(sp[as.character(fc.item) %in% items.L12])
 }
 sp
 #if (test.single == TRUE)    ets.Err = f_ets.test.single(sp = spm)
@@ -93,7 +95,13 @@ periodicity = "weekly"
 # for each fc.item (at each level)
 # the list of items will be used
 
-rr = f_reg.roll.multi(sp = sp, imax=5)  #length(items)
+rr = f_reg.roll.multiCORE(sp = sp, imax=8)  #length(items)
+
+
+
+
+
+
 
 saveResults = FALSE
 if (saveResults == TRUE){
