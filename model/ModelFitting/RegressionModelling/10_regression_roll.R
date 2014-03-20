@@ -1,15 +1,12 @@
 ### ROLLING REGRESSION FUNCTIONALITY TESTING & LOOPING ####
 #setwd("C:/Users/matt/Dropbox/HEC/Code/iri")
-setwd(pth.dropbox.code)
+is.null(pth.dropbox.code) ; setwd(pth.dropbox.code)
 #setwd(pth.dropbox.code)
 #rm(list=ls())
-source("./.Rprofile")
+source("E:/Git/iri/.Rprofile")
 
-require("forecast")
-require("data.table") ; require("reshape2")
-require("ggplot2")
-require("foreach")
-require("xtable")
+require("forecast") ; require("data.table") ; require("reshape2")
+require("ggplot2") ; require("foreach") ; require("xtable")
 
 #setwd(pth.dropbox.code) ; source("./model/ModelFitting/ets/ets_functions.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/02_regression_functions_modelling.R")
@@ -21,23 +18,23 @@ setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
 
 #============== DATA LOADING =====================
 
-#par.item= "07-01-18200-53025"
+categories = c("beer","carbbev","milk")
+par.item= "07-01-18200-53025"
+
 par.periodicity = "weekly"
 par.Level = 1
-# 
-# # get the necessary data for a specific item: weekly or monthly data loaded
-# if (par.periodicity == "weekly") {
-#     sp = f_da.reg.cat.all(par.category="beer", par.periodicity="weekly")   # spw is the regression dataset, all nodes    
-# } else {
-#     sp = f_da.reg.cat.test(par.category="beer", par.periodicity="445")     # spm is 445 version of above    
-# }
-sp = f_da.reg.cat.all(par.category="beer", par.periodicity="weekly")   # spw is the regression dataset, all nodes    
+
+sp = f_da.reg.cat.all(par.category=categories[1], par.periodicity="weekly")  #, par.item = par.item)   # spw is the regression dataset, all nodes    
+
+# function to get the data for multiple categories
+if (TRUE == TRUE)
+{
+    sp.all = lapply(categories, function (this.cat) f_da.reg.cat.all(par.category=this.cat, par.periodicity="weekly") )  # spw is the regression dataset, all nodes    
+    sp = rbindlist(sp.all)
+}
+
 items = sp[,as.character(unique(fc.item))]
 
-
-test.single = FALSE
-test.multi = FALSE
-test.multicore = FALSE
 
 L12 = TRUE
 
@@ -46,43 +43,37 @@ if (L12 == TRUE) {
     sp = droplevels(sp[as.character(fc.item) %in% items.L12])
 }
 sp
-#if (test.single == TRUE)    ets.Err = f_ets.test.single(sp = spm)
-#if (test.multi == TRUE)    ets.Err = f_ets.test.multi(sp = spm)
-#if (test.multicore == TRUE)    ets.Err = f_ets.test.multicore(sp = spm, opt.dopar=TRUE)
+items = sp[,as.character(unique(fc.item))]
 
 
+test.single = FALSE  ;  if (test.single == TRUE)    ets.Err = f_ets.test.single(sp = spm)
+test.multi = FALSE   ;  if (test.multi == TRUE)    ets.Err = f_ets.test.multi(sp = spm)
+test.multicore = FALSE  ;  if (test.multicore == TRUE)    ets.Err = f_ets.test.multicore(sp = spm, opt.dopar=TRUE)
 
 #system.time(f_ets.test.single(sp = spm))
 #system.time(f_ets.test.multi(sp = spm))
 #system.time(f_ets.test.multicore(sp = spm, opt.dopar=TRUE, i=5))
 
 
-
-
 #=============== EXPT DESIGN - MODEL SELECTION PARS =========================
+
 print.options = list(opt.print.summary = TRUE, opt.print.aov = TRUE, opt.print.diag = TRUE, opt.print.stats = TRUE, opt.print.coef = TRUE)
+
 expt.design.master = data.table(id = 1:3, include.AR.terms = FALSE, log.model = FALSE, price.terms = c("PRICE_DIFF","PRICE","PRICE_LAG"), time.period = "WEEK")
 expt.design = as.list(expt.design.master[2])
 for  (x in names(expt.design)) assign(x, expt.design[[x]])
 
 ##
 # main functions: take a model (), get the xreg : the x values for future periods
-
-
-
 # major decisions here about the paramters in terms of variable selection:
 # price: diff/lag/log
 # promo: lag/split/combination (FEAT/DISP)
 
 # hols:
-
-
-
 # model.config
 log.model = FALSE
 include.AR.terms = FALSE 
 price.terms = "PRICE_DIFF"
-
 periodicity = "weekly"
 
 
@@ -95,14 +86,10 @@ periodicity = "weekly"
 # for each fc.item (at each level)
 # the list of items will be used
 
-rr = f_reg.roll.multiCORE(sp = sp, imax=8)  #length(items)
+#rr = f_reg.roll.m(sp=sp, imax = 8)
+rr = f_reg.roll.multiCORE(sp = sp, imax=8, ncores = 8)  #length(items)
 
-
-
-
-
-
-
+rr
 saveResults = FALSE
 if (saveResults == TRUE){
   
@@ -177,4 +164,14 @@ ggplot(data= rr, aes(y = rae, x = factor(lvl), fill = factor(lvl))) +  geom_boxp
 #     fc.comparison
 # }
 #     
+# }
+
+
+
+# 
+# # get the necessary data for a specific item: weekly or monthly data loaded
+# if (par.periodicity == "weekly") {
+#     sp = f_da.reg.cat.all(par.category="beer", par.periodicity="weekly")   # spw is the regression dataset, all nodes    
+# } else {
+#     sp = f_da.reg.cat.test(par.category="beer", par.periodicity="445")     # spm is 445 version of above    
 # }
