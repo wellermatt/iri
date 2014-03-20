@@ -4,17 +4,15 @@
 library("ggplot2");library("reshape2");library("stringr")
 
 
-
-
-# generate some results and comparisons of the different forecasting methods at various levels of aggregations:
-
 # Dimensions:
 # item - chain- store
 # months - weeks
 
+
 # Accuracy measures/residuals diagnostics
 # detailed: e, ae, re, rae, srae, se, ase (abs scaled error)
 # summary: mean, median, trimmed mean, geometric mean, etc.
+
 
 # Experimental Factors:
 # time series frequency
@@ -36,10 +34,10 @@ lk.month.to.week = function (o.month, start.end = "end") calendar.445$elapsed_we
 f_read.fcast.values = function(periodicity = "monthly", h.eval=3, 
                                melt.data = TRUE, this.item =  "00-01-18200-53030")
 {
-  setwd(pth.dropbox.data)
+    setwd(pth.dropbox.data)
   
-  # read the fcast data from file for both methods
-  if (periodicity == "weekly") {
+    # read the fcast data from file for both methods
+    if (periodicity == "weekly") {
     fc1 = readRDS( "./output/errors/bk/ets_445_weekly.rds")[,list(method = "ets_445", periodicity="weekly", fc.item, o = origin.week, k, fc, act)]
     origin.subset.445 = unique(fc1$o)
     fc2 = readRDS( "./output/errors/bk/errors_reg2.rds")[t %in% origin.subset.445,
@@ -49,7 +47,7 @@ f_read.fcast.values = function(periodicity = "monthly", h.eval=3,
     fcast$o.month = unlist(lapply(fcast$o,function(o)lk.week.to.month(o)))
     fcast$fc.month = unlist(lapply(fcast$fc.period,function(o)lk.week.to.month(o)))
     fcast[,m:=fc.month-o.month]   
-  } else {
+    } else {
     fc1 = readRDS( "./output/errors/bk/ets_445.rds")[,list(method = "ets_445", periodicity="monthly", fc.item, o = origin, k, fc=yhat)]
     origin.subset.445 = unique(fc1$o)
     fc2 = readRDS("./output/errors/bk/regression_weekly_445.rds")[origin %in% origin.subset.445,
@@ -58,10 +56,10 @@ f_read.fcast.values = function(periodicity = "monthly", h.eval=3,
     fcast[,o.month := o]
     fcast[,fc.month := o+k]
     fcast[,m:=fc.month-o.month]
-  }
-  
-  
-  if (melt.data == TRUE) {
+    }
+    
+    # format the data in molten form
+    if (melt.data == TRUE) {
     
     # filter to the relevant horizon (months and weeks?) and item (optional?)
     fcast = fcast[m == h.eval &  fc.item == this.item] 
@@ -74,24 +72,52 @@ f_read.fcast.values = function(periodicity = "monthly", h.eval=3,
     act = data.table(key.fields,t= 1:n.actuals, value = actuals)
     out = rbindlist(list(fcast.melt, act ) )
     out
-  } else  fcast
+    } else  fcast
   
 }
 #f_get_actuals(periodicity="monthly")
 
+#reg_week_test.rds
 
+f_load.res.reg.all = function(par.category)
+{
+    #££ the regression output neds modification and a consistent format defined
+    
+    require(stringr);require(ggplot2)
+    setwd(pth.dropbox.data)
+    fil = paste0("./output/errors/reg_week_test.rds")    #   _", par.category, "
+    
+    par.category = "beer"
+    
+    res =readRDS(fil)
+    #[,list(category = par.category, method = "ets_445", periodicity="monthly", fc.item, o = origin, k, fc=yhat, act=y, ape = 100*rae)]
+    names(res)[3:6] = c("o", "h", "f", "y")
+    
+    
+    #res[,lvl := str_count( fc.item, "/") + 1 ]
+    #res[,Level:=factor(lvl,labels = c("1 ITEM", "2 CHAIN", "3 STORE")[1:length(unique(lvl))],ordered=TRUE)]
+    #res[,lvl:=NULL]
+    
+    
+    
+    res[,km:= cut(k, breaks=c(0,1,2,3),right=TRUE,labels=c("M1","M2","M3"))]
+    
+    #print(ggplot(data=res, aes(x= km, y = ape, colour = Level, alpha = 0.5)) +  geom_jitter() + facet_wrap( ~Level, ncol=2, scales="free") + geom_boxplot()) #+ coord_flip())
+    #print(ggplot(data=res[Level=="1 ITEM"], aes(x= fc.item, y = ape, colour = Level, alpha = 0.5)) +  geom_jitter() + facet_wrap( ~km, ncol=1) + geom_boxplot() + coord_flip())
+    #print(ggplot(data=res[Level=="2 CHAIN"], aes(y = ape, x = Level, alpha = 0.5)) +  geom_jitter() + facet_wrap( ~km, ncol=1) + geom_boxplot() + coord_flip())
+    res
+}
 f_load.res.ets.all = function(par.category)
 {
     require(stringr);require(ggplot2)
     setwd(pth.dropbox.data)
     fil = paste0("./output/errors/ets_445_fast_all_123_", par.category, ".rds")
-    res =readRDS(fil)[,list(category = par.category, method = "ets_445", periodicity="monthly", fc.item, o = origin, k, fc=yhat, act=y, ape = 100*rae)]
+    res =readRDS(fil)[,list(category = par.category, method = "ets_445", periodicity="monthly", fc.item, o = origin, h=k, fc=yhat, y, ape = 100*rae)]
     res[,lvl := str_count( fc.item, "/") + 1 ]
     res[,Level:=factor(lvl,labels = c("1 ITEM", "2 CHAIN", "3 STORE")[1:length(unique(lvl))],ordered=TRUE)]
     res[,lvl:=NULL]
     
     res[,km:= cut(k, breaks=c(0,1,2,3),right=TRUE,labels=c("M1","M2","M3"))]
-    
     
     #print(ggplot(data=res, aes(x= km, y = ape, colour = Level, alpha = 0.5)) +  geom_jitter() + facet_wrap( ~Level, ncol=2, scales="free") + geom_boxplot()) #+ coord_flip())
     #print(ggplot(data=res[Level=="1 ITEM"], aes(x= fc.item, y = ape, colour = Level, alpha = 0.5)) +  geom_jitter() + facet_wrap( ~km, ncol=1) + geom_boxplot() + coord_flip())
@@ -104,6 +130,8 @@ dcast(res,formula=category~Level,fun.aggregate=median,value.var="ape")
 dcast(res[Level=="1 ITEM"],formula=category+fc.item~km,fun.aggregate=median,value.var="ape")
 
 f_load.res.ets.all(par.category = "carbbev")
+
+
 
 f_fcast.plot = function(plot.data, periodicity = "weekly", h.eval = 3)
 {
@@ -130,6 +158,13 @@ f_fcast.plot = function(plot.data, periodicity = "weekly", h.eval = 3)
   p
 }
 #f_fcast.plot()
+
+
+
+
+
+
+
 
 f_get.fcast.comp.dat.weekly = function()
 {
