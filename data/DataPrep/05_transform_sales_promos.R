@@ -11,7 +11,8 @@
 f_load.stores.clean = function()
 ## load the cleaned list of stores with their related chain and market attributes
 {
-	stores = readRDS("./iri reference data/stores.clean.rds")
+	setwd(pth.dropbox.data)
+    stores = readRDS("./iri reference data/stores.clean.rds")
 	stores
 }
 
@@ -181,18 +182,22 @@ f_data.aggregate.week.445 = function(dat.w, opt.weighted.mean = FALSE) {
 # dropping the fc.item descriptor fields (UPC, IRI_KEY, chain), parameterising the script for categories
 # move the further subsetting to the earlier stage of subsetting on HEC
 
-library(data.table) ; library(plyr) ; library(reshape)  ;  library(caret)
+library(data.table) ; library(plyr) ; library(reshape2)  ;  library(caret)
 
-setwd(pth.dropbox.code)  ;  source("./DataAdaptor/10_load_data_various.R")
+setwd(pth.dropbox.code)  ;  source("./data/DataAdaptor/10_load_data_various.R")
 
-categories = c("razors")
-for (par.category in categories)
+categories = c("yoghurt")
+
+categories = list.files("/storage/users/wellerm/data/04_subset")
+
+for (par.category in categories[15:17])
 {
 	setwd(pth.dropbox.data)
+    
 	promo.flags.agg.methods = "wmean"    # which method to use to aggregate the promotional flags (wmean or mean)
 
 	# load the subset of data in original IRI format (i.e. categorical variables for promotions, no price calculated)
-	fil = paste("./iri category subsets/unformatted/", par.category, "/", par.category, ".subset.rds", sep="")
+	fil = paste0("/storage/users/wellerm/data/04_subset/", par.category, "/", par.category, ".subset.rds")
 	dat.cat.1 = data.table(readRDS(fil))
 	col.order = c("fc.item", "UPC", "chain", "IRI_KEY",  "WEEK", "UNITS", "DOLLARS", "PRICE", "PR")
 
@@ -212,22 +217,16 @@ for (par.category in categories)
 	# remove the PROMO_NONE flags as we now have PROMO_ANY flags instead which make more sense
 	sp.cat$FEAT_NONE = NULL
 	sp.cat$DISP_NONE = NULL
-
-	setwd("./iri category subsets/reformatted")
-	saveRDS(sp.cat, paste(par.category,".subset.sales.promos.weekly.rds",sep=""))
-	saveRDS(fc.items, paste(par.category,".subset.fc.items.rds",sep=""))
+    
+    pth.formatted = paste0("/storage/users/wellerm/data/04_subset/", par.category, "/")
+    
+	#fil = paste0(pth.formatted, par.category, ".subset.reformatted.rds")
+	saveRDS(sp.cat, paste0(pth.formatted, par.category,".subset.sales.promos.weekly.rds"))
+	saveRDS(fc.items, paste0(pth.formatted, par.category,".subset.fc.items.rds"))
 	
 	# monthly data aggregation and saving
 	setwd(pth.dropbox.data)
 	sp.cat.445 = f_data.aggregate.week.445(dat.w = sp.cat, opt.weighted.mean = FALSE)
-	setwd("./iri category subsets/reformatted")
-	saveRDS(sp.cat.445, paste(par.category,".subset.sales.promos.445.rds",sep=""))
+	saveRDS(sp.cat.445, paste0(pth.formatted, par.category,".subset.sales.promos.445.rds"))
 	
 }
-
-# some analysis to identify missing values by chain/store
-# dcast(sp.cat,UPC+WEEK~chain,fun.aggregate=function(x)sum(is.na(x)),value.var="UNITS")
-# head(dcast(sp.cat,chain+IRI_KEY~WEEK,fun.aggregate=function(x)sum(is.na(x)),value.var="UNITS"))
-
-
-

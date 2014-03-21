@@ -88,7 +88,7 @@ f_subset.chain.restrictions = function(skus.to.keep, par.min.num.stores.in.chain
 {
     ## now subset the SKU/Store combinations to only include the chains with a specified number of stores
     # we need to get the chain for each store and then count the stores per upc/chain combination
-    stores = readRDS(paste0(pth.dropbox.data,"/iri reference data/stores.clean.rds"))
+    stores = readRDS(paste0(pth.dropbox.data,"iri reference data/stores.clean.rds"))
     skul.h = skus.to.keep
     skul.h = merge(skul.h, stores[,c(1:3), with =FALSE], by = "IRI_KEY")
     sku.chain = skul.h[, list(store.count = length(unique(IRI_KEY))) , by = c("UPC","chain")]
@@ -183,7 +183,7 @@ categories = gsub(".tf.all.rds", "",
                   list.files("/storage/users/wellerm/data/02_tf/sales/all", pattern = "*.tf.all.rds"))
 
 
-lapply(categories, f_subset.category.main)
+lapply(categories[24:31], f_subset.category.main)
 
 
 # 

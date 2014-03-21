@@ -18,7 +18,7 @@ if (machine == "M11") pth.dropbox.code <<- "F:/Git/iri/"
 
 # set up for UNIX
 if (pth.dropbox == "/home/users/wellerm/") {
-    pth.dropbox.data <<- paste0(pth.dropbox, "data/iri/")
+    pth.dropbox.data <<- paste0(pth.dropbox, "data/")
     pth.dropbox.code <<- paste0(pth.dropbox, "projects/iri/")
 }
 

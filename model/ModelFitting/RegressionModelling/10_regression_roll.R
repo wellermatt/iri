@@ -16,34 +16,54 @@ setwd(pth.dropbox.code) ; source("./other/GenericRoutines/useful_functions.R")
 setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
 
 
+#=============== EXPT DESIGN - MODEL SELECTION PARS =========================
+
+log.model = FALSE
+include.AR.terms = FALSE 
+price.terms = "PRICE_DIFF"
+periodicity = "weekly"
+
+print.options = list(opt.print.summary = TRUE, opt.print.aov = TRUE, opt.print.diag = TRUE, opt.print.stats = TRUE, opt.print.coef = TRUE)
+
+expt.design.master = data.table(id = 1:3, include.AR.terms = FALSE, log.model = FALSE, price.terms = c("PRICE_DIFF","PRICE","PRICE_LAG"), time.period = "WEEK")
+expt.design = as.list(expt.design.master[2])
+for  (x in names(expt.design)) assign(x, expt.design[[x]])
+
 #============== DATA LOADING =====================
 
 categories = c("beer","carbbev","milk")
 par.item= "07-01-18200-53025"
 
 par.periodicity = "weekly"
-par.Level = 1
+par.Level = 3
 
-sp = f_da.reg.cat.all(par.category=categories[1], par.periodicity="weekly")  #, par.item = par.item)   # spw is the regression dataset, all nodes    
+# use the standard beer SKU
+sp = f_da.reg.cat.all(par.category=categories[1], par.periodicity="weekly", par.item = par.item)   # spw is the regression dataset, all nodes    
 
 # function to get the data for multiple categories
-if (TRUE == TRUE)
+if (TRUE == FALSE)
 {
     sp.all = lapply(categories, function (this.cat) f_da.reg.cat.all(par.category=this.cat, par.periodicity="weekly") )  # spw is the regression dataset, all nodes    
     sp = rbindlist(sp.all)
 }
 
+# limit the levels included: 1/2/3
 items = sp[,as.character(unique(fc.item))]
-
-
 L12 = TRUE
-
 if (L12 == TRUE) {
     items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<=par.Level)]
-    sp = droplevels(sp[as.character(fc.item) %in% items.L12])
-}
+    sp = droplevels(sp[as.character(fc.item) %in% items.L12])}
 sp
 items = sp[,as.character(unique(fc.item))]
+
+#=========
+
+nitems = length(unique(sp$fc.item))
+this.time = system.time(f_reg.roll.multiCORE(sp = sp, imax=8, ncores = 8) ) #length(items)
+test.stats = data.table(method = "reg_roll", periodicity, nitems, this.time = this.time[3])
+
+
+
 
 
 test.single = FALSE  ;  if (test.single == TRUE)    ets.Err = f_ets.test.single(sp = spm)
@@ -52,16 +72,7 @@ test.multicore = FALSE  ;  if (test.multicore == TRUE)    ets.Err = f_ets.test.m
 
 #system.time(f_ets.test.single(sp = spm))
 #system.time(f_ets.test.multi(sp = spm))
-#system.time(f_ets.test.multicore(sp = spm, opt.dopar=TRUE, i=5))
 
-
-#=============== EXPT DESIGN - MODEL SELECTION PARS =========================
-
-print.options = list(opt.print.summary = TRUE, opt.print.aov = TRUE, opt.print.diag = TRUE, opt.print.stats = TRUE, opt.print.coef = TRUE)
-
-expt.design.master = data.table(id = 1:3, include.AR.terms = FALSE, log.model = FALSE, price.terms = c("PRICE_DIFF","PRICE","PRICE_LAG"), time.period = "WEEK")
-expt.design = as.list(expt.design.master[2])
-for  (x in names(expt.design)) assign(x, expt.design[[x]])
 
 ##
 # main functions: take a model (), get the xreg : the x values for future periods
@@ -71,10 +82,6 @@ for  (x in names(expt.design)) assign(x, expt.design[[x]])
 
 # hols:
 # model.config
-log.model = FALSE
-include.AR.terms = FALSE 
-price.terms = "PRICE_DIFF"
-periodicity = "weekly"
 
 
 
@@ -87,7 +94,9 @@ periodicity = "weekly"
 # the list of items will be used
 
 #rr = f_reg.roll.m(sp=sp, imax = 8)
-rr = f_reg.roll.multiCORE(sp = sp, imax=8, ncores = 8)  #length(items)
+
+
+stop()
 
 rr
 saveResults = FALSE
