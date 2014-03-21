@@ -3,8 +3,7 @@
 # and adding lags, harmonic and holiday variables
 
 library("data.table")
-rm(list=ls())
-options(width=150)
+options(width=120)
 machine = (Sys.info()["nodename"])
 
 #source("E:/Git/iri/.Rprofile")

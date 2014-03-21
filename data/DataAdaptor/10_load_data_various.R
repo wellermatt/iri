@@ -2,10 +2,9 @@
 #setwd(pth.dropbox.data)
 
 f_load.stores = function(){
-	stores <<- readRDS("./iri reference data/stores.clean.rds")
-	#qplot(x=store_rev_avg,data=stores) + 
-	#ggtitle("Distribution of store size\nTotal Store Revenue  ($m/year)\n")
-	#qplot(y=store_rev_avg, x = chain, data=stores, geom="point", stat="summary", fun.y="sum")
+    setwd(pth.dropbox.data)
+    stores <<- readRDS("./iri reference data/stores.clean.rds")
+    stores
 }
 
 f_load.calendar = function(){
