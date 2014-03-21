@@ -9,7 +9,7 @@ if (machine == "DESKTOP") pth.dropbox <<- "D:/Dropbox/Dropbox/"
 if (machine == "IDEA-PC") pth.dropbox <<- "C:/Users/welle_000/Dropbox/"
 
 # set up for Windows/Dropbox
-pth.data.iri <<- paste0(pth.dropbox, "HEC/IRI_DATA/")
+pth.dropbox.data <<- paste0(pth.dropbox, "HEC/IRI_DATA/")
 #pth.dropbox.code <<- paste(pth.dropbox, "HEC/Code/iri/", sep = "")
 
 if (machine == "IDEA-PC") pth.dropbox.code <<- "E:/Git/iri/"

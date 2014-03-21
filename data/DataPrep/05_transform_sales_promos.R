@@ -192,7 +192,7 @@ categories = list.files("/storage/users/wellerm/data/04_subset")
 
 for (par.category in categories[c(2,4:14,18:28)])
 {
-	print(paste(Processing category:",par.category))
+	print(paste("Processing category:",par.category))
 	setwd(pth.dropbox.data)
     
 	promo.flags.agg.methods = "wmean"    # which method to use to aggregate the promotional flags (wmean or mean)

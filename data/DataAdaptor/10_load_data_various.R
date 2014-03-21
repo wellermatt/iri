@@ -19,18 +19,23 @@ f_load.calendar = function(){
 }
 
 f_load.dat.subset = function(category, par.weekly = TRUE, par.445 = TRUE){
-	if (par.weekly == TRUE) {
-		fil = paste("./iri category subsets/reformatted/",  category, ".subset.sales.promos.weekly.rds", sep = "")  #category, "/",
+    setwd(pth.dropbox.data)
+    if (par.weekly == TRUE) {
+		fil = paste0("./iri category subsets/reformatted/",  category, ".subset.sales.promos.weekly.rds")  #category, "/",
+		fil = paste0("/storage/users/wellerm/data/04_subset/",category, "/",  category, ".subset.sales.promos.weekly.rds")  
 		dat.cat.weekly <<- readRDS(fil)
 	}
 	if (par.445 == TRUE) {
-		fil = paste("./iri category subsets/reformatted/",  category, ".subset.sales.promos.445.rds", sep = "")  #category, "/",
+		fil = paste0("./iri category subsets/reformatted/",  category, ".subset.sales.promos.445.rds")  #category, "/",
+		fil = paste0("/storage/users/wellerm/data/04_subset/",category, "/",  category, ".subset.sales.promos.445.rds")  
 		dat.cat.445 <<- readRDS(fil)
 	}
 }
 
 f_load.fc.items.subset = function(category) {
-	fil = paste("./iri category subsets/reformatted/",  category, ".subset.fc.items.rds", sep = "")  #category, "/",
+    setwd(pth.dropbox.data)
+	fil = paste0("./iri category subsets/reformatted/",  category, ".subset.fc.items.rds")  #category, "/",
+    fil = paste0("/storage/users/wellerm/data/04_subset/",category, "/",  category, ".subset.fc.items.rds")  
 	fc.items <<- readRDS(fil)
 }
 
