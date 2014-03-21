@@ -192,6 +192,7 @@ categories = list.files("/storage/users/wellerm/data/04_subset")
 
 for (par.category in categories[c(2,4:14,18:28)])
 {
+	print(paste(Processing category:",par.category))
 	setwd(pth.dropbox.data)
     
 	promo.flags.agg.methods = "wmean"    # which method to use to aggregate the promotional flags (wmean or mean)
@@ -210,8 +211,11 @@ for (par.category in categories[c(2,4:14,18:28)])
 	sp.cat.1 = f_level1_promo_dummies(dat.cat.1)
 	sp.cat.2 = f_level2_promo_dummies(sp.cat.1)
 	sp.cat.3 = f_level3_promo_dummies(sp.cat.1)
-
+	
 	sp.cat = rbind(sp.cat.1, sp.cat.2, sp.cat.3)
+	
+	sp.cat.1 = NULL
+	sp.cat.2 = NULL
 	setnames(x = sp.cat, gsub("\\+", "_PLUS", x = names(sp.cat)))
 
 	# remove the PROMO_NONE flags as we now have PROMO_ANY flags instead which make more sense
