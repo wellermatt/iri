@@ -16,6 +16,11 @@
 
 library(data.table)
 
+## define the parameters for this procedure
+args <- commandArgs(trailingOnly = TRUE)
+print (args)
+
+
 
 
 f_load.upc.category = function(pth.upc, par.category)
@@ -44,7 +49,7 @@ f_upc.store.horizon = function(pth.agg, par.category,
     
     # this funmction will examine the category summary file to see which sku/location forecast items are in scope 
     # given the restricting parameters provided.  it will return a list of upc/store combinations for use elsewhere
-    {
+{
 	
 	# function to identify the SKUS (item by store) that we will be interested in using
 	# will take the top n items and identify where they have been sold for more than a specified
@@ -151,34 +156,9 @@ f_subset.get.upc.stores = function(pth.upc, pth.agg,par.category,
 	skus.to.keep	
 }
 
-
-
-########### MAIN ############
-
-
-pth.upc = "/home/users/wellerm/IRI_DATA/iri reference data/upc/"
-pth.tf = "/storage/users/wellerm/data/02_tf/sales/"
-pth.agg = "/storage/users/wellerm/data/03_agg/"
-pth.subset = "/storage/users/wellerm/data/04_subset/"
-
-
-categories = c("beer", "carbbev", "milk")
-
-
-#lapply(categories, f_subset.category.main)
-
-
-TEST = TRUE
-
-if (TEST == TRUE) {
-    
-    pth.upc = paste0(pth.dropbox.data, "iri reference data/upc/")
-    pth.tf = paste0(pth.dropbox.data, "tf-test/")
-    pth.agg = paste0(pth.dropbox.data, "iri category summaries/")
-    pth.subset = paste0(pth.dropbox.data, "iri category subsets/unformatted/")
-    
-    # determine which items to keep in the subset
-    skus.to.keep = f_subset.get.upc.stores(pth.upc, pth.agg, par.category = "razors", 
+f_subset.category.main = function(par.category="razors")
+{
+    skus.to.keep = f_subset.get.upc.stores(pth.upc, pth.agg, par.category = par.category, 
                                            par.top.n.items = 10, par.upc.store.min.weeks=200, par.upc.store.max.consec.missing.periods=2,
                                            par.min.num.stores.in.chain = 3)
     
@@ -187,6 +167,51 @@ if (TEST == TRUE) {
     num.recs = f_subset.transactions(pth.tf, pth.subset, par.category, skus.to.keep)    
     upc = NULL; upc.top.n = NULL ; sku=NULL ; dat.subset=NULL; gc()
     num.recs
+    
+}
+
+
+########### MAIN ############
+pth.upc = "/home/users/wellerm/IRI_DATA/iri reference data/upc/"
+pth.tf = "/storage/users/wellerm/data/02_tf/sales/"
+pth.agg = "/storage/users/wellerm/data/03_agg/"
+pth.subset = "/storage/users/wellerm/data/04_subset/"
+
+categories = c("yoghurt")
+
+
+lapply(categories, f_subset.category.main)
+
+
+# 
+# par.category = if (is.null(args[1])) "diapers" else args[1]
+# if (par.category == "all")
+# {
+#     the.files = list.files("/storage/users/wellerm/data/02_tf/sales/all", pattern = "*.tf.all.rds")
+#     categories = gsub(".tf.all.rds", "", the.files)
+#     print(categories)
+#     for(category in categories)	f_iri.category.summarise(category)
+#     
+#     
+# } else f_iri.category.summarise(par.category)
+# 
+# 
+
+
+
+
+
+TEST = FALSE
+
+if (TEST == TRUE) {
+    
+    pth.upc = paste0(pth.dropbox.data, "iri reference data/upc/")
+    pth.tf = paste0(pth.dropbox.data, "other/tf-test/")
+    pth.agg = paste0(pth.dropbox.data, "iri category summaries/")
+    pth.subset = paste0(pth.dropbox.data, "iri category subsets/unformatted/")
+    
+    # determine which items to keep in the subset
+    f_subset.category.main("razors")
 }
 
  ##### EOF ######
