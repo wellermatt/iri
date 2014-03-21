@@ -1,5 +1,6 @@
 
-cd ~/projects/exp1.1/DataPrep
+cd ~/projects/iri/data/DataPrep
+
 #$ -S /bin/bash
 #$ -l h_vmem=4.0G
 #$ -m e
