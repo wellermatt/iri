@@ -35,8 +35,7 @@ harmonics.445 = data.table(cbind(period_id = 1:72, harmonics.445), key = "period
 
 f_run_prep.reg.dat = function(par.category)
 {
-    f_load.dat.subset(par.category)
-    f_load.fc.items.subset(par.category)
+    
     
 }
 
@@ -45,7 +44,8 @@ categories = c("beer", "carbbev", "milk", "razors")
 
 cats = lapply(categories[4], 
               function(par.category) {
-                  f_run_prep.reg.dat(par.category)
+                  f_load.dat.subset(par.category)
+			    f_load.fc.items.subset(par.category)
                   f_regression.data.main(par.category, par.weekly = TRUE, par.445=TRUE)
               })
 
