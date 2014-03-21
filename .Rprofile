@@ -9,7 +9,7 @@ if (machine == "DESKTOP") pth.dropbox <<- "D:/Dropbox/Dropbox/"
 if (machine == "IDEA-PC") pth.dropbox <<- "C:/Users/welle_000/Dropbox/"
 
 # set up for Windows/Dropbox
-pth.dropbox.data <<- paste(pth.dropbox, "HEC/IRI_DATA/", sep = "")
+pth.data.iri <<- paste0(pth.dropbox, "HEC/IRI_DATA/")
 #pth.dropbox.code <<- paste(pth.dropbox, "HEC/Code/iri/", sep = "")
 
 if (machine == "IDEA-PC") pth.dropbox.code <<- "E:/Git/iri/"
@@ -18,8 +18,8 @@ if (machine == "M11") pth.dropbox.code <<- "F:/Git/iri/"
 
 # set up for UNIX
 if (pth.dropbox == "/home/users/wellerm/") {
-    pth.dropbox.data <<- paste(pth.dropbox, "IRI_DATA/", sep = "")
-    pth.dropbox.code <<- paste(pth.dropbox, "projects/iri/", sep = "")
+    pth.dropbox.data <<- paste0(pth.dropbox, "data/iri/")
+    pth.dropbox.code <<- paste0(pth.dropbox, "projects/iri/")
 }
 
 unrowname <- function(x) {

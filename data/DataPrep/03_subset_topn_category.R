@@ -172,12 +172,15 @@ f_subset.category.main = function(par.category="razors")
 
 
 ########### MAIN ############
-pth.upc = "/home/users/wellerm/IRI_DATA/iri reference data/upc/"
-pth.tf = "/storage/users/wellerm/data/02_tf/sales/"
+pth.upc = "/home/users/wellerm/data/iri reference data/upc/"
+pth.tf = "/storage/users/wellerm/data/02_tf/sales/all/"
 pth.agg = "/storage/users/wellerm/data/03_agg/"
 pth.subset = "/storage/users/wellerm/data/04_subset/"
 
-categories = c("yoghurt")
+categories = c("blades")
+
+categories = gsub(".tf.all.rds", "", 
+                  list.files("/storage/users/wellerm/data/02_tf/sales/all", pattern = "*.tf.all.rds"))
 
 
 lapply(categories, f_subset.category.main)
