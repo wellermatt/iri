@@ -43,9 +43,9 @@ categories = c("beer", "carbbev", "milk", "razors")
 
 cats = lapply(categories[4], 
               function(par.category) {
-                  f_load.dat.subset(par.category)
+                f_load.cat.subset.sp(par.category,par.weekly=TRUE)
 			    f_load.fc.items.subset(par.category)
-                  f_regression.data.main(par.category, par.weekly = TRUE, par.445=TRUE)
+                f_prepare.reg.dat.main(par.category, par.weekly = TRUE, par.445=TRUE)
               })
 
 

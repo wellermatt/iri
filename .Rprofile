@@ -2,6 +2,14 @@ options("width"=160)                # wide display with multiple monitors
 
 library("data.table")
 
+platform = .Platform$OS.type
+#Sys.info()[['sysname']]
+
+switch(platform,
+       windows= {print("I'm a Windows PC.")},
+       Linux  = {print("I'm a penguin.")},
+       Darwin = {print("I'm a Mac.")})
+
 machine <<- (Sys.info()["nodename"])
 pth.dropbox <<- "/home/users/wellerm/"
 if (machine == "M11") pth.dropbox <<- "C:/Users/Matt/Dropbox/"

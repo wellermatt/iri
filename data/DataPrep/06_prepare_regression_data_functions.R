@@ -2,8 +2,12 @@
 # into the format for passing to auto.step.reg
 
 
-f_regression.data.main = function(par.category, par.weekly = TRUE, par.445 = TRUE) {
+f_prepare.reg.dat.main = function(par.category, par.weekly = TRUE, par.445 = TRUE, 
+                                       sp.weekly = NULL, sp.445 = NULL) {
 
+    
+    ### changes needed her for paths
+    
 	#=========================================================================================
 	# ALL fc.items WEEKLY for this category data file
 	#=========================================================================================

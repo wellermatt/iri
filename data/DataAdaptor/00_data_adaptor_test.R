@@ -18,7 +18,7 @@ f_da.reg.cat.all = function(par.category, par.periodicity, par.item = NULL, bo.s
 	if (!is.null(par.item)) sp = sp[UPC==par.item]
     
     # take out week 313 for the time being
-    if (par.periodicity == "weekly") sp = sp[WEEK != 313]
+    if (par.periodicity == "weekly") sp = sp[WEEK != 312]
     
     # optionally save the subset of data
 	if (bo.save.subset == TRUE) {		

@@ -17,24 +17,39 @@ f_load.calendar = function(){
 	calendar.445[,(cols.to.drop.445) := NULL]
 }
 
-f_load.dat.subset = function(category, par.weekly = TRUE, par.445 = TRUE){
+f_load.cat.subset.sp = function(category, par.weekly = TRUE, par.445 = TRUE){
+    
+    # used in step 6 where we add the full set of regression variables
+    
     setwd(pth.dropbox.data)
+    
     if (par.weekly == TRUE) {
-		fil = paste0("./iri category subsets/reformatted/",  category, ".subset.sales.promos.weekly.rds")  #category, "/",
-		fil = paste0("/storage/users/wellerm/data/04_subset/",category, "/",  category, ".subset.sales.promos.weekly.rds")  
+		fil = if (Sys.info()['sysname'] != "LINUX") {
+            paste0("./iri category subsets/reformatted/",  category, ".subset.sales.promos.weekly.rds")  #category, "/",
+		} else {
+		    fil = paste0("/storage/users/wellerm/data/04_subset/",category, "/",  category, ".subset.sales.promos.weekly.rds")      
+		}
+		
 		dat.cat.weekly <<- readRDS(fil)
 	}
 	if (par.445 == TRUE) {
-		fil = paste0("./iri category subsets/reformatted/",  category, ".subset.sales.promos.445.rds")  #category, "/",
-		fil = paste0("/storage/users/wellerm/data/04_subset/",category, "/",  category, ".subset.sales.promos.445.rds")  
+	    fil = if (Sys.info()['sysname'] != "LINUX") {
+            paste0("./iri category subsets/reformatted/",  category, ".subset.sales.promos.445.rds")  #category, "/",
+	    } else {
+            paste0("/storage/users/wellerm/data/04_subset/",category, "/",  category, ".subset.sales.promos.445.rds")  
+	    }
 		dat.cat.445 <<- readRDS(fil)
 	}
+    #list(weekly = dat.cat.weekly, m445 = dat.cat.445)
 }
 
 f_load.fc.items.subset = function(category) {
     setwd(pth.dropbox.data)
-	fil = paste0("./iri category subsets/reformatted/",  category, ".subset.fc.items.rds")  #category, "/",
-    fil = paste0("/storage/users/wellerm/data/04_subset/",category, "/",  category, ".subset.fc.items.rds")  
+    fil = if (Sys.info()['sysname'] != "LINUX") {
+        paste0("./iri category subsets/reformatted/",  category, ".subset.fc.items.rds")  #category, "/",
+    } else {
+        paste0("/storage/users/wellerm/data/04_subset/",category, "/",  category, ".subset.fc.items.rds")  
+    }
 	fc.items <<- readRDS(fil)
 }
 
