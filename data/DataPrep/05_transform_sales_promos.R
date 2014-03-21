@@ -183,14 +183,14 @@ f_data.aggregate.week.445 = function(dat.w, opt.weighted.mean = FALSE) {
 # move the further subsetting to the earlier stage of subsetting on HEC
 
 library(data.table) ; library(plyr) ; library(reshape2)  ;  library(caret)
-
+source("~/projects/iri/.Rprofile")
 setwd(pth.dropbox.code)  ;  source("./data/DataAdaptor/10_load_data_various.R")
 
 categories = c("yoghurt")
 
 categories = list.files("/storage/users/wellerm/data/04_subset")
 
-for (par.category in categories[15:17])
+for (par.category in categories[c(2,4:14,18:28)])
 {
 	setwd(pth.dropbox.data)
     
