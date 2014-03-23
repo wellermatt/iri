@@ -4,6 +4,35 @@
 # this procedure is very much lined up for monthly forecasting at present
 # 
 
+
+f_ets.test.multicore = function(sp, par.category, freq = 12, h.max=3, 
+                                Trace = TRUE, opt.dopar = "dopar", i=10)
+{
+    library(doParallel)
+    if (opt.dopar =="dopar") registerDoParallel(8)
+    export.list = c("f_ets.run.item","f_ets.roll.fc.item", "f_load.calendar", "pth.dropbox.data", "dtcomb", "isplitDT")
+    sp[,fc.item := factor(fc.item)]
+    setkeyv(sp, c("fc.item"))  #,"period_id"))
+    multi.item.results =
+        foreach(dt.sub = isplitDT(sp, levels(sp$fc.item)),
+                .combine='dtcomb', .multicombine=TRUE,
+                .export = export.list,
+                .packages=c("data.table", "forecast", "reshape2", "foreach")) %dopar% {
+                    fc.item = dt.sub$key[1]
+                    print(fc.item)
+                    this.roll = f_ets.run.item(dt.sub$value, freq = 12, h.max = 3,Trace=TRUE)
+                    this.roll$fc.item = fc.item
+                    this.roll
+                }
+    setwd(pth.dropbox.data)
+    #print(multi.item.results)
+    fil=paste0("./output/errors/ets_445_fast_all_1_", par.category, ".rds")
+    saveRDS(object=multi.item.results, file = fil)
+    multi.item.results
+}
+
+
+
 f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, forecast.cycle = "monthly") 
 {    
     
@@ -25,6 +54,7 @@ f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, forec
     
     # origins are the time points where forecasts are to be generated and should be in the correct scale (weeks or months)
     # by default we assume the cycle is monthly/445 and the frequency = monthly
+    f_load.calendar()
     origins = calendar.445[period_id >= o1 & period_id < n, c(period_id)]
     
     if (forecast.cycle == "weekly") origins = calendar.weekly[WEEK >= o1 & WEEK < n, WEEK]
@@ -109,30 +139,3 @@ f_ets.test.multi = function(sp, freq = 12, h.max=3, Trace = TRUE) {
 }
 
 
-
-f_ets.test.multicore = function(sp, par.category, freq = 12, h.max=3, 
-                                Trace = TRUE, opt.dopar = TRUE, i=10)
-{
-    library(doParallel)
-    if (opt.dopar =="dopar") registerDoParallel(8)
-    export.list = c("f_ets.run.item","f_ets.roll.fc.item")
-    sp[,fc.item := factor(fc.item)]
-    setkeyv(sp, c("fc.item"))  #,"period_id"))
-    multi.item.results =
-        foreach(dt.sub = isplitDT(sp, levels(sp$fc.item)),
-                .combine='dtcomb', .multicombine=TRUE,
-                .export = export.list,
-                .packages=c("data.table", "forecast", "reshape2")) %dopar% {
-                    fc.item = dt.sub$key[1]
-                    print(fc.item)
-                    #ss = spm[fc.item == items[i]]
-                    this.roll = f_ets.run.item(dt.sub$value, freq = 12, h.max = 3,Trace=TRUE)
-                    this.roll$fc.item = fc.item
-                    this.roll
-                }
-    setwd(pth.dropbox.data)
-    #print(multi.item.results)
-	fil=paste0("./output/errors/ets_445_fast_all_1_", par.category, ".rds")
-    saveRDS(object=multi.item.results, file = fil)
-    multi.item.results
-}

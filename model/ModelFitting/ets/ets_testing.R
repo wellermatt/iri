@@ -1,17 +1,14 @@
-print(getwd())
-#setwd("~/projects/iri/")
-#setwd("E:/Git/iri/")
-source('.Rprofile')
+print(paste(">> Start directory =", getwd()))
+if (!exists("machine")) source('~/projects/iri/.Rprofile')
 
 setwd(pth.dropbox.code)
-#rm(list=ls())
 
 
 ##==== parameters ========
 categories = c("milk","beer","carbbev")
 par.category = "milk"
 par.periodicity = "445"
-L12 = 3
+L12 = 1
 
 #==========================
 
@@ -76,17 +73,17 @@ f_ets.test = function(par.category, par.periodicity)
 	items = sp[,as.character(unique(fc.item))]
 	if (L12 < 3) {
 		items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<=L12)]
-		sp = droplevels(sp[fc.item %in% items.L12[1:2]])
+		sp = droplevels(sp[fc.item %in% items.L12[]])
 	}
 	if (test.single == TRUE)    ets.Err = f_ets.test.single(sp = sp)
 	if (test.multi == TRUE)    ets.Err = f_ets.test.multi(sp = sp)
-	if (test.multicore == TRUE)    ets.Err = f_ets.test.multicore(sp = sp, par.category = par.category, opt.dopar=TRUE)
+	if (test.multicore == TRUE)    ets.Err = f_ets.test.multicore(sp = sp, par.category = par.category, opt.dopar="dopar")
 
 }
 
-f_ets.test("milk","445")
-f_ets.test("beer","445")
-f_ets.test("carbbev","445")
+
+#f_ets.test("beer","445")
+#f_ets.test("carbbev","445")
 
 
 unique(sp$fc.item)
@@ -95,7 +92,7 @@ unique(sp$fc.item)
 #========================
 #system.time(f_ets.test.single(sp = sp))
 #system.time(f_ets.test.multi(sp = sp))
-#system.time(f_ets.test.multicore(sp = sp, opt.dopar=TRUE, i=5))
+test.multicore = TRUE ; system.time(f_ets.test("milk","445"))
 
 
 
