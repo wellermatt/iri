@@ -22,9 +22,10 @@ f_load.cat.subset.sp = function(category, par.weekly = TRUE, par.445 = TRUE){
     # used in step 6 where we add the full set of regression variables
     
     setwd(pth.dropbox.data)
+    print(category)
     
     if (par.weekly == TRUE) {
-		fil = if (Sys.info()['sysname'] != "LINUX") {
+		fil = if (platform != "unix") {
             paste0("./iri category subsets/reformatted/",  category, ".subset.sales.promos.weekly.rds")  #category, "/",
 		} else {
 		    fil = paste0("/storage/users/wellerm/data/04_subset/",category, "/",  category, ".subset.sales.promos.weekly.rds")      
@@ -33,19 +34,19 @@ f_load.cat.subset.sp = function(category, par.weekly = TRUE, par.445 = TRUE){
 		dat.cat.weekly <<- readRDS(fil)
 	}
 	if (par.445 == TRUE) {
-	    fil = if (Sys.info()['sysname'] != "LINUX") {
+	    fil = if (platform != "unix") {
             paste0("./iri category subsets/reformatted/",  category, ".subset.sales.promos.445.rds")  #category, "/",
 	    } else {
             paste0("/storage/users/wellerm/data/04_subset/",category, "/",  category, ".subset.sales.promos.445.rds")  
 	    }
 		dat.cat.445 <<- readRDS(fil)
 	}
-    #list(weekly = dat.cat.weekly, m445 = dat.cat.445)
+    list(weekly = dat.cat.weekly, m445 = dat.cat.445)
 }
 
 f_load.fc.items.subset = function(category) {
     setwd(pth.dropbox.data)
-    fil = if (Sys.info()['sysname'] != "LINUX") {
+    fil = if (platform != "unix") {
         paste0("./iri category subsets/reformatted/",  category, ".subset.fc.items.rds")  #category, "/",
     } else {
         paste0("/storage/users/wellerm/data/04_subset/",category, "/",  category, ".subset.fc.items.rds")  

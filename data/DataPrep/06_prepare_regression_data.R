@@ -4,7 +4,7 @@
 
 library("data.table")
 options(width=120)
-machine = (Sys.info()["nodename"])
+#machine = (Sys.info()["nodename"])
 
 #source("E:/Git/iri/.Rprofile")
 source("~/projects/iri/.Rprofile")
@@ -43,9 +43,10 @@ categories = c("beer", "carbbev", "milk", "razors")
 
 cats = lapply(categories[4], 
               function(par.category) {
-                f_load.cat.subset.sp(par.category,par.weekly=TRUE)
+                sp.set = f_load.cat.subset.sp(par.category,par.weekly=TRUE)
 			    f_load.fc.items.subset(par.category)
-                f_prepare.reg.dat.main(par.category, par.weekly = TRUE, par.445=TRUE)
+                f_prepare.reg.dat.main(par.category, par.weekly = TRUE, par.445=TRUE,
+                                       sp.weekly= sp.set$weekly, sp.445 = sp.set$m445)
               })
 
 

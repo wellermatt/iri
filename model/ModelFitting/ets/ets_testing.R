@@ -1,6 +1,6 @@
 print(getwd())
 #setwd("~/projects/iri/")
-#setwd("D:/Git/iri/")
+#setwd("E:/Git/iri/")
 source('.Rprofile')
 
 setwd(pth.dropbox.code)
@@ -11,7 +11,7 @@ setwd(pth.dropbox.code)
 categories = c("milk","beer","carbbev")
 par.category = "milk"
 par.periodicity = "445"
-L12 = 1
+L12 = 3
 
 #==========================
 
@@ -30,8 +30,19 @@ print(ls())
 
 #=============== TESTING =================
 
-#     "00-01-18200-53030"
- #,par.item= "07-01-18200-53025"
+# "00-01-18200-53030"
+# par.item= "07-01-18200-53025"
+TEST = FALSE
+if (TEST == TRUE) {
+    library(microbenchmark)
+    y=ts(rnorm(72,100,20),start = 2001, freq=12)
+    microbenchmark(f_ets.roll.fc.item(y,h.max=3,forecast.cycle="monthly"),times=10)
+    
+    
+    y=ts(rnorm(312,100,20),start = 2001, freq=52)
+    microbenchmark(f_ets.roll.fc.item(y,h.max=13,forecast.cycle="monthly"),times=10)
+    microbenchmark(f_ets.roll.fc.item(y,h.max=13,forecast.cycle="weekly"),times=10)    
+}
 
 #============== DATA LOADING =====================
 # get the necessary data for a specific item
@@ -48,10 +59,10 @@ f_load_data_sp = function(par.category, par.periodicity="445", par.item = NULL)
     sp
 }
 
-sp.all = rbindlist(lapply(categories, function(x) data.table(category = x, f_load_data_sp(par.category=x))))[,c(1:3,7),with=F]
+#sp.all = rbindlist(lapply(categories, function(x) data.table(category = x, f_load_data_sp(par.category=x))))[,c(1:3,7),with=F]
 
-write.csv(dcast(sp.all,period_id~category+fc.item,sum,value.var="UNITS"),file = "E:/items.ts.csv")
-write.csv(dcast(sp.all, category+fc.item~period_id,sum,value.var="UNITS"),file = "E:/items.ts.flip.csv")
+#write.csv(dcast(sp.all,period_id~category+fc.item,sum,value.var="UNITS"),file = "E:/items.ts.csv")
+#write.csv(dcast(sp.all, category+fc.item~period_id,sum,value.var="UNITS"),file = "E:/items.ts.flip.csv")
 
 
 test.single = FALSE
@@ -65,7 +76,7 @@ f_ets.test = function(par.category, par.periodicity)
 	items = sp[,as.character(unique(fc.item))]
 	if (L12 < 3) {
 		items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<=L12)]
-		sp = droplevels(sp[fc.item %in% items.L12])
+		sp = droplevels(sp[fc.item %in% items.L12[1:2]])
 	}
 	if (test.single == TRUE)    ets.Err = f_ets.test.single(sp = sp)
 	if (test.multi == TRUE)    ets.Err = f_ets.test.multi(sp = sp)

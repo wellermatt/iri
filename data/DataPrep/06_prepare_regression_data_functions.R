@@ -6,15 +6,17 @@ f_prepare.reg.dat.main = function(par.category, par.weekly = TRUE, par.445 = TRU
                                        sp.weekly = NULL, sp.445 = NULL) {
 
     
-    ### changes needed her for paths
+    ### changes needed here for paths
     
 	#=========================================================================================
 	# ALL fc.items WEEKLY for this category data file
 	#=========================================================================================
 	if (par.weekly == TRUE) {	
-		fil = paste("./iri category subsets/reformatted/",  par.category, ".subset.sales.promos.weekly.rds", sep = "")  #category, "/",
-		sp.weekly = readRDS(fil)
-		setkeyv(sp.weekly, c("fc.item","WEEK"))
+		if (sp.weekly == NULL) {
+		    fil = paste("./iri category subsets/reformatted/",  par.category, ".subset.sales.promos.weekly.rds", sep = "")  #category, "/",
+		    sp.weekly = readRDS(fil)    
+		}
+        setkeyv(sp.weekly, c("fc.item","WEEK"))
 
 		sp.weekly = merge(sp.weekly, calendar.slim, by="WEEK")  # add in the calendar fields
 		sp.weekly = merge(sp.weekly, harmonics.weekly, by="WEEK")  # add in the calendar fields
@@ -33,7 +35,10 @@ f_prepare.reg.dat.main = function(par.category, par.weekly = TRUE, par.445 = TRU
 	# ALL fc.items MONTHLY for this category data file
 	#=========================================================================================
 	if (par.445 == TRUE) {	
-		fil = paste("./iri category subsets/reformatted/",  par.category, ".subset.sales.promos.445.rds", sep = "")  #category, "/",
+		if (sp.445 == NULL) {
+            fil = paste("./iri category subsets/reformatted/",  par.category, ".subset.sales.promos.445.rds", sep = "")  #category, "/",
+            sp.445 = readRDS(fil)
+		}
 		sp.445 = readRDS(fil)
 		setkeyv(sp.445, c("fc.item","period_id"))
 		

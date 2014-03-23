@@ -4,39 +4,55 @@
 # this procedure is very much lined up for monthly forecasting at present
 # 
 
-f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, ets.reopt = FALSE) 
+f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, forecast.cycle = "monthly") 
 {    
+    
     # rules around length of series (n), horizon (h), splitting rules
-    m = tsp(y)[3]               # m is seasonal period
-    n <- length(y)              # n is series length
+    freq = tsp(y)[3]
+    n <- length(y)
+        
+    if (freq == 12) o1 <- 48             # minimum data length for fitting a model
+    if (freq == 52) o1 <- 208             # minimum data length for fitting a model
     
-    if (m == 12) k <- 48             # minimum data length for fitting a model
-    if (m == 52) k <- 208             # minimum data length for fitting a model
-    
-    # fit model to the test set
-    st <- tsp(y)[1]+(k-1)/m                 # st = start period (as of) in ts terms
+    # fit model to the test set: use HoltWinters for weekly and ets for monthly
+    st <- tsp(y)[1] + (o1-1)/freq                # st = start period (as of) in ts terms
     yhist <- window(y, end = st)
-    fit.original <- ets(yhist, model="ZZZ")  # model="MMM",
+    fit.original <- if (freq == 12) {
+        ets(yhist, model="ZZZ")  # model="MMM",
+    } else {
+        HoltWinters(yhist)
+    }
     
-    # define the matrices for collecting the data
-    err     <- matrix(NA, n-k, h.max) 
-    yhat    <- matrix(NA, n-k, h.max)
-    act     <- matrix(NA, n-k, h.max)    
+    # origins are the time points where forecasts are to be generated and should be in the correct scale (weeks or months)
+    # by default we assume the cycle is monthly/445 and the frequency = monthly
+    origins = calendar.445[period_id >= o1 & period_id < n, c(period_id)]
     
-    for(i in 1:(n-k))
+    if (forecast.cycle == "weekly") origins = calendar.weekly[WEEK >= o1 & WEEK < n, WEEK]
+    if (forecast.cycle == "monthly" & freq==52) origins = calendar.445[elapsed_weeks >= o1 & elapsed_weeks < n,  elapsed_weeks]
+    
+    roll.ets = foreach(o = origins, .combine=dtcomb) %do%
     {
-        yhist <- window(y, end = st + (i-1)/m)
-        yfuture <- window(y, start = st + i/m , end = st + (i+h.max-1)/m)
+        #print(o)
+        yhist <- window(y, end = st + (o-o1)/freq)
+        h = min(h.max, n - o)
+        yfuture <- window(y, start = st + (o-o1+1)/freq , end = st + (o-o1+h)/freq)
         
-        # use ets to re-fit the model.
-        if (ets.reopt != TRUE) {
-            fit <- ets(yhist, model=fit.original)
+        # use ets or  HoltWinters to re-fit the model.
+        if (reoptimise != TRUE) {
+            fit <- if(freq == 12) {
+                ets(yhist, model=fit.original)
+            } else {
+                HoltWinters(yhist)
+            }
         } else {
-            fit <- ets(yhist, model="ZZZ")
+            fit <- if(freq == 12) {
+                fit <- ets(yhist, model="ZZZ")
+            } else {
+                HoltWinters(yhist)
+            }
         }
-        
         # do the forecasts,      
-        fcast <- forecast(fit, h = min(n-k-i+1, h.max))
+        fcast <- forecast(fit, h = h)
         
         # optional printing
         if (PRINT == TRUE) {
@@ -45,25 +61,10 @@ f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, ets.reopt = FALSE)
             #print(yfuture)
             #print(fcast)
         }
-        
-        # record the data
-        err[i,1:length(yfuture)] <- fcast[['mean']]-yfuture
-        act[i,1:length(yfuture)] <- yfuture
-        yhat[i,1:length(yfuture)] <- fcast[['mean']]
+        data.table(o, h = 1:length(yfuture), y = yfuture, yhat = fcast[['mean']])
     }
     
-    start.origin = k
-    
-    # prepare the accuracy stats
-    act.melt = data.table(melt(act,value.name="y", varnames=c("t","k")),key="t,k") [!is.na(y)]
-    yhat.melt = data.table(melt(yhat,value.name="yhat", varnames=c("t","k")),key="t,k") [!is.na(yhat)]
-    Err = act.melt[yhat.melt]
-    Err[,origin:=start.origin+t-1]
-    Err[,fc.period:=start.origin+t+k-1]
-    Err[,`:=` (e = yhat - y, ae = abs(yhat-y), 
-               re = (yhat - y)/y, rae = abs((yhat - y)/y))]
-    
-    list(Err = Err, fit = fit)
+    return(roll.ets)   # may also want to return some details from the model e.g. alpha, beta, gamma, phi)
 }
 
 
@@ -71,6 +72,7 @@ f_ets.run.item = function(ss, freq, h.max, Trace = FALSE)  #fc.item = "00-01-182
 {    
     y = ts(ss$UNITS, start=c(2001,1), frequency = freq)
     roll = f_ets.roll.fc.item(y, h.max = h.max)
+    roll$fc.item = unique(ss$fc.item)
     
     if (Trace == TRUE) { print(roll$fit) ; print(roll$Err) }
     roll
@@ -85,9 +87,7 @@ f_ets.test.single = function(sp, freq = 12, h.max=3, Trace = TRUE) {
     ss = sp[fc.item == this.item]
     #print(ss)
     this.roll = f_ets.run.item(ss=ss, freq = freq, h.max=h.max,Trace=TRUE)
-    Err = this.roll$Err
-    Err$fc.item = this.item
-    Err
+    this.roll
 }
 
 f_ets.test.multi = function(sp, freq = 12, h.max=3, Trace = TRUE) {
@@ -127,9 +127,8 @@ f_ets.test.multicore = function(sp, par.category, freq = 12, h.max=3,
                     print(fc.item)
                     #ss = spm[fc.item == items[i]]
                     this.roll = f_ets.run.item(dt.sub$value, freq = 12, h.max = 3,Trace=TRUE)
-                    Err = this.roll$Err
-                    Err$fc.item = fc.item
-                    Err
+                    this.roll$fc.item = fc.item
+                    this.roll
                 }
     setwd(pth.dropbox.data)
     #print(multi.item.results)
