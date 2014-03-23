@@ -5,13 +5,13 @@
 # 
 
 
-f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, opt.dopar = "do", cores=4, Trace = TRUE)
+f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, opt.dopar = "do", cores=6, Trace = TRUE)
 {
     # function will take an input set of data (sp) for multiple forecast items and save/return a set of forecasts
     sp[,fc.item := factor(fc.item)]   ;   setkeyv(sp, c("fc.item"))  #,"period_id"))
     print(paste(length(levels(sp$fc.item)), "forecast items to process"))
     
-    export.list = c("f_ets.run.item","f_ets.roll.fc.item", "f_load.calendar", "pth.dropbox.data", "dtcomb", "isplitDT")
+    export.list = c("f_ets.run.item","f_ets.roll.fc.item", "f_load.calendar", "pth.dropbox.data", "dtcomb", "isplitDT", "h.max", "freq")
     
     
     library(doParallel)
@@ -27,7 +27,7 @@ f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, opt.dop
                 .packages=c("data.table", "forecast", "reshape2", "foreach")) %dopar% {
                     fc.item = dt.sub$key[1]
                     print(fc.item)
-                    this.roll = f_ets.run.item(dt.sub$value, freq = 12, h.max = 3,Trace=TRUE)
+                    this.roll = f_ets.run.item(dt.sub$value, freq = freq, h.max = h.max,Trace=TRUE)
                     this.roll$fc.item = fc.item
                     this.roll
                 }

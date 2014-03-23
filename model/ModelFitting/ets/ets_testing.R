@@ -14,6 +14,8 @@ Level = 2
 
 library("forecast") ; library("data.table") ; library("reshape2")
 library("ggplot2")  ; library("microbenchmark") ; library("foreach")
+library("snow") ; library("doSNOW")
+
 ## LOCAL CODE FILES
 setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
 setwd(pth.dropbox.code) ; source("./data/DataAdaptor/10_load_data_various.R")
@@ -40,7 +42,11 @@ if (TEST == TRUE) {
     par.category = "beer"    # par.upc = "00-01-18200-53030",
     sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
                                par.upc = "00-01-18200-53030", Level = 3, univariate = TRUE)
-    system.time(   f_ets.rolling.multicore(sp=sp, par.category=par.category,freq=12,h.max=3,opt.dopar="dopar",cores=4))
+    system.time(   f_ets.rolling.multicore(sp=sp, par.category=par.category,freq=12,h.max=3,opt.dopar="dopar",cores=6))
+
+	sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "weekly", 
+                               par.upc = "00-01-18200-53030", Level = 3, univariate = TRUE)
+    system.time(   f_ets.rolling.multicore(sp=sp, par.category=par.category,freq=52,h.max=13,opt.dopar="dopar",cores=6))
     
 }
 
