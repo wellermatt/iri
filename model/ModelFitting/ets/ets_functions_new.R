@@ -5,19 +5,21 @@
 # 
 
 
-f_ets.test.multicore = function(sp, par.category, freq = 12, h.max=3, 
-                                Trace = TRUE, opt.dopar = "dopar", i=10)
+f_ets.multicore = function(sp, par.category, freq = 12, h.max=3, 
+                                Trace = TRUE, opt.dopar = "do", i=10)
 {
     library(doParallel)
-    if (opt.dopar =="dopar") registerDoParallel(8)
-    export.list = c("f_ets.run.item","f_ets.roll.fc.item", "f_load.calendar", "pth.dropbox.data", "dtcomb", "isplitDT")
+    if (opt.dopar =="dopar") {
+        registerDoParallel(8)
+        export.list = c("f_ets.run.item","f_ets.roll.fc.item", "f_load.calendar", "pth.dropbox.data", "dtcomb", "isplitDT")
+    }
     sp[,fc.item := factor(fc.item)]
     setkeyv(sp, c("fc.item"))  #,"period_id"))
     multi.item.results =
         foreach(dt.sub = isplitDT(sp, levels(sp$fc.item)),
                 .combine='dtcomb', .multicombine=TRUE,
                 .export = export.list,
-                .packages=c("data.table", "forecast", "reshape2", "foreach")) %dopar% {
+                .packages=c("data.table", "forecast", "reshape2", "foreach")) %do% {
                     fc.item = dt.sub$key[1]
                     print(fc.item)
                     this.roll = f_ets.run.item(dt.sub$value, freq = 12, h.max = 3,Trace=TRUE)
@@ -35,7 +37,7 @@ f_ets.test.multicore = function(sp, par.category, freq = 12, h.max=3,
 
 f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, forecast.cycle = "monthly") 
 {    
-    
+    # runs rolling origin multi-step forecasting for a single time series
     # rules around length of series (n), horizon (h), splitting rules
     freq = tsp(y)[3]
     n <- length(y)
@@ -119,6 +121,9 @@ f_ets.test.single = function(sp, freq = 12, h.max=3, Trace = TRUE) {
     this.roll = f_ets.run.item(ss=ss, freq = freq, h.max=h.max,Trace=TRUE)
     this.roll
 }
+
+
+
 
 f_ets.test.multi = function(sp, freq = 12, h.max=3, Trace = TRUE) {
     items = unique(sp$fc.item)

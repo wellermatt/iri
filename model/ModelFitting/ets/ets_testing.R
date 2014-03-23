@@ -3,74 +3,67 @@ if (!exists("machine")) source('~/projects/iri/.Rprofile')
 print(paste("Machine =",machine))
 print(paste("Platform = ", platform))
 
-setwd(pth.dropbox.code)
-
-
 ##==== parameters ========
 categories = c("milk","beer","carbbev")
-par.category = "milk"
+par.category = "beer"
 par.periodicity = "445"
-L12 = 3
+L12 = 1
+par.item= "07-01-18200-53025"      # "00-01-18200-53030"
 
-#==========================
+### ============ LIBRARIES & SOURCE CODE ==============
 
-## LIBRARIES
 library("forecast") ; library("data.table") ; library("reshape2")
-library("ggplot2")
-
-
+library("ggplot2")  ; library("microbenchmark") ; library("foreach")
 ## LOCAL CODE FILES
 setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/ets/ets_functions_new.R")
 setwd(pth.dropbox.code) ; source("./other/GenericRoutines/useful_functions.R")
 
-print(ls())
-
-
 #=============== TESTING =================
 
-# "00-01-18200-53030"
-# par.item= "07-01-18200-53025"
-TEST = FALSE
+print(ls())
+
+TEST = TRUE
 if (TEST == TRUE) {
-    library(microbenchmark)
-    y=ts(rnorm(72,100,20),start = 2001, freq=12)
-    microbenchmark(f_ets.roll.fc.item(y,h.max=3,forecast.cycle="monthly"),times=10)
+    
+    #y=ts(rnorm(72,100,20),start = 2001, freq=12)
+    #microbenchmark(f_ets.roll.fc.item(y, h.max=3, forecast.cycle="monthly"), times=10)
+    
+    # low level testing for a single item
+    sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
+                          par.upc = "00-01-18200-53030", Level = 1,univariate = TRUE)
+    y = ts(sp$UNITS,start=c(2001,1),frequency=12)
+    f_ets.roll.fc.item(y, h.max=3, forecast.cycle="monthly")
+    
+    
+    sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
+                               par.upc = "00-01-18200-53030", Level = 2,univariate = TRUE)
+    microbenchmark(   f_ets.test.multicore(sp=sp, par.category=par.category,freq=12,h.max=3,opt.dopar="do"), times=10)
+    #test.multicore = TRUE ; system.time(f_ets.test("milk","445"))
+    #test.multicore = TRUE ; system.time(f_ets.test("beer","445"))
+    #test.multicore = TRUE ; system.time(f_ets.test("carbbev","445"))
+    
+    
     
     
     y=ts(rnorm(312,100,20),start = 2001, freq=52)
-    microbenchmark(f_ets.roll.fc.item(y,h.max=13,forecast.cycle="monthly"),times=10)
-    microbenchmark(f_ets.roll.fc.item(y,h.max=13,forecast.cycle="weekly"),times=10)    
+    #microbenchmark(f_ets.roll.fc.item(y,h.max=13,forecast.cycle="monthly"),times=10)
+    #microbenchmark(f_ets.roll.fc.item(y,h.max=13,forecast.cycle="weekly"),times=10)    
 }
 
 #============== DATA LOADING =====================
 # get the necessary data for a specific item
+# sp for multiple categories
 
+# sp.all = rbindlist(lapply(categories, function(x) data.table(category = x, f_load_data_sp(par.category=x))))[,c(1:3,7),with=F]
 
-#sp.all = rbindlist(lapply(categories, function(x) data.table(category = x, f_load_data_sp(par.category=x))))[,c(1:3,7),with=F]
-
-#write.csv(dcast(sp.all,period_id~category+fc.item,sum,value.var="UNITS"),file = "E:/items.ts.csv")
-#write.csv(dcast(sp.all, category+fc.item~period_id,sum,value.var="UNITS"),file = "E:/items.ts.flip.csv")
+# write.csv(dcast(sp.all,period_id~category+fc.item,sum,value.var="UNITS"),file = "E:/items.ts.csv")
+# write.csv(dcast(sp.all, category+fc.item~period_id,sum,value.var="UNITS"),file = "E:/items.ts.flip.csv")
 
 
 test.single = FALSE
 test.multi = FALSE
 test.multicore = TRUE
-
-
-f_ets.test = function(par.category, par.periodicity)
-{
-	sp = f_da.reg.cat.all(par.category = par.category, par.periodicity = par.periodicity)
-	items = sp[,as.character(unique(fc.item))]
-	if (L12 < 3) {
-		items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<=L12)]
-		sp = droplevels(sp[fc.item %in% items.L12[]])
-	}
-	if (test.single == TRUE)    ets.Err = f_ets.test.single(sp = sp)
-	if (test.multi == TRUE)    ets.Err = f_ets.test.multi(sp = sp)
-	if (test.multicore == TRUE)    ets.Err = f_ets.test.multicore(sp = sp, par.category = par.category, opt.dopar="dopar")
-
-}
 
 
 #f_ets.test("beer","445")
@@ -83,9 +76,6 @@ f_ets.test = function(par.category, par.periodicity)
 #========================
 #system.time(f_ets.test.single(sp = sp))
 #system.time(f_ets.test.multi(sp = sp))
-test.multicore = TRUE ; system.time(f_ets.test("milk","445"))
-#test.multicore = TRUE ; system.time(f_ets.test("beer","445"))
-#test.multicore = TRUE ; system.time(f_ets.test("carbbev","445"))
 
 
 setwd(pth.dropbox.data)
