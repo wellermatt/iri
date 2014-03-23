@@ -4,7 +4,7 @@ cd ~/projects/exp1.1/DataPrep
 #$ -l h_vmem=5.0G
 #$ -m e
 #$ -M wellermatt@hotmail.com
-#$ -q serial
+#$ -q night
 #$ -N mjw_job1
 
 source /etc/profile

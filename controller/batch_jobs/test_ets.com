@@ -1,10 +1,11 @@
 
 cd ~/projects/iri/model/ModelFitting/ets/
 #$ -S /bin/bash
-#$ -l h_vmem=4.0G
+#$ -l h_vmem=6.0G
+#$ -pe make 6
 #$ -m e
 #$ -M wellermatt@hotmail.com
-#$ -q test
+#$ -q parallel
 #$ -N mjw_job1
 
 source /etc/profile
