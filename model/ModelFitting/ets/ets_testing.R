@@ -1,5 +1,7 @@
 print(paste(">> Start directory =", getwd()))
 if (!exists("machine")) source('~/projects/iri/.Rprofile')
+print(paste("Machine =",machine))
+print(paste("Platform = ", platform))
 
 setwd(pth.dropbox.code)
 
@@ -8,7 +10,7 @@ setwd(pth.dropbox.code)
 categories = c("milk","beer","carbbev")
 par.category = "milk"
 par.periodicity = "445"
-L12 = 1
+L12 = 3
 
 #==========================
 
@@ -44,17 +46,6 @@ if (TEST == TRUE) {
 #============== DATA LOADING =====================
 # get the necessary data for a specific item
 
-f_load_data_sp = function(par.category, par.periodicity="445", par.item = NULL)
-{
-	if (par.periodicity == "445") sp = f_da.reg.cat.all(par.category = par.category, par.periodicity = par.periodicity)
-	if (par.periodicity == "weekly") sp= f_da.reg.cat.all(par.category=par.category, par.periodicity=par.periodicity)
-	items = sp[,as.character(unique(fc.item))]
-	if (L12 < 3) {
-	    items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<=L12)]
-	    sp = droplevels(sp[fc.item %in% items.L12])
-	}
-    sp
-}
 
 #sp.all = rbindlist(lapply(categories, function(x) data.table(category = x, f_load_data_sp(par.category=x))))[,c(1:3,7),with=F]
 
@@ -86,13 +77,21 @@ f_ets.test = function(par.category, par.periodicity)
 #f_ets.test("carbbev","445")
 
 
-unique(sp$fc.item)
+#unique(sp$fc.item)
 
 
 #========================
 #system.time(f_ets.test.single(sp = sp))
 #system.time(f_ets.test.multi(sp = sp))
 test.multicore = TRUE ; system.time(f_ets.test("milk","445"))
+#test.multicore = TRUE ; system.time(f_ets.test("beer","445"))
+#test.multicore = TRUE ; system.time(f_ets.test("carbbev","445"))
+
+
+setwd(pth.dropbox.data)
+milk = readRDS("./output/errors/ets_445_fast_all_1_milk.rds")
+beer = readRDS("./output/errors/ets_445_fast_all_1_beer.rds")
+carbbev = readRDS("./output/errors/ets_445_fast_all_1_carbbev.rds")
 
 
 
@@ -107,10 +106,6 @@ test.multicore = TRUE ; system.time(f_ets.test("milk","445"))
 # qplot(data = Err3.melt,y=value, x=factor(lvl), geom="boxplot") + geom_jitter()
 # qplot(data = Err3.melt[lvl>1],x=value, colour=factor(lvl), geom="density") 
 # qplot(data = Err3.melt,x=value, geom="histogram") + facet_wrap(facets=~lvl, ncol=1)
-
-
-
-
 
 
 

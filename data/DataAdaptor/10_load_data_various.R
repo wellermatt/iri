@@ -17,6 +17,7 @@ f_load.calendar = function(){
 	calendar.445[,(cols.to.drop.445) := NULL]
 }
 
+
 f_load.cat.subset.sp = function(category, par.weekly = TRUE, par.445 = TRUE){
     
     # used in step 6 where we add the full set of regression variables
@@ -43,6 +44,7 @@ f_load.cat.subset.sp = function(category, par.weekly = TRUE, par.445 = TRUE){
 	}
     list(weekly = dat.cat.weekly, m445 = dat.cat.445)
 }
+
 
 f_load.fc.items.subset = function(category) {
     setwd(pth.dropbox.data)

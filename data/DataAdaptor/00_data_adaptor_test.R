@@ -38,4 +38,16 @@ f_da.reg.cat.test = function(par.category, par.periodicity) {
 }
 
 
+f_load_data_sp = function(par.category="beer", par.periodicity="445", par.item = NULL)
+{
+    if (par.periodicity == "445") sp = f_da.reg.cat.all(par.category = par.category, par.periodicity = par.periodicity)
+    if (par.periodicity == "weekly") sp= f_da.reg.cat.all(par.category=par.category, par.periodicity=par.periodicity)
+    items = sp[,as.character(unique(fc.item))]
+    if (L12 < 3) {
+        items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<=L12)]
+        sp = droplevels(sp[fc.item %in% items.L12])
+    }
+    sp
+}
+#f_load_data_sp()
 
