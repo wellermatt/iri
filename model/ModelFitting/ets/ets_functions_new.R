@@ -5,31 +5,39 @@
 # 
 
 
-f_ets.multicore = function(sp, par.category, freq = 12, h.max=3, 
-                                Trace = TRUE, opt.dopar = "do", i=10)
+f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, opt.dopar = "do", cores=4, Trace = TRUE)
 {
+    # function will take an input set of data (sp) for multiple forecast items and save/return a set of forecasts
+    sp[,fc.item := factor(fc.item)]   ;   setkeyv(sp, c("fc.item"))  #,"period_id"))
+    print(paste(length(levels(sp$fc.item)), "forecast items to process"))
+    
+    export.list = c("f_ets.run.item","f_ets.roll.fc.item", "f_load.calendar", "pth.dropbox.data", "dtcomb", "isplitDT")
+    
+    
     library(doParallel)
-    if (opt.dopar =="dopar") {
-        registerDoParallel(8)
-        export.list = c("f_ets.run.item","f_ets.roll.fc.item", "f_load.calendar", "pth.dropbox.data", "dtcomb", "isplitDT")
-    }
-    sp[,fc.item := factor(fc.item)]
-    setkeyv(sp, c("fc.item"))  #,"period_id"))
+    #if (opt.dopar =="dopar") registerDoParallel(cores)
+    library(doSNOW)
+    cl <- makeCluster(cores, outfile="")
+    registerDoSNOW(cl)
+    
     multi.item.results =
         foreach(dt.sub = isplitDT(sp, levels(sp$fc.item)),
                 .combine='dtcomb', .multicombine=TRUE,
                 .export = export.list,
-                .packages=c("data.table", "forecast", "reshape2", "foreach")) %do% {
+                .packages=c("data.table", "forecast", "reshape2", "foreach")) %dopar% {
                     fc.item = dt.sub$key[1]
                     print(fc.item)
                     this.roll = f_ets.run.item(dt.sub$value, freq = 12, h.max = 3,Trace=TRUE)
                     this.roll$fc.item = fc.item
                     this.roll
                 }
-    setwd(pth.dropbox.data)
-    #print(multi.item.results)
-    fil=paste0("./output/errors/ets_445_fast_all_1_", par.category, ".rds")
-    saveRDS(object=multi.item.results, file = fil)
+    print(head(multi.item.results,10))
+    
+    # create a file name and save the results
+    setwd(pth.dropbox.data)         
+    fil = paste0("./output/errors/ets_", freq, "_", par.category, ".rds")
+    saveRDS(object = multi.item.results, file = fil)
+    
     multi.item.results
 }
 

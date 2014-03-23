@@ -14,7 +14,9 @@ module add R
 
 echo Job running on compute node `uname -n`
 
-Rscript --vanilla ets_testing.R
+R CMD BATCH --no-save ets_testing.R ~/output/ets_testing.output
+
+mail -s "ets" wellermatt@hotmail.com < ~/output/ets_testing.output
 
 
 

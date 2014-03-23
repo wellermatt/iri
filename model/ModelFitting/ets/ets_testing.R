@@ -7,8 +7,8 @@ print(paste("Platform = ", platform))
 categories = c("milk","beer","carbbev")
 par.category = "beer"
 par.periodicity = "445"
-L12 = 1
-par.item= "07-01-18200-53025"      # "00-01-18200-53030"
+Level = 3
+#par.item= "07-01-18200-53025"      # "00-01-18200-53030"
 
 ### ============ LIBRARIES & SOURCE CODE ==============
 
@@ -16,6 +16,7 @@ library("forecast") ; library("data.table") ; library("reshape2")
 library("ggplot2")  ; library("microbenchmark") ; library("foreach")
 ## LOCAL CODE FILES
 setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
+setwd(pth.dropbox.code) ; source("./data/DataAdaptor/10_load_data_various.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/ets/ets_functions_new.R")
 setwd(pth.dropbox.code) ; source("./other/GenericRoutines/useful_functions.R")
 
@@ -30,26 +31,30 @@ if (TEST == TRUE) {
     #microbenchmark(f_ets.roll.fc.item(y, h.max=3, forecast.cycle="monthly"), times=10)
     
     # low level testing for a single item
-    sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
-                          par.upc = "00-01-18200-53030", Level = 1,univariate = TRUE)
-    y = ts(sp$UNITS,start=c(2001,1),frequency=12)
-    f_ets.roll.fc.item(y, h.max=3, forecast.cycle="monthly")
+    #sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
+    #                      par.upc = "00-01-18200-53030", Level = 1,univariate = TRUE)
+    #y = ts(sp$UNITS,start=c(2001,1),frequency=12)
+    #f_ets.roll.fc.item(y, h.max=3, forecast.cycle="monthly")
     
     
+    par.category = "beer"    # par.upc = "00-01-18200-53030",
     sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
-                               par.upc = "00-01-18200-53030", Level = 2,univariate = TRUE)
-    microbenchmark(   f_ets.test.multicore(sp=sp, par.category=par.category,freq=12,h.max=3,opt.dopar="do"), times=10)
+                               Level = 2, univariate = TRUE)
+    system.time(   f_ets.rolling.multicore(sp=sp, par.category=par.category,freq=12,h.max=3,opt.dopar="dopar",cores=4))
+    
+}
+
+
+    
     #test.multicore = TRUE ; system.time(f_ets.test("milk","445"))
     #test.multicore = TRUE ; system.time(f_ets.test("beer","445"))
     #test.multicore = TRUE ; system.time(f_ets.test("carbbev","445"))
     
     
-    
-    
-    y=ts(rnorm(312,100,20),start = 2001, freq=52)
+    #y=ts(rnorm(312,100,20),start = 2001, freq=52)
     #microbenchmark(f_ets.roll.fc.item(y,h.max=13,forecast.cycle="monthly"),times=10)
     #microbenchmark(f_ets.roll.fc.item(y,h.max=13,forecast.cycle="weekly"),times=10)    
-}
+
 
 #============== DATA LOADING =====================
 # get the necessary data for a specific item
@@ -78,10 +83,10 @@ test.multicore = TRUE
 #system.time(f_ets.test.multi(sp = sp))
 
 
-setwd(pth.dropbox.data)
-milk = readRDS("./output/errors/ets_445_fast_all_1_milk.rds")
-beer = readRDS("./output/errors/ets_445_fast_all_1_beer.rds")
-carbbev = readRDS("./output/errors/ets_445_fast_all_1_carbbev.rds")
+#setwd(pth.dropbox.data)
+#milk = readRDS("./output/errors/ets_445_fast_all_1_milk.rds")
+#beer = readRDS("./output/errors/ets_445_fast_all_1_beer.rds")
+#carbbev = readRDS("./output/errors/ets_445_fast_all_1_carbbev.rds")
 
 
 
