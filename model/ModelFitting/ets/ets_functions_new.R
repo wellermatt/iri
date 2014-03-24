@@ -5,13 +5,14 @@
 # 
 
 
-f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, opt.dopar = "do", cores=6, Trace = TRUE)
+f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, opt.dopar = "dopar", cores=6, Trace = TRUE)
 {
     # function will take an input set of data (sp) for multiple forecast items and save/return a set of forecasts
     sp[,fc.item := factor(fc.item)]   ;   setkeyv(sp, c("fc.item"))  #,"period_id"))
     print(paste(length(levels(sp$fc.item)), "forecast items to process"))
     
-    export.list = c("f_ets.run.item","f_ets.roll.fc.item", "f_load.calendar", "pth.dropbox.data", "dtcomb", "isplitDT", "h.max", "freq")
+    export.list = c("f_ets.run.item","f_ets.roll.fc.item", "f_load.calendar", "pth.dropbox.data", 
+                    "dtcomb", "isplitDT", "h.max", "freq")
         
     if (opt.dopar =="dopar") {
         # library(doParallel)  ;  registerDoParallel(cores)
@@ -32,6 +33,7 @@ f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, opt.dop
                 }
     print(head(multi.item.results,10))
     
+    stopCluster(cl)
     # create a file name and save the results
     setwd(pth.dropbox.data)         
     fil = paste0("./output/errors/ets_", freq, "_", par.category, ".rds")
@@ -92,20 +94,20 @@ f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, forec
         }
         # do the forecasts,      
         fcast <- forecast(fit, h = h)
-        
+        #fcast.naive = rwf
         # optional printing
         if (PRINT == TRUE) {
             print(fit)
-            #print(yhist) 
-            #print(yfuture)
-            #print(fcast)
+            print(accuracy(fit))
         }
         
         data.table(o, 
                    h = 1:length(yfuture), 
                    t = o + 1:length(yfuture), 
-                   fc = fcast[['mean']], 
-                   act = yfuture)
+                   fc = as.numeric(fcast[['mean']]), 
+                   fc.naive = rep(yhist[o], h),
+                   fc.snaive = yhist[(o-freq+1):(o-freq+h)],
+                   act = as.numeric(yfuture))
     }
     
     return(roll.ets)   # may also want to return some details from the model e.g. alpha, beta, gamma, phi)
@@ -116,8 +118,10 @@ f_ets.run.item = function(ss, freq, h.max, Trace = FALSE)  #fc.item = "00-01-182
 {    
     y = ts(ss$UNITS, start=c(2001,1), frequency = freq)
     
-    if (sum(is.na(y))>0) y = na.approx(y, na.rm=FALSE)
-    if (sum(is.na(y))>0) na.locf(na.locf(y,fromLast=TRUE, na.rm=FALSE),na.rm=FALSE)
+    if (sum(is.na(y))>0) y = ts(na.approx(y, na.rm=FALSE), start = c(2001,1), freq=freq)
+    if (sum(is.na(y))>0) y= ts(na.locf(na.locf(y,fromLast=TRUE, na.rm=FALSE),na.rm=FALSE),start = c(2001,1), freq=freq)
+    
+    print(y)
     
     roll = f_ets.roll.fc.item(y, h.max = h.max)
     #roll$fc.item = unique(ss$fc.item)

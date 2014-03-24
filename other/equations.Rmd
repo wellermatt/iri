@@ -1,0 +1,27 @@
+Title
+========================================================
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring web pages (click the **Help** toolbar button for more details on using R Markdown).
+
+When you click the **Knit HTML** button a web page will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+$$
+    \mathrm{MAE} = \frac{1}{n}\sum_{i=1}^n \left| f_i-y_i\right| =\frac{1}{n}\sum_{i=1}^n \left| e_i \right|
+$$
+
+$$
+    \mathrm{MASE} = \frac{1}{n}\sum_{t=1}^n\left( \frac{\left| e_t \right|}{\frac{1}{n-1}\sum_{i=2}^n \left| Y_i-Y_{i-1}\right|} \right) = \frac{\sum_{t=1}^{n} \left| e_t \right|}{\frac{n}{n-1}\sum_{i=2}^n \left| Y_i-Y_{i-1}\right|}
+    \mathrm{MASE} = \frac{1}{n}\sum_{t=1}^n\left(\frac{\left| e…right|}{\frac{n}{n-1}\sum_{i=2}^n \left| Y_i-Y_{i-1}\right|}
+$$
+
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r fig.width=7, fig.height=6}
+plot(cars)
+```
+

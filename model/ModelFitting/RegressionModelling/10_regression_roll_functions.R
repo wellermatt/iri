@@ -25,18 +25,19 @@ f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "we
     multi.item.results =
         foreach(dt.sub = isplitDT(sp, levels(sp$fc.item)),
                 .combine='dtcomb', .multicombine=TRUE,
+                .errorhandling = "stop",
                 .export = export.functions,
                 .packages=c("data.table", "forecast", "reshape2","MASS","foreach")) %dopar%
         {
             fc.item = dt.sub$key[1]
-            print(fc.item)
+            print(paste0("\n--> ",fc.item))
             reg.roll = f_reg.roll_fc.item(sp1 = dt.sub$value, freq = 52, h.max=h.max)             
             results = data.table(fc.item = fc.item, periodicity = par.periodicity, reg.roll)    
             results
         }
-    
     print(head(multi.item.results,10))
     
+    opt.add.errors = FALSE
     if (opt.add.errors == TRUE) {
         multi.item.results = f_errors.calculate(multi.item.results)
     }
@@ -65,21 +66,24 @@ f_reg.roll_fc.item = function(sp1, freq = 52, h.max = 13, model.pars = NULL)
     if (freq == 12) o1 <- 48             # minimum data length for fitting a model
     if (freq == 52) o1 <- 208             # minimum data length for fitting a model
     
-    end.week = max(sp1$period)
+    end.period = max(sp1$period)
     
     # initial fit window and fit STEPWISE model
-    fit.model.original = f_ts.regression.auto.stepAIC(sp1[1:o1])  # window.t = 1:198
+    fit.model.original = f_ts.regression.auto.stepAIC(sp1[1:o1],print.details=0)  # window.t = 1:198
     frm.original = fit.model.original$call$formula
     frm.text = paste(as.character(frm.original)[c(2,1,3)],collapse=" ")
     model.vars = gsub("^\\s+|\\s+$", "", unlist(strsplit(frm.text, split = "\\+|\\~")))
     
     
     reg.roll = 
-        foreach (o = o1:(end.week-1),     
+        foreach (o = o1:(end.period-1),     
                  .combine='dtcomb', .multicombine=TRUE) %do%
         {                  
+            # what is the extent of the horizon for this origin
+            h = min(h.max, end.period-o)
+            #print(h)
             # build the xreg variables, based on the variables in formula!!        
-            xregnew = sp1[period %in% (o+1):min(o+h.max,end.week), eval(model.vars), with = F]
+            xregnew = sp1[period %in% (o+1):(o+h), eval(model.vars), with = F]
             
             # update or re-optimise the model??
             # fit.model = f_ts.regression.auto.stepAIC(ssw[1:o])  # window.t = 1:198
@@ -91,12 +95,14 @@ f_reg.roll_fc.item = function(sp1, freq = 52, h.max = 13, model.pars = NULL)
             #             fc = forecast(revised.model,
             #                           h=min(h, end.week-o), 
             #                           newdata = data.frame(xregnew))
-            act = sp1[period %in% (o+1):min(o+h.max,end.week),UNITS]
+            act = sp1[period %in% (o+1):(o+h),UNITS]
             fc.comparison = data.table(o,
-                                       h = 1:min(h.max, end.week-o),
-                                       t = o + 1:min(h.max, end.week-o),
-                                       fc = fc,
-                                       act = act)
+                                       h = 1:h,
+                                       t = o+1:h,
+                                       fc = as.numeric(fc),
+                                       fc.naive = rep(sp1[o,UNITS], h),   #sp1[1:o1]
+                                       fc.snaive = sp1[(o-freq+1):(o-freq+h),UNITS],    #sp1[1:o1]
+                                       act = as.numeric(act))
             fc.comparison
         }
 

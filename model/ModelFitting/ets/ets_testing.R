@@ -29,8 +29,8 @@ print(ls())
 TEST = TRUE
 if (TEST == TRUE) {
     
-    #y=ts(rnorm(72,100,20),start = 2001, freq=12)
-    #microbenchmark(f_ets.roll.fc.item(y, h.max=3, forecast.cycle="monthly"), times=10)
+    y=ts(rnorm(72,100,20),start = 2001, freq=12)
+    microbenchmark(f_ets.roll.fc.item(y, h.max=3, forecast.cycle="monthly"), times=10)
     
     # low level testing for a single item
     #sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
@@ -38,15 +38,17 @@ if (TEST == TRUE) {
     #y = ts(sp$UNITS,start=c(2001,1),frequency=12)
     #f_ets.roll.fc.item(y, h.max=3, forecast.cycle="monthly")
     
-    
+    Level=3
+    # 445 ets
     par.category = "beer"    # par.upc = "00-01-18200-53030",
     sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
-                               par.upc = "00-01-18200-53030", Level = 3, univariate = TRUE)
-    system.time(   f_ets.rolling.multicore(sp=sp, par.category=par.category,freq=12,h.max=3,opt.dopar="dopar",cores=6))
-
+                               par.upc = "00-01-18200-53030", Level = Level, univariate = TRUE)
+    system.time(res.m <- f_ets.rolling.multicore(sp=sp, par.category=par.category,freq=12,h.max=3,opt.dopar="dopar",cores=6))
+    
+    # WEEKLY ets
 	sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "weekly", 
-                               par.upc = "00-01-18200-53030", Level = 3, univariate = TRUE)
-    system.time(   f_ets.rolling.multicore(sp=sp, par.category=par.category,freq=52,h.max=13,opt.dopar="dopar",cores=6))
+                               par.upc = "00-01-18200-53030", Level = Level, univariate = TRUE)
+    system.time(res.w <- f_ets.rolling.multicore(sp=sp, par.category=par.category,freq=52,h.max=13,opt.dopar="dopar",cores=6))
     
 }
 
@@ -91,7 +93,8 @@ test.multicore = TRUE
 
 #setwd(pth.dropbox.data)
 #milk = readRDS("./output/errors/ets_12_milk.rds")
-#beer = readRDS("./output/errors/ets_12_beer.rds")
+beer12 = readRDS("./output/errors/ets_12_beer.rds")
+beer52 = readRDS("./output/errors/ets_52_beer.rds")
 #carbbev = readRDS("./output/errors/ets_12_carbbev.rds")
 
 

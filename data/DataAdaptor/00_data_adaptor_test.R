@@ -5,7 +5,8 @@
 
 
 f_adaptor.reg.cat.all = function(par.category, par.periodicity, 
-                            par.upc = NULL, Level = 1, univariate = TRUE, bo.save.subset = FALSE) {
+                            par.upc = NULL, par.fc.item = NULL, Level = 1, 
+                            univariate = TRUE, bo.save.subset = FALSE) {
 
 	# get an input dataset for regression for a whole category
 	# optionally split it for a single item
@@ -18,6 +19,7 @@ f_adaptor.reg.cat.all = function(par.category, par.periodicity,
     
     # optionally filter the data
 	if (!is.null(par.upc)) sp = sp[UPC==par.upc]
+    if (!is.null(par.fc.item)) sp = sp[UPC==par.fc.item]
     if (Level < 3) {
         items = sp[,as.character(unique(fc.item))]
         items.sub = items[which(unlist(lapply(strsplit(items,"/"),length)) <= Level)]

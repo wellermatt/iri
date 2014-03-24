@@ -26,6 +26,7 @@ price.terms = "PRICE_DIFF"
 categories = c("beer","carbbev","milk")
 par.category = "beer"
 par.upc = "00-01-18200-53030"
+par.fc.item = NULL# "00-01-18200-53030/57" #
 par.periodicity = "weekly"
 Level = 3
 
@@ -41,15 +42,19 @@ for  (x in names(expt.design)) assign(x, expt.design[[x]])
 # use the standard beer SKU
 sp = f_adaptor.reg.cat.all (par.category=categories[1], par.periodicity="weekly",
                             Level = Level, univariate = FALSE, 
-                            par.upc = par.upc)   # spw is the regression dataset, all nodes    
+                            par.upc = par.upc, par.fc.item = par.fc.item)   # spw is the regression dataset, all nodes    
 
 #========= TESTING ===============
 
-this.time = system.time(reg.roll <- f_reg.roll.multiCORE(sp = sp,par.category="beer",par.periodicity="weekly", h.max = 13, cores = 6) )
+this.time = system.time(reg.roll <- f_reg.roll.multiCORE(sp = sp,  par.category="beer",  par.periodicity="weekly", 
+                                                         h.max = 13,  cores = 6) )
+
 test.stats = data.table(method = "reg_roll", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), this.time = this.time[3])
 print(test.stats)
 
-# add the errors here?
+# add the errors here - yes
+
+f_errors.calculate(reg.roll)
 
 saveResults = TRUE
 if (saveResults == TRUE){
@@ -60,7 +65,7 @@ if (saveResults == TRUE){
     
 }
 
-
+rr=reg.roll
 
 
 ##
@@ -87,8 +92,7 @@ library(stringr)
 rr[,lvl := str_count( fc.item, "/")+1 ]
 rr[,list(mape = mean(abs(re),na.rm=TRUE)),by=list(lvl,k)]
 rr=reg.roll
-dcast(data = rr,k~lvl,
-      fun.aggregate=median,na.rm=TRUE,value.var="rae")
+dcast(data = rr,h~lvl,fun.aggregate=median,na.rm=TRUE,value.var="ape")
 dcast(data = rr,lvl+fc.item~k,
       fun.aggregate=median,na.rm=TRUE,value.var="rae")
 
