@@ -23,6 +23,7 @@ include.AR.terms = FALSE
 price.terms = "PRICE_DIFF"
 
 categories = c("beer","carbbev","milk")
+par.category = "beer"
 par.upc = "00-01-18200-53030"
 par.periodicity = "weekly"
 Level = 3
@@ -40,24 +41,24 @@ sp = f_adaptor.reg.cat.all (par.category=categories[1], par.periodicity="weekly"
                             Level = Level, univariate = FALSE, 
                             par.upc = par.upc)   # spw is the regression dataset, all nodes    
 
-#=========
+#========= TESTING ===============
 
-nitems = length(unique(sp$fc.item))
-this.time = system.time(f_reg.roll.multiCORE(sp = sp,par.category="beer",
-                                             par.periodicity="445", h.max = 13, cores = 4) ) #length(items)
-
-test.stats = data.table(method = "reg_roll", par.periodicity, nitems, this.time = this.time[3])
-
+this.time = system.time(reg.roll <- f_reg.roll.multiCORE(sp = sp,par.category="beer",par.periodicity="weekly", h.max = 13, cores = 6) )
+test.stats = data.table(method = "reg_roll", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), this.time = this.time[3])
 print(test.stats)
 
+# add the errors here?
+
+saveResults = TRUE
+if (saveResults == TRUE){
+    
+    setwd(pth.dropbox.data)
+    saveRDS(reg.roll, paste0("./output/errors/reg_", par.periodicity, "_", par.category, ".rds"))
+    setwd(pth.dropbox.code)
+    
+}
 
 
-#test.single = FALSE  ;  if (test.single == TRUE)    ets.Err = f_ets.test.single(sp = spm)
-#test.multi = FALSE   ;  if (test.multi == TRUE)    ets.Err = f_ets.test.multi(sp = spm)
-test.multicore = FALSE  ;  if (test.multicore == TRUE)    ets.Err = f_ets.test.multicore(sp = spm, opt.dopar=TRUE)
-
-#system.time(f_ets.test.single(sp = spm))
-#system.time(f_ets.test.multi(sp = spm))
 
 
 ##
@@ -72,15 +73,6 @@ test.multicore = FALSE  ;  if (test.multicore == TRUE)    ets.Err = f_ets.test.m
 
 
 
-## SET UP MULTICORE
-#determine which OS (Windows/Linux)
-
-
-# for each fc.item (at each level)
-# the list of items will be used
-
-#rr = f_reg.roll.m(sp=sp, imax = 8)
-
 
 # function to get the data for multiple categories
 # if (TRUE == FALSE)
@@ -89,29 +81,6 @@ test.multicore = FALSE  ;  if (test.multicore == TRUE)    ets.Err = f_ets.test.m
 #     sp = rbindlist(sp.all)
 # }
 # 
-# # limit the levels included: 1/2/3
-# items = sp[,as.character(unique(fc.item))]
-# L12 = TRUE
-# if (L12 == TRUE) {
-#     items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<=par.Level)]
-#     sp = droplevels(sp[as.character(fc.item) %in% items.L12])}
-# sp
-# items = sp[,as.character(unique(fc.item))]
-
-
-stop()
-
-rr
-saveResults = FALSE
-if (saveResults == TRUE){
-  
-  setwd(pth.dropbox.data)
-  saveRDS(rr, "./output/errors/errors_reg3.rds")
-  #zz=readRDS( "./output/errors/errors_reg2.rds")
-  setwd(pth.dropbox.code)
-  
-}
-
 
 
 # blah blah
@@ -119,7 +88,7 @@ if (saveResults == TRUE){
 library(stringr)
 rr[,lvl := str_count( fc.item, "/")+1 ]
 rr[,list(mape = mean(abs(re),na.rm=TRUE)),by=list(lvl,k)]
-
+rr=reg.roll
 dcast(data = rr,k~lvl,
       fun.aggregate=median,na.rm=TRUE,value.var="rae")
 dcast(data = rr,lvl+fc.item~k,

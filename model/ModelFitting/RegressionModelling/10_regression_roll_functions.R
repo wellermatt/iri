@@ -32,7 +32,6 @@ f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "we
             print(fc.item)
             reg.roll = f_reg.roll_fc.item(sp1 = dt.sub$value, freq = 52, h.max=h.max)             
             results = data.table(fc.item = fc.item, periodicity = par.periodicity, reg.roll)    
-            
             results
         }
     
@@ -40,7 +39,10 @@ f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "we
     
     setwd(pth.dropbox.data)
     if (opt.print.results == TRUE) print(multi.item.results)
-    if (opt.save.results == TRUE) saveRDS(object=multi.item.results,file="./output/errors/reg_week_test.rds")
+    if (opt.save.results == TRUE) {
+        setwd(pth.dropbox.data)
+        saveRDS(multi.item.results, paste0("./output/errors/reg_", par.periodicity, "_", par.category, ".rds"))
+    }#saveRDS(object=multi.item.results,file="./output/errors/reg_week_test.rds")
     return(multi.item.results)
 }
 
