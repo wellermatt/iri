@@ -21,7 +21,12 @@ setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
 log.model = FALSE
 include.AR.terms = FALSE 
 price.terms = "PRICE_DIFF"
-periodicity = "weekly"
+
+categories = c("beer","carbbev","milk")
+par.upc = "00-01-18200-53030"
+par.periodicity = "weekly"
+Level = 3
+
 
 print.options = list(opt.print.summary = TRUE, opt.print.aov = TRUE, opt.print.diag = TRUE, opt.print.stats = TRUE, opt.print.coef = TRUE)
 
@@ -30,44 +35,25 @@ expt.design = as.list(expt.design.master[2])
 for  (x in names(expt.design)) assign(x, expt.design[[x]])
 
 #============== DATA LOADING =====================
-
-categories = c("beer","carbbev","milk")
-par.item= "07-01-18200-53025"
-
-par.periodicity = "weekly"
-par.Level = 3
-
 # use the standard beer SKU
-sp = f_da.reg.cat.all(par.category=categories[1], par.periodicity="weekly", par.item = par.item)   # spw is the regression dataset, all nodes    
-
-# function to get the data for multiple categories
-if (TRUE == FALSE)
-{
-    sp.all = lapply(categories, function (this.cat) f_da.reg.cat.all(par.category=this.cat, par.periodicity="weekly") )  # spw is the regression dataset, all nodes    
-    sp = rbindlist(sp.all)
-}
-
-# limit the levels included: 1/2/3
-items = sp[,as.character(unique(fc.item))]
-L12 = TRUE
-if (L12 == TRUE) {
-    items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<=par.Level)]
-    sp = droplevels(sp[as.character(fc.item) %in% items.L12])}
-sp
-items = sp[,as.character(unique(fc.item))]
+sp = f_adaptor.reg.cat.all (par.category=categories[1], par.periodicity="weekly",
+                            Level = Level, univariate = FALSE, 
+                            par.upc = par.upc)   # spw is the regression dataset, all nodes    
 
 #=========
 
 nitems = length(unique(sp$fc.item))
-this.time = system.time(f_reg.roll.multiCORE(sp = sp, imax=8, ncores = 8) ) #length(items)
-test.stats = data.table(method = "reg_roll", periodicity, nitems, this.time = this.time[3])
+this.time = system.time(f_reg.roll.multiCORE(sp = sp,par.category="beer",
+                                             par.periodicity="445", h.max = 13, cores = 4) ) #length(items)
+
+test.stats = data.table(method = "reg_roll", par.periodicity, nitems, this.time = this.time[3])
+
+print(test.stats)
 
 
 
-
-
-test.single = FALSE  ;  if (test.single == TRUE)    ets.Err = f_ets.test.single(sp = spm)
-test.multi = FALSE   ;  if (test.multi == TRUE)    ets.Err = f_ets.test.multi(sp = spm)
+#test.single = FALSE  ;  if (test.single == TRUE)    ets.Err = f_ets.test.single(sp = spm)
+#test.multi = FALSE   ;  if (test.multi == TRUE)    ets.Err = f_ets.test.multi(sp = spm)
 test.multicore = FALSE  ;  if (test.multicore == TRUE)    ets.Err = f_ets.test.multicore(sp = spm, opt.dopar=TRUE)
 
 #system.time(f_ets.test.single(sp = spm))
@@ -94,6 +80,23 @@ test.multicore = FALSE  ;  if (test.multicore == TRUE)    ets.Err = f_ets.test.m
 # the list of items will be used
 
 #rr = f_reg.roll.m(sp=sp, imax = 8)
+
+
+# function to get the data for multiple categories
+# if (TRUE == FALSE)
+# {
+#     sp.all = lapply(categories, function (this.cat) f_da.reg.cat.all(par.category=this.cat, par.periodicity="weekly") )  # spw is the regression dataset, all nodes    
+#     sp = rbindlist(sp.all)
+# }
+# 
+# # limit the levels included: 1/2/3
+# items = sp[,as.character(unique(fc.item))]
+# L12 = TRUE
+# if (L12 == TRUE) {
+#     items.L12 = items[which(unlist(lapply(strsplit(items,"/"),length))<=par.Level)]
+#     sp = droplevels(sp[as.character(fc.item) %in% items.L12])}
+# sp
+# items = sp[,as.character(unique(fc.item))]
 
 
 stop()
