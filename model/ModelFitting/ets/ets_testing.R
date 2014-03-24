@@ -90,9 +90,9 @@ test.multicore = TRUE
 
 
 #setwd(pth.dropbox.data)
-#milk = readRDS("./output/errors/ets_445_fast_all_1_milk.rds")
-#beer = readRDS("./output/errors/ets_445_fast_all_1_beer.rds")
-#carbbev = readRDS("./output/errors/ets_445_fast_all_1_carbbev.rds")
+#milk = readRDS("./output/errors/ets_12_milk.rds")
+#beer = readRDS("./output/errors/ets_12_beer.rds")
+#carbbev = readRDS("./output/errors/ets_12_carbbev.rds")
 
 
 

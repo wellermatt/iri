@@ -12,14 +12,13 @@ f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, opt.dop
     print(paste(length(levels(sp$fc.item)), "forecast items to process"))
     
     export.list = c("f_ets.run.item","f_ets.roll.fc.item", "f_load.calendar", "pth.dropbox.data", "dtcomb", "isplitDT", "h.max", "freq")
-    
-    
-    library(doParallel)
-    #if (opt.dopar =="dopar") registerDoParallel(cores)
-    library(doSNOW)
-    cl <- makeCluster(cores, outfile="")
-    registerDoSNOW(cl)
-    
+        
+    if (opt.dopar =="dopar") {
+        # library(doParallel)  ;  registerDoParallel(cores)
+        library(doSNOW)
+        cl <- makeCluster(cores, outfile="")
+        registerDoSNOW(cl)
+    }
     multi.item.results =
         foreach(dt.sub = isplitDT(sp, levels(sp$fc.item)),
                 .combine='dtcomb', .multicombine=TRUE,
@@ -28,7 +27,7 @@ f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, opt.dop
                     fc.item = dt.sub$key[1]
                     print(fc.item)
                     this.roll = f_ets.run.item(dt.sub$value, freq = freq, h.max = h.max,Trace=TRUE)
-                    this.roll$fc.item = fc.item
+                    this.roll = data.table(fc.item, this.roll)
                     this.roll
                 }
     print(head(multi.item.results,10))
@@ -101,7 +100,12 @@ f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, forec
             #print(yfuture)
             #print(fcast)
         }
-        data.table(o, h = 1:length(yfuture), y = yfuture, yhat = fcast[['mean']])
+        
+        data.table(o, 
+                   h = 1:length(yfuture), 
+                   t = o + 1:length(yfuture), 
+                   fc = fcast[['mean']], 
+                   act = yfuture)
     }
     
     return(roll.ets)   # may also want to return some details from the model e.g. alpha, beta, gamma, phi)
@@ -111,8 +115,12 @@ f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, forec
 f_ets.run.item = function(ss, freq, h.max, Trace = FALSE)  #fc.item = "00-01-18200-53030", pth = NULL)
 {    
     y = ts(ss$UNITS, start=c(2001,1), frequency = freq)
+    
+    if (sum(is.na(y))>0) y = na.approx(y, na.rm=FALSE)
+    if (sum(is.na(y))>0) na.locf(na.locf(y,fromLast=TRUE, na.rm=FALSE),na.rm=FALSE)
+    
     roll = f_ets.roll.fc.item(y, h.max = h.max)
-    roll$fc.item = unique(ss$fc.item)
+    #roll$fc.item = unique(ss$fc.item)
     
     if (Trace == TRUE) { print(roll$fit) ; print(roll$Err) }
     roll

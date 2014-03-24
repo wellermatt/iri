@@ -27,12 +27,13 @@ categories = c("beer","carbbev","milk")
 par.category = "beer"
 par.upc = "00-01-18200-53030"
 par.periodicity = "weekly"
-Level = 2
+Level = 3
 
 
 print.options = list(opt.print.summary = TRUE, opt.print.aov = TRUE, opt.print.diag = TRUE, opt.print.stats = TRUE, opt.print.coef = TRUE)
 
-expt.design.master = data.table(id = 1:3, include.AR.terms = FALSE, log.model = FALSE, price.terms = c("PRICE_DIFF","PRICE","PRICE_LAG"), time.period = "WEEK")
+expt.design.master = data.table(id = 1:3, include.AR.terms = FALSE, log.model = FALSE, 
+                                price.terms = c("PRICE_DIFF","PRICE","PRICE_LAG"), time.period = "WEEK")
 expt.design = as.list(expt.design.master[2])
 for  (x in names(expt.design)) assign(x, expt.design[[x]])
 
@@ -70,10 +71,6 @@ if (saveResults == TRUE){
 
 # hols:
 # model.config
-
-
-
-
 
 # function to get the data for multiple categories
 # if (TRUE == FALSE)

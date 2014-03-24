@@ -37,12 +37,17 @@ f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "we
     
     print(head(multi.item.results,10))
     
+    if (opt.add.errors == TRUE) {
+        multi.item.results = f_errors.calculate(multi.item.results)
+    }
+        
+        
     setwd(pth.dropbox.data)
     if (opt.print.results == TRUE) print(multi.item.results)
     if (opt.save.results == TRUE) {
         setwd(pth.dropbox.data)
         saveRDS(multi.item.results, paste0("./output/errors/reg_", par.periodicity, "_", par.category, ".rds"))
-    }#saveRDS(object=multi.item.results,file="./output/errors/reg_week_test.rds")
+    }
     return(multi.item.results)
 }
 
@@ -87,8 +92,9 @@ f_reg.roll_fc.item = function(sp1, freq = 52, h.max = 13, model.pars = NULL)
             #                           h=min(h, end.week-o), 
             #                           newdata = data.frame(xregnew))
             act = sp1[period %in% (o+1):min(o+h.max,end.week),UNITS]
-            fc.comparison = data.table(t = o,
-                                       k = 1:min(h.max, end.week-o),
+            fc.comparison = data.table(o,
+                                       h = 1:min(h.max, end.week-o),
+                                       t = o + 1:min(h.max, end.week-o),
                                        fc = fc,
                                        act = act)
             fc.comparison
