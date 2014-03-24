@@ -61,7 +61,10 @@ f_reg.roll_fc.item = function(sp1, freq = 52, h.max = 13, model.pars = NULL)
 {
     # receives the data (ssw) to fit the model for a single item using additional parameters
     #require(fomulatools)
-    # needs correction to accept weekly or monthly data with varying start/end dates
+
+    # 1 needs correction to accept weekly or monthly data with varying start/end dates
+    # 2 needs to handle xreg NAs and output a restricted set
+    
     
     if (freq == 12) o1 <- 48             # minimum data length for fitting a model
     if (freq == 52) o1 <- 208             # minimum data length for fitting a model
@@ -84,6 +87,7 @@ f_reg.roll_fc.item = function(sp1, freq = 52, h.max = 13, model.pars = NULL)
             #print(h)
             # build the xreg variables, based on the variables in formula!!        
             xregnew = sp1[period %in% (o+1):(o+h), eval(model.vars), with = F]
+            missing.periods = is.null(xregnew$UNITS)
             
             # update or re-optimise the model??
             # fit.model = f_ts.regression.auto.stepAIC(ssw[1:o])  # window.t = 1:198
@@ -91,18 +95,18 @@ f_reg.roll_fc.item = function(sp1, freq = 52, h.max = 13, model.pars = NULL)
     
             # make the predictions
             fc = predict.lm(object=revised.model,newdata=xregnew)
-
+            fc
             #             fc = forecast(revised.model,
             #                           h=min(h, end.week-o), 
             #                           newdata = data.frame(xregnew))
             act = sp1[period %in% (o+1):(o+h),UNITS]
             fc.comparison = data.table(o,
-                                       h = 1:h,
-                                       t = o+1:h,
+                                       h = (1:h)[!missing.periods],
+                                       t = o+1:h[!missing.periods],
                                        fc = as.numeric(fc),
-                                       fc.naive = rep(sp1[o,UNITS], h),   #sp1[1:o1]
-                                       fc.snaive = sp1[(o-freq+1):(o-freq+h),UNITS],    #sp1[1:o1]
-                                       act = as.numeric(act))
+                                       fc.naive = rep(sp1[o,UNITS], h)[!missing.periods],   #sp1[1:o1]
+                                       fc.snaive = sp1[(o-freq+1):(o-freq+h),UNITS][!missing.periods],    #sp1[1:o1]
+                                       act = as.numeric(act)[!missing.periods])
             fc.comparison
         }
 

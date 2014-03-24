@@ -44,8 +44,10 @@ dcast(data=Err,lvl+periodicity~method,fun.aggregate=median,na.rm=TRUE,value.var=
 
 
 #==========================================================================
-
-
+y = 1:10
+y[4] = NA
+is.na(y)
+x = y[!is.na(y)]
 
 
 

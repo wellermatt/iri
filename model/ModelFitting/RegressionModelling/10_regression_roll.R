@@ -1,6 +1,6 @@
 ### ROLLING REGRESSION FUNCTIONALITY TESTING & LOOPING ####
 #setwd("C:/Users/matt/Dropbox/HEC/Code/iri")
-source("~/projects/iri/.Rprofile")
+#source("~/projects/iri/.Rprofile")
 source("E:/Git/iri/.Rprofile")
 
 is.null(pth.dropbox.code) ; setwd(pth.dropbox.code)
@@ -25,10 +25,11 @@ price.terms = "PRICE_DIFF"
 
 categories = c("beer","carbbev","milk")
 par.category = "beer"
-par.upc = "00-01-18200-53030"
-par.fc.item = NULL# "00-01-18200-53030/57" #
+par.upc = "00-01-18200-53030"     #NULL #
+par.fc.item = NULL # "00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
 par.periodicity = "weekly"
 Level = 3
+cores = 6
 
 
 print.options = list(opt.print.summary = TRUE, opt.print.aov = TRUE, opt.print.diag = TRUE, opt.print.stats = TRUE, opt.print.coef = TRUE)
@@ -46,10 +47,10 @@ sp = f_adaptor.reg.cat.all (par.category=categories[1], par.periodicity="weekly"
 
 #========= TESTING ===============
 
-this.time = system.time(reg.roll <- f_reg.roll.multiCORE(sp = sp,  par.category="beer",  par.periodicity="weekly", 
-                                                         h.max = 13,  cores = 6) )
+this.time = system.time(reg.roll <- f_reg.roll.multiCORE(sp = sp,  par.category = "beer",  par.periodicity="weekly", 
+                                                         h.max = 13,  cores = cores) )
 
-test.stats = data.table(method = "reg_roll", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), this.time = this.time[3])
+test.stats = data.table(method = "reg_roll", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
 print(test.stats)
 
 # add the errors here - yes

@@ -19,7 +19,7 @@ f_adaptor.reg.cat.all = function(par.category, par.periodicity,
     
     # optionally filter the data
 	if (!is.null(par.upc)) sp = sp[UPC==par.upc]
-    if (!is.null(par.fc.item)) sp = sp[UPC==par.fc.item]
+    if (!is.null(par.fc.item)) sp = sp[fc.item==par.fc.item]
     if (Level < 3) {
         items = sp[,as.character(unique(fc.item))]
         items.sub = items[which(unlist(lapply(strsplit(items,"/"),length)) <= Level)]
