@@ -1,14 +1,14 @@
 ### ROLLING REGRESSION FUNCTIONALITY TESTING & LOOPING ####
 #setwd("C:/Users/matt/Dropbox/HEC/Code/iri")
+source("~/projects/iri/.Rprofile")
+
 is.null(pth.dropbox.code) ; setwd(pth.dropbox.code)
 #setwd(pth.dropbox.code)
 #rm(list=ls())
-source("E:/Git/iri/.Rprofile")
 
 require("forecast") ; require("data.table") ; require("reshape2")
 require("ggplot2") ; require("foreach") ; require("xtable")
 
-#setwd(pth.dropbox.code) ; source("./model/ModelFitting/ets/ets_functions.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/02_regression_functions_modelling.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/10_regression_roll_functions.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/03_regression_functions_diagnostics.R")

@@ -1,12 +1,12 @@
 
-cd ~/projects/iri/model/ModelFitting/Regression/
+cd ~/projects/iri/model/ModelFitting/RegressionModelling/
 #$ -S /bin/bash
 #$ -l h_vmem=2.0G
 #$ -pe make 6
 #$ -m e
 #$ -M wellermatt@hotmail.com
 #$ -q night
-#$ -N ETS_NIGHT
+#$ -N REG_ROLL_NIGHT
 
 source /etc/profile
 
