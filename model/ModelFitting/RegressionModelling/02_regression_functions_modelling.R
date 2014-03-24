@@ -163,9 +163,9 @@ f_ts.regression.auto.stepAIC = function(dt, print.details = 1,
 
 f_ts.regression.model.summary = 
     function(my.model = NULL, include.AR.terms = FALSE,
-             print.options = list(opt.print.summary = TRUE, opt.print.aov = TRUE,
-                                  opt.print.diag = TRUE, opt.print.stats = TRUE, 
-                                  opt.print.coef = TRUE) )
+             print.options = list(opt.print.summary = TRUE, opt.print.aov = FALSE,
+                                  opt.print.diag = FALSE, opt.print.stats = TRUE, 
+                                  opt.print.coef = FALSE) )
   
 # this function can take a model and will calculate accuracy stats, coefficients, elasticities for it.  
 # Will also output the relevant information for the user.

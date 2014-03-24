@@ -1,6 +1,7 @@
 ### ROLLING REGRESSION FUNCTIONALITY TESTING & LOOPING ####
 #setwd("C:/Users/matt/Dropbox/HEC/Code/iri")
 source("~/projects/iri/.Rprofile")
+source("E:/Git/iri/.Rprofile")
 
 is.null(pth.dropbox.code) ; setwd(pth.dropbox.code)
 #setwd(pth.dropbox.code)
@@ -26,7 +27,7 @@ categories = c("beer","carbbev","milk")
 par.category = "beer"
 par.upc = "00-01-18200-53030"
 par.periodicity = "weekly"
-Level = 3
+Level = 2
 
 
 print.options = list(opt.print.summary = TRUE, opt.print.aov = TRUE, opt.print.diag = TRUE, opt.print.stats = TRUE, opt.print.coef = TRUE)
