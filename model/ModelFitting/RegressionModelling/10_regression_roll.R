@@ -65,7 +65,13 @@ if (saveResults == TRUE){
     
 }
 
-rr=reg.roll
+
+
+#==========================================================================
+
+
+
+#rr=reg.roll
 
 
 ##
@@ -87,25 +93,22 @@ rr=reg.roll
 
 
 # blah blah
-
-library(stringr)
-rr[,lvl := str_count( fc.item, "/")+1 ]
-rr[,list(mape = mean(abs(re),na.rm=TRUE)),by=list(lvl,k)]
-rr=reg.roll
-dcast(data = rr,h~lvl,fun.aggregate=median,na.rm=TRUE,value.var="ape")
-dcast(data = rr,lvl+fc.item~k,
-      fun.aggregate=median,na.rm=TRUE,value.var="rae")
-
-# results[,list(mape = mean(abs(re))),by=k]
 # 
-
-qplot(data=rr, x = re) + facet_wrap(facets = ~lvl,ncol=3, scales = "free")
-ggplot(data= rr, aes(x = re, colour = factor(k))) +  geom_density() + facet_wrap(facets = ~lvl, scales = "free")
-ggplot(data= rr, aes(y = rae, x = factor(lvl), fill = factor(lvl))) +  geom_boxplot() + coord_flip()
-
-
-#==========================================================================
-
+# library(stringr)
+# rr[,lvl := str_count( fc.item, "/")+1 ]
+# rr[,list(mape = mean(abs(re),na.rm=TRUE)),by=list(lvl,k)]
+# rr=reg.roll
+# dcast(data = rr,h~lvl,fun.aggregate=median,na.rm=TRUE,value.var="ape")
+# dcast(data = rr,lvl+fc.item~k,
+#       fun.aggregate=median,na.rm=TRUE,value.var="rae")
+# 
+# # results[,list(mape = mean(abs(re))),by=k]
+# # 
+# 
+# qplot(data=rr, x = re) + facet_wrap(facets = ~lvl,ncol=3, scales = "free")
+# ggplot(data= rr, aes(x = re, colour = factor(k))) +  geom_density() + facet_wrap(facets = ~lvl, scales = "free")
+# ggplot(data= rr, aes(y = rae, x = factor(lvl), fill = factor(lvl))) +  geom_boxplot() + coord_flip()
+# 
 # 
 # pacf(mm$residuals)
 # 
