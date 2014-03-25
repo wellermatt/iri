@@ -1,7 +1,7 @@
 #rm(list=ls())
 ### ROLLING REGRESSION FUNCTIONALITY TESTING & LOOPING ####
 if (!exists("machine")) {
-    if (.Platform$OS.type = "Linux") {
+    if (.Platform$OS.type == "unix") {
         source("~/projects/iri/.Rprofile")
     } else {
         source("E:/Git/iri/.Rprofile") #source("~/projects/iri/.Rprofile") #else source("E:/Git/iri/.Rprofile")
