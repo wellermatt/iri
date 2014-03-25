@@ -9,8 +9,8 @@ f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "we
     sp[,fc.item := factor(fc.item)]
     setkeyv(sp, c("fc.item"))  #,"period_id"))
     
+    library(doParallel)
     if (cores>1) {
-        library(doParallel)
         #if (opt.dopar =="dopar") registerDoParallel(cores)
         library(doSNOW)
         cl <- makeCluster(cores, outfile="")

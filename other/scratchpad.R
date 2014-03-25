@@ -33,6 +33,7 @@ beer.52.reg = data.table(category=strsplit("beer.52.reg","\\.")[[1]][1],
 
 res.comp = rbindlist(list(beer.12.ets,beer.52.ets, beer.52.reg) )
 
+
 Err = f_errors.calculate(res.comp[method == "reg"])
 Err = f_errors.calculate(beer.52.reg)
 
@@ -45,6 +46,11 @@ dcast(data=Err,lvl+periodicity~method,fun.aggregate=median,na.rm=TRUE,value.var=
 library(ggplot2)
 
 ggplot(data=Err, aes(x=lvl, y=rae.snaive))  + geom_boxplot()
+ggplot(data=Err[lvl==1 & rae.snaive<1], aes(x=fc.item, y=rae.snaive))  + geom_boxplot() + coord_flip()
+
+
+x = readRDS("./output/errors/reg_52_milk_L123all.rds")
+x
 #==========================================================================
 y = 1:10
 y[4] = NA

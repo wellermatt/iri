@@ -26,18 +26,17 @@ price.terms = "PRICE_DIFF"
 
 par.category = "milk"
 par.upc =   NULL   #    "00-01-18200-53030"     
-par.fc.item =   "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
+par.fc.item =   NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
 par.periodicity = "weekly"
 freq = 52
 Level = 3
 cores = 1
 
-#if
-#args <- commandArgs(trailingOnly = TRUE)
-#print (args)
-#par.category = args[1] 
-#Level = args[2]
-
+args <- commandArgs(trailingOnly = TRUE)
+print (args)
+par.category = args[1] 
+Level = args[2]
+cores = args[3]
 
 print.options = list(opt.print.summary = TRUE, opt.print.aov = FALSE, opt.print.diag = FALSE, opt.print.stats = TRUE, opt.print.coef = FALSE)
 expt.design.master = data.table(id = 1:3, include.AR.terms = FALSE, log.model = FALSE, 
@@ -52,7 +51,8 @@ sp = f_adaptor.reg.cat.all (par.category=par.category, par.periodicity=par.perio
                             par.upc = par.upc, par.fc.item = par.fc.item)   # spw is the regression dataset, all nodes    
 
 #========= TESTING ===============
-
+this.time = system.time(reg.roll <- f_reg.roll.multiCORE(sp = sp,  par.category = par.category,  par.periodicity=par.periodicity, freq=freq,                                                         
+                                                         h.max = 13,  cores = cores) )
 test.stats = data.table(method = "reg_roll", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
 print(test.stats)
 
