@@ -1,7 +1,6 @@
+#rm(list=ls())
 ### ROLLING REGRESSION FUNCTIONALITY TESTING & LOOPING ####
-#setwd("C:/Users/matt/Dropbox/HEC/Code/iri")
-#source("~/projects/iri/.Rprofile")
-source("E:/Git/iri/.Rprofile")
+if (is.null(machine)) source("~/projects/iri/.Rprofile") #else source("E:/Git/iri/.Rprofile")
 
 is.null(pth.dropbox.code) ; setwd(pth.dropbox.code)
 #setwd(pth.dropbox.code)
@@ -9,6 +8,7 @@ is.null(pth.dropbox.code) ; setwd(pth.dropbox.code)
 
 require("forecast") ; require("data.table") ; require("reshape2")
 require("ggplot2") ; require("foreach") ; require("xtable")
+
 
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/02_regression_functions_modelling.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/10_regression_roll_functions.R")
@@ -25,15 +25,15 @@ price.terms = "PRICE_DIFF"
 
 categories = c("beer","carbbev","milk")
 par.category = "beer"
-par.upc = "00-01-18200-53030"     #NULL #
-par.fc.item = NULL # "00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
+par.upc =   NULL   #    "00-01-18200-53030"     
+par.fc.item =   NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
 par.periodicity = "weekly"
-Level = 3
-cores = 6
+freq = 52
+Level = 2
+cores = 8
 
 
-print.options = list(opt.print.summary = TRUE, opt.print.aov = TRUE, opt.print.diag = TRUE, opt.print.stats = TRUE, opt.print.coef = TRUE)
-
+print.options = list(opt.print.summary = TRUE, opt.print.aov = FALSE, opt.print.diag = FALSE, opt.print.stats = TRUE, opt.print.coef = FALSE)
 expt.design.master = data.table(id = 1:3, include.AR.terms = FALSE, log.model = FALSE, 
                                 price.terms = c("PRICE_DIFF","PRICE","PRICE_LAG"), time.period = "WEEK")
 expt.design = as.list(expt.design.master[2])
@@ -41,13 +41,13 @@ for  (x in names(expt.design)) assign(x, expt.design[[x]])
 
 #============== DATA LOADING =====================
 # use the standard beer SKU
-sp = f_adaptor.reg.cat.all (par.category=categories[1], par.periodicity="weekly",
+sp = f_adaptor.reg.cat.all (par.category=categories[1], par.periodicity=par.periodicity,
                             Level = Level, univariate = FALSE, 
                             par.upc = par.upc, par.fc.item = par.fc.item)   # spw is the regression dataset, all nodes    
 
 #========= TESTING ===============
 
-this.time = system.time(reg.roll <- f_reg.roll.multiCORE(sp = sp,  par.category = "beer",  par.periodicity="weekly", 
+this.time = system.time(reg.roll <- f_reg.roll.multiCORE(sp = sp,  par.category = par.category,  par.periodicity=par.periodicity, freq=freq,
                                                          h.max = 13,  cores = cores) )
 
 test.stats = data.table(method = "reg_roll", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
@@ -55,13 +55,13 @@ print(test.stats)
 
 # add the errors here - yes
 
-f_errors.calculate(reg.roll)
+#rr = f_errors.calculate(reg.roll)
 
 saveResults = TRUE
 if (saveResults == TRUE){
     
     setwd(pth.dropbox.data)
-    saveRDS(reg.roll, paste0("./output/errors/reg_", par.periodicity, "_", par.category, ".rds"))
+    saveRDS(reg.roll, paste0("./output/errors/reg_", freq, "_", par.category, "_L12all.rds"))
     setwd(pth.dropbox.code)
     
 }

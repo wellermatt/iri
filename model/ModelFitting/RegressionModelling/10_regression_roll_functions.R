@@ -1,7 +1,7 @@
 
 #======= ROLL CONTROLLER ===========
 
-f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "weekly", 
+f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "weekly", freq = 52,
                                 opt.print.results = FALSE, opt.save.results =TRUE, h.max, cores = 1)
 {
     # multicore implementation of the rolling regression
@@ -31,8 +31,8 @@ f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "we
         {
             fc.item = dt.sub$key[1]
             print(paste0("\n--> ",fc.item))
-            reg.roll = f_reg.roll_fc.item(sp1 = dt.sub$value, freq = 52, h.max=h.max)             
-            results = data.table(fc.item = fc.item, periodicity = par.periodicity, reg.roll)    
+            reg.roll = f_reg.roll_fc.item(sp1 = dt.sub$value, freq = freq, h.max=h.max)             
+            results = data.table(fc.item = fc.item, freq = freq, reg.roll)    
             results
         }
     print(head(multi.item.results,10))
@@ -94,7 +94,7 @@ f_reg.roll_fc.item = function(sp1, freq = 52, h.max = 13, model.pars = NULL)
             revised.model = lm(formula = frm.text, data=sp1[1:o])
     
             # make the predictions
-            fc = predict.lm(object=revised.model,newdata=xregnew)
+            fc = predict.lm(object=revised.model,newdata=xregnew[!is.null(xregnew$UNITS)])
             fc
             #             fc = forecast(revised.model,
             #                           h=min(h, end.week-o), 
@@ -109,8 +109,8 @@ f_reg.roll_fc.item = function(sp1, freq = 52, h.max = 13, model.pars = NULL)
                                        act = as.numeric(act)[!missing.periods])
             fc.comparison
         }
-
-    return(reg.roll)
+    
+    return(reg.roll[!is.na(act)])
 }
 
 
