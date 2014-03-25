@@ -2,19 +2,20 @@
 #======= ROLL CONTROLLER ===========
 
 f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "weekly", freq = 52,
-                                opt.print.results = FALSE, opt.save.results =TRUE, h.max, cores = 1)
+                                opt.print.results = FALSE, opt.save.results =FALSE, h.max, cores = 1)
 {
     # multicore implementation of the rolling regression
     # sp can contain multiple products
     sp[,fc.item := factor(fc.item)]
     setkeyv(sp, c("fc.item"))  #,"period_id"))
     
-    
-    library(doParallel)
-    #if (opt.dopar =="dopar") registerDoParallel(cores)
-    library(doSNOW)
-    cl <- makeCluster(cores, outfile="")
-    registerDoSNOW(cl)
+    if (cores>1) {
+        library(doParallel)
+        #if (opt.dopar =="dopar") registerDoParallel(cores)
+        library(doSNOW)
+        cl <- makeCluster(cores, outfile="")
+        registerDoSNOW(cl)
+    }
     
     export.functions =  c("f_reg.roll_fc.item","f_ts.regression.auto.stepAIC",
                           "f_ts.regression.fourier.k.optimise","f_ts.regression.fourier.k.test","f_ts.fourier.terms.for.formula","f_ts.regression.data.reduce.formula",
@@ -35,20 +36,21 @@ f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "we
             results = data.table(fc.item = fc.item, freq = freq, reg.roll)    
             results
         }
+    
+    # tidy up the cluster, tidy up results and return
+    if (cores>1) stopCluster(cl=cl)
     print(head(multi.item.results,10))
     
     opt.add.errors = FALSE
     if (opt.add.errors == TRUE) {
         multi.item.results = f_errors.calculate(multi.item.results)
     }
-        
-        
-    setwd(pth.dropbox.data)
     if (opt.print.results == TRUE) print(multi.item.results)
     if (opt.save.results == TRUE) {
         setwd(pth.dropbox.data)
         saveRDS(multi.item.results, paste0("./output/errors/reg_", par.periodicity, "_", par.category, ".rds"))
     }
+    
     return(multi.item.results)
 }
 

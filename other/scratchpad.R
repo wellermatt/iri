@@ -29,20 +29,22 @@ beer.52.ets = data.table(category=strsplit("beer.52.ets","\\.")[[1]][1],
 beer.52.reg = data.table(category=strsplit("beer.52.reg","\\.")[[1]][1],
                          periodicity=strsplit("beer.52.reg","\\.")[[1]][2],
                          method = strsplit("beer.52.reg","\\.")[[1]][3],
-                         readRDS("./output/errors/reg_52_beer.rds")[,-2,with=F]) 
+                         readRDS("./output/errors/reg_52_beer_L123all.rds")[,-2,with=F]) 
 
 res.comp = rbindlist(list(beer.12.ets,beer.52.ets, beer.52.reg) )
 
-Err = f_errors.calculate(res.comp)
+Err = f_errors.calculate(res.comp[method == "reg"])
+Err = f_errors.calculate(beer.52.reg)
 
-
-Err
+Err[]
 
 dcast(data=Err,lvl+periodicity~method,fun.aggregate=median,na.rm=TRUE,value.var="sape")
 dcast(data=Err,lvl+periodicity~method,fun.aggregate=median,na.rm=TRUE,value.var="rae.snaive")
 dcast(data=Err,lvl+periodicity~method,fun.aggregate=median,na.rm=TRUE,value.var="rae.naive")
 
+library(ggplot2)
 
+ggplot(data=Err, aes(x=lvl, y=rae.snaive))  + geom_boxplot()
 #==========================================================================
 y = 1:10
 y[4] = NA
