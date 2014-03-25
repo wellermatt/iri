@@ -2,7 +2,7 @@
 #======= ROLL CONTROLLER ===========
 
 f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "weekly", freq = 52,
-                                opt.print.results = FALSE, opt.save.results =FALSE, h.max, cores = 1)
+                                opt.print.results = FALSE, opt.save.results =FALSE, h.max=13, cores = 1)
 {
     # multicore implementation of the rolling regression
     # sp can contain multiple products
@@ -10,12 +10,7 @@ f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "we
     setkeyv(sp, c("fc.item"))  #,"period_id"))
     
     library(doParallel)
-    if (cores>1) {
-        #if (opt.dopar =="dopar") registerDoParallel(cores)
-        library(doSNOW)
-        cl <- makeCluster(cores, outfile="")
-        registerDoSNOW(cl)
-    }
+
     
     export.functions =  c("f_reg.roll_fc.item","f_ts.regression.auto.stepAIC",
                           "f_ts.regression.fourier.k.optimise","f_ts.regression.fourier.k.test","f_ts.fourier.terms.for.formula","f_ts.regression.data.reduce.formula",
@@ -23,10 +18,16 @@ f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "we
                           "log.model", "include.AR.terms", "price.terms",
                           "dtcomb", "isplitDT")
     
+    #if (opt.dopar =="dopar") registerDoParallel(cores)
+    #library(doSNOW)
+    cl <- makeCluster(cores, outfile="")
+    registerDoParallel(cl)
+    
+    print(paste("**** Cluster started with", cores, "cores"))
     multi.item.results =
         foreach(dt.sub = isplitDT(sp, levels(sp$fc.item)),
                 .combine='dtcomb', .multicombine=TRUE,
-                .errorhandling = "stop",
+                .errorhandling = "remove",.verbose=TRUE,
                 .export = export.functions,
                 .packages=c("data.table", "forecast", "reshape2","MASS","foreach")) %dopar%
         {
