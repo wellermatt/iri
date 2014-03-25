@@ -1,10 +1,12 @@
 #rm(list=ls())
 ### ROLLING REGRESSION FUNCTIONALITY TESTING & LOOPING ####
-if (!exists("machine")) source("E:/Git/iri/.Rprofile") #source("~/projects/iri/.Rprofile") #else source("E:/Git/iri/.Rprofile")
-
-is.null(pth.dropbox.code) ; setwd(pth.dropbox.code)
-#setwd(pth.dropbox.code)
-#rm(list=ls())
+if (!exists("machine")) {
+    if (.Platform$OS.type = "Linux") {
+        source("~/projects/iri/.Rprofile")
+    } else {
+        source("E:/Git/iri/.Rprofile") #source("~/projects/iri/.Rprofile") #else source("E:/Git/iri/.Rprofile")
+    }
+}
 
 require("forecast") ; require("data.table") ; require("reshape2")
 require("ggplot2") ; require("foreach") ; require("xtable")
@@ -26,12 +28,12 @@ price.terms = "PRICE_DIFF"
 
 
 
-par.category = "milk"
+par.category = "carbbev"
 par.upc =   NULL   #    "00-01-18200-53030"     
 par.fc.item =NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
 par.periodicity = "weekly"
 freq = 52
-Level = 2
+Level = 3
 cores = 8
 
 
@@ -39,8 +41,8 @@ args <- commandArgs(trailingOnly = TRUE)
 print (args)
 if (length(args)>0)  {
     par.category = args[1] 
-    Level = args[2]
-    cores = args[3]
+    Level = as.integer(args[2])
+    cores = as.integer(args[3])
 }
 
 print.options = list(opt.print.summary = TRUE, opt.print.aov = FALSE, opt.print.diag = FALSE, opt.print.stats = TRUE, opt.print.coef = FALSE)
