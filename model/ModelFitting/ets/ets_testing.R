@@ -46,7 +46,7 @@ TEST = TRUE
 if (TEST == TRUE) {
     
     #y = ts(rnorm(72,100,20),start = 2001, freq=12)
-    microbenchmark(f_ets.roll.fc.item(y, h.max=3,freq.cycle=12,reoptimise=FALSE), times=1)
+    #microbenchmark(f_ets.roll.fc.item(y, h.max=3,freq.cycle=12,reoptimise=FALSE), times=1)
     
     # low level testing for a single item
     #sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
