@@ -5,7 +5,7 @@ cd ~/projects/iri/model/ModelFitting/RegressionModelling/
 #$ -pe make 8
 #$ -m e
 #$ -M wellermatt@hotmail.com
-#$ -q night
+#$ -q parallel
 #$ -N REG_ROLL_TEST
 
 source /etc/profile
