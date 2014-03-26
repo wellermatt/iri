@@ -14,11 +14,11 @@ print(paste("Platform = ", platform))
 par.category = "beer"
 freq = 52
 freq.cycle = 12
-h.max =13
-Level = 2
+h.max = if(freq == 52) 13 else 3
+Level = 3
 par.upc =    "00-01-18200-53030"      # NULL   # "07-01-18200-53025 
-par.fc.item = NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
-cores = 4
+par.fc.item = NULL #"00-01-18200-53030/57"      #  NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
+cores = 1
 
 # replace with command line options
 args <- commandArgs(trailingOnly = TRUE)
@@ -54,7 +54,8 @@ print(ls())
 par.periodicity = if (freq == 52) "weekly" else "445"
 
 
-sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity, par.upc = par.upc, Level = Level, univariate = TRUE)
+sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity, 
+                           par.upc = par.upc, par.fc.item=par.fc.item, Level = Level, univariate = TRUE)
 print(sp)
 
 this.time = system.time(res.w <- 

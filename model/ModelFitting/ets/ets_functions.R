@@ -33,7 +33,7 @@ f_ets.rolling.multicore = function(sp, par.category,
     multi.item.results =
         foreach(dt.sub = isplitDT(sp, levels(sp$fc.item)),
                 .combine='dtcomb', .multicombine=TRUE,
-                .verbose = FALSE, .errorhandling = "stop",
+                .verbose = FALSE, .errorhandling = "remove",
                 .export = export.list,
                 .packages=c("data.table", "forecast", "reshape2", "foreach")) %dopar% {
                     fc.item = dt.sub$key[1]
@@ -44,13 +44,9 @@ f_ets.rolling.multicore = function(sp, par.category,
                 }
     stopCluster(cl)
     
-    print(head(multi.item.results,10))
-    
-    # create a file name and save the results
-    setwd(pth.dropbox.data)         
-    fil = paste0("./output/errors/ets_", freq, "_", freq.cycle, "_", par.category, ".rds")
-    saveRDS(object = multi.item.results, file = fil)
-    
+    print("=== END MULTICORE LOOP ====")
+    print(multi.item.results)
+
     multi.item.results
 }
 
