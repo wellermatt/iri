@@ -33,8 +33,8 @@ par.upc =   NULL   #    "00-01-18200-53030"
 par.fc.item =NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
 par.periodicity = "weekly"
 freq = 52
-Level = 3
-cores = 8
+Level = 1
+cores = 2
 
 
 args <- commandArgs(trailingOnly = TRUE)

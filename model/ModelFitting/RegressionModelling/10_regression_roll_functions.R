@@ -96,20 +96,21 @@ f_reg.roll_fc.item = function(sp1, freq = 52, h.max = 13, model.pars = NULL)
             # fit.model = f_ts.regression.auto.stepAIC(ssw[1:o])  # window.t = 1:198
             revised.model = lm(formula = frm.text, data=sp1[1:o])
     
-            # make the predictions
+            # make the predictions - could also use forecast (slower?)
             fc = predict.lm(object=revised.model,newdata=xregnew[!is.null(xregnew$UNITS)])
-            fc
-            #             fc = forecast(revised.model,
-            #                           h=min(h, end.week-o), 
-            #                           newdata = data.frame(xregnew))
-            act = sp1[period %in% (o+1):(o+h),UNITS]
+            
+            # get the in-sample (rolling) 1-step naive erros (or 1 cycle ahead errors)
+            mae.naive = mean(abs(diff(sp1[period %in% 1:o,UNITS], 1)), na.rm = TRUE)
+            mae.snaive = mean(abs(diff(sp1[period %in% 1:o,UNITS], freq)), na.rm = TRUE)
             fc.comparison = data.table(o,
                                        h = (1:h)[!missing.periods],
                                        t = o+1:h[!missing.periods],
                                        fc = as.numeric(fc),
-                                       fc.naive = rep(sp1[o,UNITS], h)[!missing.periods],   #sp1[1:o1]
-                                       fc.snaive = sp1[(o-freq+1):(o-freq+h),UNITS][!missing.periods],    #sp1[1:o1]
-                                       act = as.numeric(act)[!missing.periods])
+                                       act = as.numeric(sp1[period %in% (o+1):(o+h),UNITS])[!missing.periods],
+                                       fc.naive = rep(sp1[o,UNITS], h)[!missing.periods], 
+                                       fc.snaive = sp1[(o-freq+1):(o-freq+h),UNITS][!missing.periods],
+                                       mae.naive = mae.naive,
+                                       mae.snaive = mae.snaive)
             fc.comparison
         }
     

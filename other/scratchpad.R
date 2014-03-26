@@ -1,3 +1,4 @@
+rm(list=ls()) ; gc()
 source("E:/Git/iri/.Rprofile")
 library("stringr"); library(reshape2)
 
@@ -9,33 +10,50 @@ f_errors.calculate = function(dt)
     dt[,e:=fc-act]
     dt[,ae:=abs(e)]
     dt[,ape:=ae/act]
-    dt[,sape:=(2*ae)/(act+fc)]
-    #dt[,ase.snaive:=]
-    dt[,rae.snaive:=abs(fc-act)/abs(fc.snaive-act)]    # check
-    dt[,rae.naive:=abs(fc-act)/abs(fc.naive-act)]    # check
-    dt[,lvl := str_count( fc.item, "/") + 1 ]
+#     dt[,sape:=(2*ae)/(act+fc)]
+#     dt[,rae.snaive:=abs(fc-act)/abs(fc.snaive-act)]    # check
+#     dt[,rae.naive:=abs(fc-act)/abs(fc.naive-act)]    # check
+#     dt[,lvl := str_count( fc.item, "/") + 1 ]
+    dt[,`:=`(sape=(2*ae)/(act+fc),rae.snaive=abs(fc-act)/abs(fc.snaive-act),rae.naive=abs(fc-act)/abs(fc.naive-act),lvl = str_count( fc.item, "/") + 1) ]
 }
 
 ## BEER ETS ERROR PREP
-beer.12.ets = data.table(category=strsplit("beer.12.ets","\\.")[[1]][1],
-                         periodicity=strsplit("beer.12.ets","\\.")[[1]][2],
-                         method = strsplit("beer.12.ets","\\.")[[1]][3],
-                         readRDS("./output/errors/ets_12_beer.rds")) 
-beer.52.ets = data.table(category=strsplit("beer.52.ets","\\.")[[1]][1],
-                         periodicity=strsplit("beer.52.ets","\\.")[[1]][2],
-                         method = strsplit("beer.52.ets","\\.")[[1]][3],
-                         readRDS("./output/errors/ets_52_beer.rds")) 
+if (opt.ets == TRUE) {
+    beer.12.ets = data.table(category=strsplit("beer.12.ets","\\.")[[1]][1],
+                             periodicity=strsplit("beer.12.ets","\\.")[[1]][2],
+                             method = strsplit("beer.12.ets","\\.")[[1]][3],
+                             readRDS("./output/errors/ets_12_beer.rds")) 
+    beer.52.ets = data.table(category=strsplit("beer.52.ets","\\.")[[1]][1],
+                             periodicity=strsplit("beer.52.ets","\\.")[[1]][2],
+                             method = strsplit("beer.52.ets","\\.")[[1]][3],
+                             readRDS("./output/errors/ets_52_beer.rds"))     
+}
 
 beer.52.reg = data.table(category=strsplit("beer.52.reg","\\.")[[1]][1],
                          periodicity=strsplit("beer.52.reg","\\.")[[1]][2],
                          method = strsplit("beer.52.reg","\\.")[[1]][3],
                          readRDS("./output/errors/reg_52_beer_L123all.rds")[,-2,with=F]) 
 
-res.comp = rbindlist(list(beer.12.ets,beer.52.ets, beer.52.reg) )
+milk.52.reg = data.table(category=strsplit("milk.52.reg","\\.")[[1]][1],
+                         periodicity=strsplit("milk.52.reg","\\.")[[1]][2],
+                         method = strsplit("milk.52.reg","\\.")[[1]][3],
+                         readRDS("./output/errors/reg_52_milk_L3.rds")[,-2,with=F]) 
+carbbev.52.reg = 
+    data.table(category=strsplit("carbbev.52.reg","\\.")[[1]][1],
+                         periodicity=strsplit("carbbev.52.reg","\\.")[[1]][2],
+                         method = strsplit("carbbev.52.reg","\\.")[[1]][3],
+                         readRDS("./output/errors/reg_52_carbbev_L3.rds")[,-2,with=F]) 
 
+res.reg = rbindlist(list(beer.52.reg,milk.52.reg, carbbev.52.reg) )
+rm(list=c("beer.52.reg","milk.52.reg", "carbbev.52.reg")) ; gc()
+tables()
 
-Err = f_errors.calculate(res.comp[method == "reg"])
-Err = f_errors.calculate(beer.52.reg)
+nrow(res.reg)
+Err = f_errors.calculate(res.reg[method == "reg"])  ; res.reg = NULL  ; gc()
+
+saveRDS(Err, "./output/errors/Err.reg.temp.rds")
+
+dcast(data=Err,lvl+periodicity~category,fun.aggregate=median,na.rm=TRUE,value.var="ape")
 
 Err[]
 

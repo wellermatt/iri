@@ -8,6 +8,8 @@ categories = c("milk","beer","carbbev")
 par.category = "beer"
 par.periodicity = "445"
 Level = 3
+freq = 12
+freq.cycle = 12
 #par.item= "07-01-18200-53025"      # "00-01-18200-53030"
 
 ### ============ LIBRARIES & SOURCE CODE ==============

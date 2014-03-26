@@ -5,14 +5,14 @@
 # 
 
 
-f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, opt.dopar = "dopar", cores=6, Trace = TRUE)
+f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, freq.cycle = 12, opt.dopar = "dopar", cores=6, Trace = TRUE)
 {
     # function will take an input set of data (sp) for multiple forecast items and save/return a set of forecasts
     sp[,fc.item := factor(fc.item)]   ;   setkeyv(sp, c("fc.item"))  #,"period_id"))
     print(paste(length(levels(sp$fc.item)), "forecast items to process"))
     
     export.list = c("f_ets.run.item","f_ets.roll.fc.item", "f_load.calendar", "pth.dropbox.data", 
-                    "dtcomb", "isplitDT", "h.max", "freq")
+                    "dtcomb", "isplitDT", "h.max", "freq", "freq.cycle")
         
     if (opt.dopar =="dopar") {
         # library(doParallel)  ;  registerDoParallel(cores)
@@ -27,7 +27,7 @@ f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, opt.dop
                 .packages=c("data.table", "forecast", "reshape2", "foreach")) %dopar% {
                     fc.item = dt.sub$key[1]
                     print(fc.item)
-                    this.roll = f_ets.run.item(dt.sub$value, freq = freq, h.max = h.max,Trace=TRUE)
+                    this.roll = f_ets.run.item(dt.sub$value, freq = freq, freq.cycle = freq.cycle, h.max = h.max,Trace=TRUE)
                     this.roll = data.table(fc.item, this.roll)
                     this.roll
                 }
@@ -36,7 +36,7 @@ f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, opt.dop
     stopCluster(cl)
     # create a file name and save the results
     setwd(pth.dropbox.data)         
-    fil = paste0("./output/errors/ets_", freq, "_", par.category, ".rds")
+    fil = paste0("./output/errors/ets_", freq, "_", freq.cycle, "_", par.category, ".rds")
     saveRDS(object = multi.item.results, file = fil)
     
     multi.item.results
@@ -44,7 +44,7 @@ f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, opt.dop
 
 
 
-f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, forecast.cycle = "monthly") 
+f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, freq.cycle = 12) 
 {    
     # runs rolling origin multi-step forecasting for a single time series
     # rules around length of series (n), horizon (h), splitting rules
@@ -114,7 +114,7 @@ f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, forec
 }
 
 
-f_ets.run.item = function(ss, freq, h.max, Trace = FALSE)  #fc.item = "00-01-18200-53030", pth = NULL)
+f_ets.run.item = function(ss, freq, h.max, freq.cycle, Trace = FALSE)  #fc.item = "00-01-18200-53030", pth = NULL)
 {    
     y = ts(ss$UNITS, start=c(2001,1), frequency = freq)
     
@@ -123,7 +123,7 @@ f_ets.run.item = function(ss, freq, h.max, Trace = FALSE)  #fc.item = "00-01-182
     
     print(y)
     
-    roll = f_ets.roll.fc.item(y, h.max = h.max)
+    roll = f_ets.roll.fc.item(y, h.max = h.max, freq.cycle=freq.cycle)
     #roll$fc.item = unique(ss$fc.item)
     
     if (Trace == TRUE) { print(roll$fit) ; print(roll$Err) }
