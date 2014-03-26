@@ -1,16 +1,30 @@
 print(paste(">> Start directory =", getwd()))
-if (!exists("machine")) source('~/projects/iri/.Rprofile')
+if (!exists("machine")) {
+    if (.Platform$OS.type == "unix") {
+        source("~/projects/iri/.Rprofile")
+    } else {
+        source("E:/Git/iri/.Rprofile") #source("~/projects/iri/.Rprofile") #else source("E:/Git/iri/.Rprofile")
+    }
+}
 print(paste("Machine =",machine))
 print(paste("Platform = ", platform))
 
 ##==== parameters ========
 categories = c("milk","beer","carbbev")
+
 par.category = "beer"
 par.periodicity = "445"
 Level = 3
-freq = 12
+freq = 52
 freq.cycle = 12
-#par.item= "07-01-18200-53025"      # "00-01-18200-53030"
+h.max = 3
+
+cores = 6
+
+#par.upc = NULL  #    "00-01-18200-53030"      # NULL   #  
+par.fc.item =NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
+par.item= "07-01-18200-53025"      # "00-01-18200-53030"
+
 
 ### ============ LIBRARIES & SOURCE CODE ==============
 
@@ -31,8 +45,8 @@ print(ls())
 TEST = TRUE
 if (TEST == TRUE) {
     
-    y=ts(rnorm(72,100,20),start = 2001, freq=12)
-    microbenchmark(f_ets.roll.fc.item(y, h.max=3, forecast.cycle="monthly"), times=10)
+    #y = ts(rnorm(72,100,20),start = 2001, freq=12)
+    microbenchmark(f_ets.roll.fc.item(y, h.max=3,freq.cycle=12,reoptimise=FALSE), times=1)
     
     # low level testing for a single item
     #sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
@@ -40,20 +54,32 @@ if (TEST == TRUE) {
     #y = ts(sp$UNITS,start=c(2001,1),frequency=12)
     #f_ets.roll.fc.item(y, h.max=3, forecast.cycle="monthly")
     
-    Level=3
-    # 445 ets
-    par.category = "beer"    # par.upc = "00-01-18200-53030",
-    sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
-                               par.upc = "00-01-18200-53030", Level = Level, univariate = TRUE)
-    system.time(res.m <- f_ets.rolling.multicore(sp=sp, par.category=par.category,freq=12,h.max=3,opt.dopar="dopar",cores=6))
-    
-    # WEEKLY ets
-	sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "weekly", 
-                               par.upc = "00-01-18200-53030", Level = Level, univariate = TRUE)
-    system.time(res.w <- f_ets.rolling.multicore(sp=sp, par.category=par.category,freq=52,h.max=13,opt.dopar="dopar",cores=6))
-    
 }
 
+# 445 ets
+if (freq == 12) {
+    sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
+                               par.upc = "00-01-18200-53030", Level = Level, univariate = TRUE)
+    system.time(res.m <- f_ets.rolling.multicore(sp=sp, par.category=par.category,
+                                                 freq=freq, freq.cycle = freq.cycle, h.max=3,
+                                                 opt.dopar="dopar",cores=3))
+}
+
+
+# WEEKLY ets
+if (freq == 52) {
+    sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "weekly", 
+                               par.upc = "00-01-18200-53030", Level = Level, univariate = TRUE)
+
+    system.time(res.w <- f_ets.rolling.multicore(sp=sp, par.category=par.category,
+                                                 freq=52, freq.cycle = freq.cycle, h.max=13,
+                                                 opt.dopar="dopar",cores=cores))
+}
+
+
+
+####=======
+# serious need of a cleanup below here!!!
 
     
     #test.multicore = TRUE ; system.time(f_ets.test("milk","445"))

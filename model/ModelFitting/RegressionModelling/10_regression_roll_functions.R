@@ -1,40 +1,40 @@
 
 #======= ROLL CONTROLLER ===========
 
-f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "weekly", freq = 52,
+f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "weekly", freq = 52, freq.cycle = 52,
                                 opt.print.results = FALSE, opt.save.results =FALSE, h.max=13, cores = 1)
 {
-    # multicore implementation of the rolling regression
-    # sp can contain multiple products
+    # multicore implementation of the rolling regression - sp can contain multiple products
     sp[,fc.item := factor(fc.item)]
     setkeyv(sp, c("fc.item"))  #,"period_id"))
     
-    library(doParallel)
-
-    
+    f_load.calendar()
     export.functions =  c("f_reg.roll_fc.item","f_ts.regression.auto.stepAIC",
                           "f_ts.regression.fourier.k.optimise","f_ts.regression.fourier.k.test","f_ts.fourier.terms.for.formula","f_ts.regression.data.reduce.formula",
                           "f_ts.regression.elast", "f_ts.regression.auto.formulae.scope", "f_ts.regression.model.summary", "f_ts.diag.coef.table", "f_ts.eval.accuracy.lm",
-                          "log.model", "include.AR.terms", "price.terms",
+                          "log.model", "include.AR.terms", "price.terms", "freq.cycle", "h.max", "calendar.weekly", "calendar.445",
                           "dtcomb", "isplitDT")
     
+    
+    library(doParallel)
     #if (opt.dopar =="dopar") registerDoParallel(cores)
     #library(doSNOW)
     cl <- makeCluster(cores, outfile="")
     registerDoParallel(cl)
-    
     print(paste("**** Cluster started with", cores, "cores"))
+    
+    # main loop through the items 
     multi.item.results =
         foreach(dt.sub = isplitDT(sp, levels(sp$fc.item)),
                 .combine='dtcomb', .multicombine=TRUE,
-                .errorhandling = "remove",.verbose=TRUE,
+                .errorhandling = "stop",.verbose=TRUE,
                 .export = export.functions,
                 .packages=c("data.table", "forecast", "reshape2","MASS","foreach")) %dopar%
         {
             fc.item = dt.sub$key[1]
             print(paste0("\n--> ",fc.item))
-            reg.roll = f_reg.roll_fc.item(sp1 = dt.sub$value, freq = freq, h.max=h.max)             
-            results = data.table(fc.item = fc.item, freq = freq, reg.roll)    
+            reg.roll = f_reg.roll_fc.item(sp1 = dt.sub$value, freq = freq, freq.cycle = freq.cycle, h.max=h.max)             
+            results = data.table(fc.item = fc.item, reg.roll)    
             results
         }
     
@@ -60,7 +60,7 @@ f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "we
 
 #======= ROLL FUNCTIONS ==============
 
-f_reg.roll_fc.item = function(sp1, freq = 52, h.max = 13, model.pars = NULL)
+f_reg.roll_fc.item = function(sp1, freq = 52, freq.cycle, h.max = 13, model.pars = NULL)
 {
     # receives the data (ssw) to fit the model for a single item using additional parameters
     #require(fomulatools)
@@ -68,7 +68,7 @@ f_reg.roll_fc.item = function(sp1, freq = 52, h.max = 13, model.pars = NULL)
     # 1 needs correction to accept weekly or monthly data with varying start/end dates
     # 2 needs to handle xreg NAs and output a restricted set
     
-    
+    n = nrow(sp1)
     if (freq == 12) o1 <- 48             # minimum data length for fitting a model
     if (freq == 52) o1 <- 208             # minimum data length for fitting a model
     
@@ -80,9 +80,20 @@ f_reg.roll_fc.item = function(sp1, freq = 52, h.max = 13, model.pars = NULL)
     frm.text = paste(as.character(frm.original)[c(2,1,3)],collapse=" ")
     model.vars = gsub("^\\s+|\\s+$", "", unlist(strsplit(frm.text, split = "\\+|\\~")))
     
-    
+    # set the origins based on the forecasting cycle (freq.cycle)
+    if (freq == 12) { 
+        origins = calendar.445[period_id >= o1 & period_id < n, c(period_id)]
+    } else {
+        if (freq.cycle == 52)  {
+            origins = calendar.weekly[WEEK >= o1 & WEEK < n, WEEK]
+        } else {
+            origins = calendar.445[elapsed_weeks >= o1 & elapsed_weeks < n,  elapsed_weeks]
+        }        
+    }
+    print(origins)
+    #  o1:(end.period-1)
     reg.roll = 
-        foreach (o = o1:(end.period-1),     
+        foreach (o = origins,     
                  .combine='dtcomb', .multicombine=TRUE) %do%
         {                  
             # what is the extent of the horizon for this origin

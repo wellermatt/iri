@@ -11,7 +11,8 @@ f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, freq.cy
     sp[,fc.item := factor(fc.item)]   ;   setkeyv(sp, c("fc.item"))  #,"period_id"))
     print(paste(length(levels(sp$fc.item)), "forecast items to process"))
     
-    export.list = c("f_ets.run.item","f_ets.roll.fc.item", "f_load.calendar", "pth.dropbox.data", 
+    f_load.calendar()
+    export.list = c("f_ets.run.item","f_ets.roll.fc.item", "calendar.weekly", "calendar.445", "pth.dropbox.data", 
                     "dtcomb", "isplitDT", "h.max", "freq", "freq.cycle")
         
     if (opt.dopar =="dopar") {
@@ -31,9 +32,10 @@ f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, freq.cy
                     this.roll = data.table(fc.item, this.roll)
                     this.roll
                 }
+    stopCluster(cl)
+    
     print(head(multi.item.results,10))
     
-    stopCluster(cl)
     # create a file name and save the results
     setwd(pth.dropbox.data)         
     fil = paste0("./output/errors/ets_", freq, "_", freq.cycle, "_", par.category, ".rds")
@@ -65,11 +67,19 @@ f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, freq.
     
     # origins are the time points where forecasts are to be generated and should be in the correct scale (weeks or months)
     # by default we assume the cycle is monthly/445 and the frequency = monthly
-    f_load.calendar()
-    origins = calendar.445[period_id >= o1 & period_id < n, c(period_id)]
+    #f_load.calendar()
     
-    if (forecast.cycle == "weekly") origins = calendar.weekly[WEEK >= o1 & WEEK < n, WEEK]
-    if (forecast.cycle == "monthly" & freq==52) origins = calendar.445[elapsed_weeks >= o1 & elapsed_weeks < n,  elapsed_weeks]
+    # set the origins based on the forecasting cycle (freq.cycle)
+    if (freq == 12) { 
+        origins = calendar.445[period_id >= o1 & period_id < n, c(period_id)]
+    } else {
+        if (freq.cycle == 52)  {
+            origins = calendar.weekly[WEEK >= o1 & WEEK < n, WEEK]
+        } else {
+            origins = calendar.445[elapsed_weeks >= o1 & elapsed_weeks < n,  elapsed_weeks]
+        }        
+    }
+    #origins = f_origins.get()
     
     roll.ets = foreach(o = origins, .combine=dtcomb) %do%
     {
@@ -94,20 +104,25 @@ f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, freq.
         }
         # do the forecasts,      
         fcast <- forecast(fit, h = h)
-        #fcast.naive = rwf
+        # get the in-sample (rolling) 1-step naive erros (or 1 cycle ahead errors)
+        mae.naive = mean(abs(diff(yhist[1:o], 1)), na.rm = TRUE)
+        mae.snaive = mean(abs(diff(yhist[1:o], freq)), na.rm = TRUE)
+        
         # optional printing
         if (PRINT == TRUE) {
             print(fit)
             print(accuracy(fit))
         }
-        
+        # do we need to test for missing values here as we did with the regression??
         data.table(o, 
                    h = 1:length(yfuture), 
                    t = o + 1:length(yfuture), 
                    fc = as.numeric(fcast[['mean']]), 
+                   act = as.numeric(yfuture),
                    fc.naive = rep(yhist[o], h),
                    fc.snaive = yhist[(o-freq+1):(o-freq+h)],
-                   act = as.numeric(yfuture))
+                   mae.naive = mae.naive,
+                   mae.snaive = mae.snaive)
     }
     
     return(roll.ets)   # may also want to return some details from the model e.g. alpha, beta, gamma, phi)
@@ -130,7 +145,7 @@ f_ets.run.item = function(ss, freq, h.max, freq.cycle, Trace = FALSE)  #fc.item 
     roll
 }
 
-
+##====== EOF: redundant functions I believe
 
 f_ets.test.single = function(sp, freq = 12, h.max=3, Trace = TRUE) {
     i = 1

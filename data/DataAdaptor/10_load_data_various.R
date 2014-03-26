@@ -14,7 +14,7 @@ f_load.calendar = function(){
 	calendar.445.lead.lag <<- readRDS("./iri reference data/calendar/calendar.445.lead.lag.rds")
 	cols.to.drop.445 = grep("_LEAD1|_LAG1",names(calendar.445.lead.lag), value = TRUE)
 	calendar.445 <<- readRDS("./iri reference data/calendar/calendar.445.rds")
-	calendar.445[,(cols.to.drop.445) := NULL]
+	#calendar.445[,(cols.to.drop.445) := NULL]
 }
 
 

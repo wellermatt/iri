@@ -17,6 +17,7 @@ setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/10_re
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/03_regression_functions_diagnostics.R")
 setwd(pth.dropbox.code) ; source("./other/GenericRoutines/useful_functions.R")
 setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
+setwd(pth.dropbox.code) ; source("./data/DataAdaptor/10_load_data_various.R")
 
 
 #=============== EXPT DESIGN - MODEL SELECTION PARS =========================
@@ -28,11 +29,13 @@ price.terms = "PRICE_DIFF"
 
 
 
-par.category = "carbbev"
-par.upc =   NULL   #    "00-01-18200-53030"     
+par.category = "beer"
+par.upc = NULL  #    "00-01-18200-53030"      # NULL   #  
 par.fc.item =NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
 par.periodicity = "weekly"
 freq = 52
+freq.cycle = 12
+h.max = 13
 Level = 1
 cores = 2
 
@@ -58,9 +61,11 @@ sp = f_adaptor.reg.cat.all (par.category=par.category, par.periodicity=par.perio
                             par.upc = par.upc, par.fc.item = par.fc.item)   # spw is the regression dataset, all nodes    
 
 print(paste(length(unique(sp$fc.item))," items"))
-#========= TESTING ===============
-this.time = system.time(reg.roll <- f_reg.roll.multiCORE(sp = sp,  par.category = par.category,  par.periodicity=par.periodicity, freq=freq,                                                         
-                                                         h.max = 13,  cores = cores) )
+
+# ========= TESTING ===============
+this.time = system.time(reg.roll <- f_reg.roll.multiCORE(sp = sp,  par.category = par.category,  par.periodicity=par.periodicity, 
+                                                         freq=freq, freq.cycle = freq.cycle,
+                                                         h.max = h.max,  cores = cores) )
 test.stats = data.table(method = "reg_roll", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
 print(test.stats)
 
