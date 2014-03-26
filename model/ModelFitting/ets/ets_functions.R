@@ -5,7 +5,9 @@
 # 
 
 
-f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, freq.cycle = 12, opt.dopar = "dopar", cores=6, Trace = TRUE)
+f_ets.rolling.multicore = function(sp, par.category, 
+                                   freq = 12, freq.cycle = 12, h.max=3,
+                                   cores=1, parMethod = "doSNOW", Trace = FALSE)
 {
     # function will take an input set of data (sp) for multiple forecast items and save/return a set of forecasts
     sp[,fc.item := factor(fc.item)]   ;   setkeyv(sp, c("fc.item"))  #,"period_id"))
@@ -15,20 +17,28 @@ f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, freq.cy
     export.list = c("f_ets.run.item","f_ets.roll.fc.item", "calendar.weekly", "calendar.445", "pth.dropbox.data", 
                     "dtcomb", "isplitDT", "h.max", "freq", "freq.cycle")
         
-    if (opt.dopar =="dopar") {
-        # library(doParallel)  ;  registerDoParallel(cores)
-        library(doSNOW)
-        cl <- makeCluster(cores, outfile="")
-        registerDoSNOW(cl)
-    }
+#     if (cores>1) {
+#         # library(doParallel)  ;  registerDoParallel(cores)
+#         library(doSNOW)
+#         cl <- makeCluster(cores, outfile="")
+#         registerDoSNOW(cl)
+#     }
+    library(doParallel)
+    #if (opt.dopar =="dopar") registerDoParallel(cores)
+    #library(doSNOW)
+    cl <- makeCluster(cores, outfile="")
+    registerDoParallel(cl)
+    print(paste("**** Cluster started with", cores, "cores"))
+    
     multi.item.results =
         foreach(dt.sub = isplitDT(sp, levels(sp$fc.item)),
                 .combine='dtcomb', .multicombine=TRUE,
+                .verbose = FALSE, .errorhandling = "stop",
                 .export = export.list,
                 .packages=c("data.table", "forecast", "reshape2", "foreach")) %dopar% {
                     fc.item = dt.sub$key[1]
                     print(fc.item)
-                    this.roll = f_ets.run.item(dt.sub$value, freq = freq, freq.cycle = freq.cycle, h.max = h.max,Trace=TRUE)
+                    this.roll = f_ets.run.item(dt.sub$value, freq = freq, freq.cycle = freq.cycle, h.max = h.max, Trace=Trace)
                     this.roll = data.table(fc.item, this.roll)
                     this.roll
                 }
@@ -46,7 +56,24 @@ f_ets.rolling.multicore = function(sp, par.category, freq = 12, h.max=3, freq.cy
 
 
 
-f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, freq.cycle = 12) 
+f_ets.run.item = function(sp1, freq, h.max, freq.cycle, Trace = FALSE)  #fc.item = "00-01-18200-53030", pth = NULL)
+{    
+    y = ts(sp1$UNITS, start=c(2001,1), frequency = freq)
+    
+    if (sum(is.na(y))>0) y = ts(na.approx(y, na.rm=FALSE), start = c(2001,1), freq=freq)
+    if (sum(is.na(y))>0) y= ts(na.locf(na.locf(y,fromLast=TRUE, na.rm=FALSE),na.rm=FALSE),start = c(2001,1), freq=freq)
+    
+    # print(y)
+    
+    roll = f_ets.roll.fc.item(y, h.max = h.max, freq.cycle=freq.cycle)
+    #roll$fc.item = unique(ss$fc.item)
+    
+    if (Trace == TRUE) { print(roll$fit) ; print(roll$Err) }
+    roll
+}
+
+
+f_ets.roll.fc.item = function(y, freq.cycle, h.max, PRINT = FALSE, reoptimise = FALSE) 
 {    
     # runs rolling origin multi-step forecasting for a single time series
     # rules around length of series (n), horizon (h), splitting rules
@@ -81,9 +108,9 @@ f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, freq.
     }
     #origins = f_origins.get()
     
-    roll.ets = foreach(o = origins, .combine=dtcomb) %do%
+    roll.ets = foreach(o = origins, .combine=dtcomb, .verbose=FALSE, .errorhandling = "stop") %do%
     {
-        #print(o)
+        print(o)
         yhist <- window(y, end = st + (o-o1)/freq)
         h = min(h.max, n - o)
         yfuture <- window(y, start = st + (o-o1+1)/freq , end = st + (o-o1+h)/freq)
@@ -97,27 +124,23 @@ f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, freq.
             }
         } else {
             fit <- if(freq == 12) {
-                fit <- ets(yhist, model="ZZZ")
+                ets(yhist, model="ZZZ")
             } else {
                 HoltWinters(yhist)
             }
         }
         # do the forecasts,      
-        fcast <- forecast(fit, h = h)
+        fcast <- as.numeric(forecast(fit, h = h)$mean)
+        
         # get the in-sample (rolling) 1-step naive erros (or 1 cycle ahead errors)
         mae.naive = mean(abs(diff(yhist[1:o], 1)), na.rm = TRUE)
         mae.snaive = mean(abs(diff(yhist[1:o], freq)), na.rm = TRUE)
         
-        # optional printing
-        if (PRINT == TRUE) {
-            print(fit)
-            print(accuracy(fit))
-        }
         # do we need to test for missing values here as we did with the regression??
         data.table(o, 
                    h = 1:length(yfuture), 
                    t = o + 1:length(yfuture), 
-                   fc = as.numeric(fcast[['mean']]), 
+                   fc = fcast, 
                    act = as.numeric(yfuture),
                    fc.naive = rep(yhist[o], h),
                    fc.snaive = yhist[(o-freq+1):(o-freq+h)],
@@ -125,25 +148,15 @@ f_ets.roll.fc.item = function(y, h.max, PRINT = FALSE, reoptimise = FALSE, freq.
                    mae.snaive = mae.snaive)
     }
     
+    # optional printing
+    if (TRUE == TRUE) {
+        print(fit)
+        print(accuracy(fit))
+    }
+    
     return(roll.ets)   # may also want to return some details from the model e.g. alpha, beta, gamma, phi)
 }
 
-
-f_ets.run.item = function(ss, freq, h.max, freq.cycle, Trace = FALSE)  #fc.item = "00-01-18200-53030", pth = NULL)
-{    
-    y = ts(ss$UNITS, start=c(2001,1), frequency = freq)
-    
-    if (sum(is.na(y))>0) y = ts(na.approx(y, na.rm=FALSE), start = c(2001,1), freq=freq)
-    if (sum(is.na(y))>0) y= ts(na.locf(na.locf(y,fromLast=TRUE, na.rm=FALSE),na.rm=FALSE),start = c(2001,1), freq=freq)
-    
-    print(y)
-    
-    roll = f_ets.roll.fc.item(y, h.max = h.max, freq.cycle=freq.cycle)
-    #roll$fc.item = unique(ss$fc.item)
-    
-    if (Trace == TRUE) { print(roll$fit) ; print(roll$Err) }
-    roll
-}
 
 ##====== EOF: redundant functions I believe
 

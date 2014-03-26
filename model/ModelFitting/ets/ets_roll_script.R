@@ -9,22 +9,32 @@ if (!exists("machine")) {
 print(paste("Machine =",machine))
 print(paste("Platform = ", platform))
 
-##==== parameters ========
-categories = c("milk","beer","carbbev")
+##==== parameters ========         categories = c("milk","beer","carbbev")
 
 par.category = "beer"
-par.periodicity = "445"
-Level = 3
 freq = 52
 freq.cycle = 12
-h.max = 3
+h.max =13
+Level = 2
+par.upc =    "00-01-18200-53030"      # NULL   # "07-01-18200-53025 
+par.fc.item = NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
+cores = 4
 
-cores = 6
+# replace with command line options
+args <- commandArgs(trailingOnly = TRUE)
+print (args)
+if (length(args)>0)  {
+    par.category = args[1]
+    freq = as.integer(args[2])
+    freq.cycle = as.integer(args[3])
+    h.max = as.integer(args[4])
+    Level = as.integer(args[5])
+    par.upc = args[6] ; if(par.upc == "NULL") par.upc = NULL
+    par.fc.item = args[7] ; if(par.fc.item == "NULL") par.fc.item = NULL
+    cores = as.integer(args[8])
+}
 
-#par.upc = NULL  #    "00-01-18200-53030"      # NULL   #  
-par.fc.item =NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
-par.item= "07-01-18200-53025"      # "00-01-18200-53030"
-
+print(ls())
 
 ### ============ LIBRARIES & SOURCE CODE ==============
 
@@ -35,14 +45,37 @@ library("snow") ; library("doSNOW")
 ## LOCAL CODE FILES
 setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
 setwd(pth.dropbox.code) ; source("./data/DataAdaptor/10_load_data_various.R")
-setwd(pth.dropbox.code) ; source("./model/ModelFitting/ets/ets_functions_new.R")
+setwd(pth.dropbox.code) ; source("./model/ModelFitting/ets/ets_functions.R")
 setwd(pth.dropbox.code) ; source("./other/GenericRoutines/useful_functions.R")
 
 #=============== TESTING =================
 
 print(ls())
+par.periodicity = if (freq == 52) "weekly" else "445"
 
-TEST = TRUE
+
+sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity, par.upc = par.upc, Level = Level, univariate = TRUE)
+print(sp)
+
+this.time = system.time(res.w <- 
+                            f_ets.rolling.multicore(sp=sp, par.category=par.category,
+                                             freq=freq, freq.cycle = freq.cycle, h.max=h.max,
+                                             cores=cores, parMethod = NULL))
+
+test.stats = data.table(method = "ets", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
+print(test.stats)
+
+
+
+# create a file name and save the results
+setwd(paste0(pth.dropbox.data,"/output/errors/")  )
+if (platform=="windows") setwd("E:/data/errors/")
+fil = paste0(paste("ets", freq, freq.cycle, par.category, Level, par.upc,sep="_"), ".rds")
+saveRDS(object = res.w, file = fil)
+
+
+
+TEST = FALSE
 if (TEST == TRUE) {
     
     #y = ts(rnorm(72,100,20),start = 2001, freq=12)
@@ -56,26 +89,17 @@ if (TEST == TRUE) {
     
 }
 
-# 445 ets
-if (freq == 12) {
-    sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
-                               par.upc = "00-01-18200-53030", Level = Level, univariate = TRUE)
-    system.time(res.m <- f_ets.rolling.multicore(sp=sp, par.category=par.category,
-                                                 freq=freq, freq.cycle = freq.cycle, h.max=3,
-                                                 opt.dopar="dopar",cores=3))
-}
 
-
-# WEEKLY ets
-if (freq == 52) {
-    sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "weekly", 
-                               par.upc = "00-01-18200-53030", Level = Level, univariate = TRUE)
-
-    system.time(res.w <- f_ets.rolling.multicore(sp=sp, par.category=par.category,
-                                                 freq=52, freq.cycle = freq.cycle, h.max=13,
-                                                 opt.dopar="dopar",cores=cores))
-}
-
+# 
+# 
+# # 445 ets
+# if (freq == 12) {
+#     sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
+#                                par.upc = "00-01-18200-53030", Level = Level, univariate = TRUE)
+#     system.time(res.m <- f_ets.rolling.multicore(sp=sp, par.category=par.category,
+#                                                  freq=freq, freq.cycle = freq.cycle, h.max=h.max,
+#                                                  cores=cores, parMethod = NULL))
+#     
 
 
 ####=======
@@ -121,8 +145,8 @@ test.multicore = TRUE
 
 #setwd(pth.dropbox.data)
 #milk = readRDS("./output/errors/ets_12_milk.rds")
-beer12 = readRDS("./output/errors/ets_12_beer.rds")
-beer52 = readRDS("./output/errors/ets_52_beer.rds")
+#beer12 = readRDS("./output/errors/ets_12_beer.rds")
+#beer52 = readRDS("./output/errors/ets_52_beer.rds")
 #carbbev = readRDS("./output/errors/ets_12_carbbev.rds")
 
 

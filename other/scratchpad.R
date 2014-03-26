@@ -79,8 +79,8 @@ x = y[!is.na(y)]
 
 
 ### micro benchmark
-freq=52; h.max = 13 ; o=52
-y = ts(1:104, start = c(1,1), freq=freq)
+freq=52; h.max = 13 ; o=208
+y = ts(1:312, start = c(1,1), freq=freq)
 h = h.max
 # forecast package naive calcs
 #yhat.naive = naive(window(y, start = 1, end = (1.9999)))$mean
