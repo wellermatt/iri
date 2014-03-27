@@ -7,7 +7,7 @@
 
 f_ets.rolling.multicore = function(sp, par.category, 
                                    freq = 12, freq.cycle = 12, h.max=3,
-                                   cores=1, parMethod = "doSNOW", Trace = FALSE)
+                                   cores=1, parMethod = "doParallel", TRACE = 0)
 {
     # function will take an input set of data (sp) for multiple forecast items and save/return a set of forecasts
     sp[,fc.item := factor(fc.item)]   ;   setkeyv(sp, c("fc.item"))  #,"period_id"))
@@ -37,8 +37,9 @@ f_ets.rolling.multicore = function(sp, par.category,
                 .export = export.list,
                 .packages=c("data.table", "forecast", "reshape2", "foreach")) %dopar% {
                     fc.item = dt.sub$key[1]
-                    print(fc.item)
-                    this.roll = f_ets.run.item(dt.sub$value, freq = freq, freq.cycle = freq.cycle, h.max = h.max, Trace=Trace)
+                    print(paste("Processing item: ", fc.item))
+                    this.roll = f_ets.run.item(dt.sub$value, freq = freq, freq.cycle = freq.cycle, 
+                                               h.max = h.max, TRACE=TRACE)
                     this.roll = data.table(fc.item, this.roll)
                     this.roll
                 }
@@ -52,7 +53,7 @@ f_ets.rolling.multicore = function(sp, par.category,
 
 
 
-f_ets.run.item = function(sp1, freq, h.max, freq.cycle, Trace = FALSE)  #fc.item = "00-01-18200-53030", pth = NULL)
+f_ets.run.item = function(sp1, freq, h.max, freq.cycle, TRACE = 0)  #fc.item = "00-01-18200-53030", pth = NULL)
 {    
     y = ts(sp1$UNITS, start=c(2001,1), frequency = freq)
     
@@ -61,7 +62,7 @@ f_ets.run.item = function(sp1, freq, h.max, freq.cycle, Trace = FALSE)  #fc.item
     
     # print(y)
     
-    roll = f_ets.roll.fc.item(y, h.max = h.max, freq.cycle=freq.cycle)
+    roll = f_ets.roll.fc.item(y, h.max = h.max, freq.cycle=freq.cycle, TRACE = TRACE)
     #roll$fc.item = unique(ss$fc.item)
     
     if (Trace == TRUE) { print(roll$fit) ; print(roll$Err) }
@@ -69,7 +70,7 @@ f_ets.run.item = function(sp1, freq, h.max, freq.cycle, Trace = FALSE)  #fc.item
 }
 
 
-f_ets.roll.fc.item = function(y, freq.cycle, h.max, PRINT = FALSE, reoptimise = FALSE) 
+f_ets.roll.fc.item = function(y, freq.cycle, h.max, TRACE = 0, reoptimise = FALSE) 
 {    
     # runs rolling origin multi-step forecasting for a single time series
     # rules around length of series (n), horizon (h), splitting rules
@@ -106,7 +107,7 @@ f_ets.roll.fc.item = function(y, freq.cycle, h.max, PRINT = FALSE, reoptimise = 
     
     roll.ets = foreach(o = origins, .combine=dtcomb, .verbose=FALSE, .errorhandling = "stop") %do%
     {
-        print(o)
+        if (TRACE == 1) print(o)
         yhist <- window(y, end = st + (o-o1)/freq)
         h = min(h.max, n - o)
         yfuture <- window(y, start = st + (o-o1+1)/freq , end = st + (o-o1+h)/freq)
@@ -145,7 +146,7 @@ f_ets.roll.fc.item = function(y, freq.cycle, h.max, PRINT = FALSE, reoptimise = 
     }
     
     # optional printing
-    if (TRUE == TRUE) {
+    if (TRACE >0.7) {
         print(fit)
         print(accuracy(fit))
     }

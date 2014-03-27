@@ -19,6 +19,7 @@ Level = 3
 par.upc =    "00-01-18200-53030"      # NULL   # "07-01-18200-53025 
 par.fc.item = NULL #"00-01-18200-53030/57"      #  NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
 cores = 1
+TRACE = 0
 
 # replace with command line options
 args <- commandArgs(trailingOnly = TRUE)
@@ -61,7 +62,7 @@ print(sp)
 this.time = system.time(res.w <- 
                             f_ets.rolling.multicore(sp=sp, par.category=par.category,
                                              freq=freq, freq.cycle = freq.cycle, h.max=h.max,
-                                             cores=cores, parMethod = NULL))
+                                             cores=cores, parMethod = NULL, TRACE))
 
 test.stats = data.table(method = "ets", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
 print(test.stats)
