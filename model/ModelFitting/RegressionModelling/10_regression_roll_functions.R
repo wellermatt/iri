@@ -27,7 +27,7 @@ f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "we
     multi.item.results =
         foreach(dt.sub = isplitDT(sp, levels(sp$fc.item)),
                 .combine='dtcomb', .multicombine=TRUE,
-                .errorhandling = "stop",.verbose=TRUE,
+                .errorhandling = "remove",.verbose=FALSE,
                 .export = export.functions,
                 .packages=c("data.table", "forecast", "reshape2","MASS","foreach")) %dopar%
         {
@@ -93,7 +93,8 @@ f_reg.roll_fc.item = function(sp1, freq = 52, freq.cycle, h.max = 13, model.pars
     print(origins)
     #  o1:(end.period-1)
     reg.roll = 
-        foreach (o = origins,     
+        foreach (o = origins,    
+                 .errorhandling="remove",
                  .combine='dtcomb', .multicombine=TRUE) %do%
         {                  
             # what is the extent of the horizon for this origin
