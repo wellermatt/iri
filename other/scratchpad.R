@@ -96,3 +96,8 @@ microbenchmark(rwf(window(y, start = 1, end = (1.9999)),h=h,level=FALSE)$mean, t
 microbenchmark(rep(y[o], h),times=1000, unit="ms")
 yhat = y[o-freq]
 plot(y)
+
+
+
+#=============================
+splitArgs = function
