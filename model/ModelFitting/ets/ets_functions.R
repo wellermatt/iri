@@ -33,7 +33,7 @@ f_ets.rolling.multicore = function(sp, par.category,
     multi.item.results =
         foreach(dt.sub = isplitDT(sp, levels(sp$fc.item)),
                 .combine='dtcomb', .multicombine=TRUE,
-                .verbose = FALSE, .errorhandling = "remove",
+                .verbose = TRUE, .errorhandling = "remove",
                 .export = export.list,
                 .packages=c("data.table", "forecast", "reshape2", "foreach")) %dopar% {
                     fc.item = dt.sub$key[1]
@@ -65,7 +65,7 @@ f_ets.run.item = function(sp1, freq, h.max, freq.cycle, TRACE = 0)  #fc.item = "
     roll = f_ets.roll.fc.item(y, h.max = h.max, freq.cycle=freq.cycle, TRACE = TRACE)
     #roll$fc.item = unique(ss$fc.item)
     
-    if (Trace == TRUE) { print(roll$fit) ; print(roll$Err) }
+    if (TRACE == TRUE) { print(roll$fit) ; print(roll$Err) }
     roll
 }
 
@@ -105,7 +105,7 @@ f_ets.roll.fc.item = function(y, freq.cycle, h.max, TRACE = 0, reoptimise = FALS
     }
     #origins = f_origins.get()
     
-    roll.ets = foreach(o = origins, .combine=dtcomb, .verbose=FALSE, .errorhandling = "stop") %do%
+    roll.ets = foreach(o = origins, .combine=dtcomb, .verbose=FALSE, .errorhandling = "remove") %do%
     {
         if (TRACE == 1) print(o)
         yhist <- window(y, end = st + (o-o1)/freq)

@@ -88,7 +88,7 @@ if (saveResults == TRUE){
     
     setwd(paste0(pth.dropbox.data,"/output/errors/")  )
     if (platform=="windows") setwd("E:/data/errors/")
-    fil = paste0(paste("reg", freq, freq.cycle, par.category, Level, par.upc,sep="_"), ".rds")
+    fil = paste0(paste("reg", freq, freq.cycle, Level, par.category, par.upc,sep="_"), ".rds")
     saveRDS(object = reg.roll, file = fil)
     
 }

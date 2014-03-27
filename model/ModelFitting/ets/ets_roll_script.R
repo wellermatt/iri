@@ -59,30 +59,34 @@ sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity,
                            par.upc = par.upc, par.fc.item=par.fc.item, Level = Level, univariate = TRUE)
 print(sp)
 
-this.time = system.time(res.w <- 
+
+this.time = system.time(res <- 
                             f_ets.rolling.multicore(sp=sp, par.category=par.category,
                                              freq=freq, freq.cycle = freq.cycle, h.max=h.max,
                                              cores=cores, parMethod = NULL, TRACE))
 
 test.stats = data.table(method = "ets", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
 print(test.stats)
-
+print(head(res))
 
 
 # create a file name and save the results
 setwd(paste0(pth.dropbox.data,"/output/errors/")  )
 if (platform=="windows") setwd("E:/data/errors/")
-fil = paste0(paste("ets", freq, freq.cycle, par.category, Level, par.upc,sep="_"), ".rds")
-saveRDS(object = res.w, file = fil)
+fil = paste0(paste("ets", freq, freq.cycle, Level,par.category,  par.upc,sep="_"), ".rds")
+
+print(getwd())
+print(fil)
+saveRDS(object = res, file = fil)
 
 
 
 TEST = FALSE
 if (TEST == TRUE) {
     
-    #y = ts(rnorm(72,100,20),start = 2001, freq=12)
-    #microbenchmark(f_ets.roll.fc.item(y, h.max=3,freq.cycle=12,reoptimise=FALSE), times=1)
-    
+    y = ts(rnorm(312,100,20),start = 2001, freq=52)
+    microbenchmark(yhat <- f_ets.roll.fc.item(y, h.max=13,freq.cycle=52,reoptimise=FALSE), times=1)
+    yhat
     # low level testing for a single item
     #sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
     #                      par.upc = "00-01-18200-53030", Level = 1,univariate = TRUE)
