@@ -1,4 +1,5 @@
 
+nz =  function(x, x1="") if (is.null(x)) return(x1) else return(x)
 
 #========= parallel processing utilities ============
 #  iterator function for data.table splitting (reduces the data overhead)

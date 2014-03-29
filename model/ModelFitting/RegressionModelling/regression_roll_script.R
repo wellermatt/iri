@@ -13,7 +13,7 @@ require("ggplot2") ; require("foreach") ; require("xtable")
 
 
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/02_regression_functions_modelling.R")
-setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/10_regression_roll_functions.R")
+setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/regression_roll_functions.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/03_regression_functions_diagnostics.R")
 setwd(pth.dropbox.code) ; source("./other/GenericRoutines/useful_functions.R")
 setwd(pth.dropbox.code) ; source("./data/DataAdaptor/00_data_adaptor_test.R")
@@ -28,30 +28,31 @@ price.terms = "PRICE_DIFF"
 #categories = c("beer","carbbev","milk")
 
 
-
+# default parameter values
 par.category = "beer"
 par.upc =     "00-01-18200-53030"      # NULL   #  
-par.fc.item =NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
-par.periodicity = "weekly"
+par.fc.item = NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
 freq = 12
 freq.cycle = 12
 h.max = if(freq == 52) 13 else 3
-Level = 3
+Level = 2
 cores = 1
 TRACE = 0
 
+# custom parameter values
 args <- commandArgs(trailingOnly = TRUE)
 print (args)
-if (length(args)>0)  {
-    par.category = args[1]
-    freq = as.integer(args[2])
-    freq.cycle = as.integer(args[3])
-    h.max = as.integer(args[4])
-    Level = as.integer(args[5])
-    par.upc = args[6] ; if(par.upc == "NULL") par.upc = NULL
-    par.fc.item = args[7] ; if(par.fc.item == "NULL") par.fc.item = NULL
-    cores = as.integer(args[8])
-}
+for(i in 1:length(args)) eval(parse(text=args[[i]]))
+
+    #par.category = args[1]
+    #freq = as.integer(args[2])
+    #freq.cycle = as.integer(args[3])
+    ##h.max = as.integer(args[4])
+    #Level = as.integer(args[4])
+    #par.upc = args[5] ; if(par.upc == "NULL") par.upc = NULL
+    #par.fc.item = args[6] ; if(par.fc.item == "NULL") par.fc.item = NULL
+    #cores = as.integer(args[7])
+
 print(ls())
 
 par.periodicity = if (freq == 52) "weekly" else "445"
@@ -75,23 +76,29 @@ this.time = system.time(reg.roll <- f_reg.roll.multiCORE(sp = sp,  par.category 
                                                          freq=freq, freq.cycle = freq.cycle,
                                                          h.max = h.max,  cores = cores) )
 
-test.stats = data.table(method = "reg_roll", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
-
-print("======== OUTPUT FROM reg.roll =======")
-print(test.stats)
-
-# add the errors here???
-#rr = f_errors.calculate(reg.roll)
-
 saveResults = TRUE
 if (saveResults == TRUE){
     
     setwd(paste0(pth.dropbox.data,"/output/errors/")  )
     if (platform=="windows") setwd("E:/data/errors/")
     fil = paste0(paste("reg", freq, freq.cycle, Level, par.category, par.upc,sep="_"), ".rds")
-    saveRDS(object = reg.roll, file = fil)
-    
+    saveRDS(object = reg.roll, file = fil)    
 }
+
+
+
+#test.stats = data.table(method = "reg", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
+
+
+print("======== OUTPUT FROM reg.roll =======")
+
+
+
+run.summary = data.table(method = "reg", freq, freq.cycle, h.max, 
+                        par.category, Level, par.upc =  nz(par.upc), par.fc.item = nz(par.fc.item), 
+                        item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
+print(run.summary)
+
 
 
 
