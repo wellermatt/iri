@@ -11,31 +11,26 @@ print(paste("Platform = ", platform))
 
 ##==== parameters ========         categories = c("milk","beer","carbbev")
 
+# default parameter values
 par.category = "beer"
-freq = 52
+par.upc =     "00-01-18200-53030"      # NULL   #  
+par.fc.item = NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
+freq = 12
 freq.cycle = 12
-h.max = if(freq == 52) 13 else 3
-Level = 3
-par.upc =    "00-01-18200-53030"      # NULL   # "07-01-18200-53025 
-par.fc.item = NULL #"00-01-18200-53030/57"      #  NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
+Level = 2
 cores = 1
 TRACE = 0
 
-# replace with command line options
+# custom parameter values from command line
 args <- commandArgs(trailingOnly = TRUE)
 print (args)
-if (length(args)>0)  {
-    par.category = args[1]
-    freq = as.integer(args[2])
-    freq.cycle = as.integer(args[3])
-    h.max = as.integer(args[4])
-    Level = as.integer(args[5])
-    par.upc = args[6] ; if(par.upc == "NULL") par.upc = NULL
-    par.fc.item = args[7] ; if(par.fc.item == "NULL") par.fc.item = NULL
-    cores = as.integer(args[8])
-}
+if (length(args)>0) for(i in 1:length(args)) eval(parse(text=args[[i]]))
 
+# calculated parameters
+h.max = if(freq == 52) 13 else 3
+par.periodicity = if (freq == 52) "weekly" else "445"
 print(ls())
+
 
 ### ============ LIBRARIES & SOURCE CODE ==============
 
@@ -65,15 +60,34 @@ this.time = system.time(res <-
                                              freq=freq, freq.cycle = freq.cycle, h.max=h.max,
                                              cores=cores, parMethod = NULL, TRACE))
 
-test.stats = data.table(method = "ets", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
-print(test.stats)
+
+
+saveResults = TRUE
+if (saveResults == TRUE){
+    
+    setwd(paste0(pth.dropbox.data,"/output/errors/")  )
+    if (platform=="windows") setwd("E:/data/errors/")
+    fil = paste0(paste("ets", freq, freq.cycle, Level, par.category, par.upc,sep="_"), ".rds")
+    saveRDS(object = res, file = fil)    
+}
+
+
+
+#test.stats = data.table(method = "reg", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
+
+
+print("======== OUTPUT FROM reg.roll =======")
+
+
+
+run.summary = data.table(method = "ets", freq, freq.cycle, h.max, 
+                         par.category, Level, par.upc =  nz(par.upc), par.fc.item = nz(par.fc.item), 
+                         item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
+print(run.summary)
+
 print(head(res))
 
 
-# create a file name and save the results
-setwd(paste0(pth.dropbox.data,"/output/errors/")  )
-if (platform=="windows") setwd("E:/data/errors/")
-fil = paste0(paste("ets", freq, freq.cycle, Level,par.category,  par.upc,sep="_"), ".rds")
 
 print(getwd())
 print(fil)
