@@ -44,31 +44,44 @@ f_results.summarise = function(res) {
 
 }
 
-res.files = c("E:/data/errors/ets_12_12_3_beer_00-01-18200-53030.rds",
-              "E:/data/errors/ets_52_12_3_beer_00-01-18200-53030.rds",
-              "E:/data/errors/ets_52_52_3_beer_00-01-18200-53030.rds",
-              "E:/data/errors/reg_12_12_3_beer_00-01-18200-53030.rds",
-              "E:/data/errors/reg_52_12_3_beer_00-01-18200-53030.rds",
-              "E:/data/errors/reg_52_52_3_beer_00-01-18200-53030.rds")
+f_consolidate.errors = function()
+{
+    
+    res.files = c("E:/data/errors/ets_12_12_3_beer_00-01-18200-53030.rds",
+                  "E:/data/errors/ets_52_12_3_beer_00-01-18200-53030.rds",
+                  "E:/data/errors/ets_52_52_3_beer_00-01-18200-53030.rds",
+                  "E:/data/errors/reg_12_12_3_beer_00-01-18200-53030.rds",
+                  "E:/data/errors/reg_52_12_3_beer_00-01-18200-53030.rds",
+                  "E:/data/errors/reg_52_52_3_beer_00-01-18200-53030.rds")
+    
+    res.files = c("E:/data/errors/ets_12_12_3_beer_.rds",
+                  "E:/data/errors/ets_52_12_3_beer_.rds",
+                  "E:/data/errors/ets_52_52_3_beer_.rds",
+                  "E:/data/errors/reg_12_12_3_beer_.rds",
+                  "E:/data/errors/reg_52_12_3_beer_.rds",
+                  "E:/data/errors/reg_52_52_3_beer_.rds")
+    
+    res = rbindlist(lapply(res.files,function(x) {
+        vars = strsplit(strsplit(x,"/")[[1]][4],"_")[[1]][1:3]
+        data.table(method = vars[1], freq = vars[2], freq.cycle = vars[3],f_results.load(x))}))[!(freq.cycle!=freq)]
+    
+    
+    
+    saveRDS(res, "E:/data/errors/all.rds")
+}
+f_consolidate.errors()
 
-res.files = c("E:/data/errors/ets_12_12_3_beer_.rds",
-              "E:/data/errors/ets_52_12_3_beer_.rds",
-              "E:/data/errors/ets_52_52_3_beer_.rds",
-              "E:/data/errors/reg_12_12_3_beer_.rds",
-              "E:/data/errors/reg_52_12_3_beer_.rds",
-              "E:/data/errors/reg_52_52_3_beer_.rds")
+## load the consolidated results
 
-res = rbindlist(lapply(res.files,function(x) {
-    vars = strsplit(strsplit(x,"/")[[1]][4],"_")[[1]][1:3]
-    data.table(method = vars[1], freq = vars[2], freq.cycle = vars[3],f_results.load(x))}))[!(freq.cycle!=freq)]
-
-saveRDS(res, "E:/data/errors/all.rds")
+res = readRDS("E:/data/errors/all.rds")
 
 res[,`:=`(freq = factor(freq, levels = c(12,52),labels=c("MONTH", "WEEK")),
           freq.cycle = factor(freq.cycle,levels = c(12,52),labels=c("MONTH", "WEEK")))]
 
+res.counts = res[,.N,by=list(method,freq,freq.cycle, Level)]
 
-res[,.N,by=list(method,freq,freq.cycle, Level)]
+dcast(res.counts, freq+freq.cycle+Level~method, fun.aggregate=sum,value.var="N")
+
 
  24*13*2700
 dcast(res, Level+fc.item~method+freq+freq.cycle, fun.aggregate= median,na.rm=TRUE, value.var="ape")
@@ -91,4 +104,5 @@ ggplot(data=res[lvl==1], aes(x= fc.item, y=rae.naive)) + geom_boxplot() + coord_
 
 
 
-res.summary[Level=="ITEM"]
+x = readRDS("E:/data/errors/reg_12_12_3_beer_.rds")
+x

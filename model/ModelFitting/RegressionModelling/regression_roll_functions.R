@@ -2,7 +2,7 @@
 #======= ROLL CONTROLLER ===========
 
 f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "weekly", freq = 52, freq.cycle = 52,
-                                opt.print.results = FALSE, opt.save.results =FALSE, h.max=13, cores = 1)
+                                opt.print.results = FALSE, opt.save.results =TRUE, h.max, cores = 1)
 {
     # multicore implementation of the rolling regression - sp can contain multiple products
     sp[,fc.item := factor(fc.item)]
@@ -60,7 +60,7 @@ f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "we
 
 #======= ROLL FUNCTIONS ==============
 
-f_reg.roll_fc.item = function(sp1, freq = 52, freq.cycle, h.max = 13, model.pars = NULL)
+f_reg.roll_fc.item = function(sp1, freq = 52, freq.cycle, h.max, model.pars = NULL)
 {
     # receives the data (ssw) to fit the model for a single item using additional parameters
     #require(fomulatools)
@@ -90,7 +90,7 @@ f_reg.roll_fc.item = function(sp1, freq = 52, freq.cycle, h.max = 13, model.pars
             origins = calendar.445[elapsed_weeks >= o1 & elapsed_weeks < n,  elapsed_weeks]
         }        
     }
-    print(origins)
+    #  print(origins)
     #  o1:(end.period-1)
     reg.roll = 
         foreach (o = origins,    
@@ -99,7 +99,7 @@ f_reg.roll_fc.item = function(sp1, freq = 52, freq.cycle, h.max = 13, model.pars
         {                  
             # what is the extent of the horizon for this origin
             h = min(h.max, end.period-o)
-            #print(h)
+            print(h)
             # build the xreg variables, based on the variables in formula!!        
             xregnew = sp1[period %in% (o+1):(o+h), eval(model.vars), with = F]
             missing.periods = is.null(xregnew$UNITS)

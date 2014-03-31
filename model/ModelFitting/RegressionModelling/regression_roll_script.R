@@ -32,10 +32,10 @@ price.terms = "PRICE_DIFF"
 par.category = "beer"
 par.upc =   NULL#  "00-01-18200-53030"      # NULL   #  
 par.fc.item = NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
-freq = 52
-freq.cycle = 52
+freq = 12
+freq.cycle = 12
 h.max = if(freq == 52) 13 else 3    # maximum length of the horizon
-Level = 3
+Level = 1
 cores = 6
 TRACE = 0
 
