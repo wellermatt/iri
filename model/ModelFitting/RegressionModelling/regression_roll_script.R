@@ -30,19 +30,19 @@ price.terms = "PRICE_DIFF"
 
 # default parameter values
 par.category = "beer"
-par.upc =     "00-01-18200-53030"      # NULL   #  
+par.upc =   NULL#  "00-01-18200-53030"      # NULL   #  
 par.fc.item = NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
-freq = 12
-freq.cycle = 12
-h.max = if(freq == 52) 13 else 3
-Level = 2
-cores = 1
+freq = 52
+freq.cycle = 52
+h.max = if(freq == 52) 13 else 3    # maximum length of the horizon
+Level = 3
+cores = 6
 TRACE = 0
 
 # custom parameter values
 args <- commandArgs(trailingOnly = TRUE)
 print (args)
-for(i in 1:length(args)) eval(parse(text=args[[i]]))
+if (length(args) > 0) for(i in 1:length(args)) eval(parse(text=args[[i]]))
 
     #par.category = args[1]
     #freq = as.integer(args[2])
@@ -69,12 +69,15 @@ sp = f_adaptor.reg.cat.all (par.category=par.category, par.periodicity=par.perio
                             Level = Level, univariate = FALSE, 
                             par.upc = par.upc, par.fc.item = par.fc.item)   # spw is the regression dataset, all nodes    
 
-print(paste(length(unique(sp$fc.item))," items"))
+print(paste(length(unique(sp$fc.item))," items and", nrow(sp), " data points"))
 
 # ========= TESTING ===============
 this.time = system.time(reg.roll <- f_reg.roll.multiCORE(sp = sp,  par.category = par.category,  par.periodicity=par.periodicity, 
                                                          freq=freq, freq.cycle = freq.cycle,
                                                          h.max = h.max,  cores = cores) )
+
+reg.roll
+reg.roll[,.N,by=fc.item][N<300]
 
 saveResults = TRUE
 if (saveResults == TRUE){
