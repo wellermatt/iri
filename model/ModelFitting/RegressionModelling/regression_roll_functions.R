@@ -2,7 +2,7 @@
 #======= ROLL CONTROLLER ===========
 
 f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "weekly", freq = 52, freq.cycle = 52,
-                                opt.print.results = FALSE, opt.save.results =TRUE, h.max, cores = 1)
+                                opt.print.results = FALSE, opt.save.results =FALSE, h.max, cores = 1)
 {
     # multicore implementation of the rolling regression - sp can contain multiple products
     sp[,fc.item := factor(fc.item)]
@@ -49,7 +49,7 @@ f_reg.roll.multiCORE = function(sp, par.category = "beer", par.periodicity = "we
     if (opt.print.results == TRUE) print(multi.item.results)
     if (opt.save.results == TRUE) {
         setwd(pth.dropbox.data)
-        saveRDS(multi.item.results, paste0("./output/errors/reg_", par.periodicity, "_", par.category, ".rds"))
+        #saveRDS(multi.item.results, paste0("./output/errors/reg_", par.periodicity, "_", par.category, ".rds"))
     }
     
     return(multi.item.results)
@@ -85,9 +85,9 @@ f_reg.roll_fc.item = function(sp1, freq = 52, freq.cycle, h.max, model.pars = NU
         origins = calendar.445[period_id >= o1 & period_id < n, c(period_id)]
     } else {
         if (freq.cycle == 52)  {
-            origins = calendar.weekly[WEEK >= o1 & WEEK < n, WEEK]
+            origins = calendar.weekly[WEEK >= o1 & WEEK < end.period, WEEK]
         } else {
-            origins = calendar.445[elapsed_weeks >= o1 & elapsed_weeks < n,  elapsed_weeks]
+            origins = calendar.445[elapsed_weeks >= o1 & elapsed_weeks < end.period,  elapsed_weeks]
         }        
     }
     #  print(origins)
@@ -99,7 +99,7 @@ f_reg.roll_fc.item = function(sp1, freq = 52, freq.cycle, h.max, model.pars = NU
         {                  
             # what is the extent of the horizon for this origin
             h = min(h.max, end.period-o)
-            print(h)
+            #print(h)
             # build the xreg variables, based on the variables in formula!!        
             xregnew = sp1[period %in% (o+1):(o+h), eval(model.vars), with = F]
             missing.periods = is.null(xregnew$UNITS)

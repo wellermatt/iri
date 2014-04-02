@@ -5,9 +5,9 @@
 # 
 
 
-f_ets.rolling.multicore = function(sp, par.category, 
-                                   freq = 12, freq.cycle = 12, h.max=3,
-                                   cores=1, parMethod = "doParallel", TRACE = 0)
+f_ets.roll.MULTICORE = function(sp, par.category, 
+                                freq = 12, freq.cycle = 12, h.max=3,
+                                cores=1, parMethod = "doParallel", TRACE = 0)
 {
     # function will take an input set of data (sp) for multiple forecast items and save/return a set of forecasts
     sp[,fc.item := factor(fc.item)]   ;   setkeyv(sp, c("fc.item"))  #,"period_id"))
@@ -48,7 +48,7 @@ f_ets.rolling.multicore = function(sp, par.category,
     print("=== END MULTICORE LOOP ====")
     print(multi.item.results)
 
-    multi.item.results
+    return(multi.item.results)
 }
 
 

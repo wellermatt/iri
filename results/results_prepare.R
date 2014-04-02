@@ -44,50 +44,55 @@ f_results.summarise = function(res) {
 
 }
 
-f_consolidate.errors = function()
+f_consolidate.errors = function(upc = "00-01-18200-53030", opt.save = FALSE)
 {
     
-    res.files = c("E:/data/errors/ets_12_12_3_beer_00-01-18200-53030.rds",
-                  "E:/data/errors/ets_52_12_3_beer_00-01-18200-53030.rds",
-                  "E:/data/errors/ets_52_52_3_beer_00-01-18200-53030.rds",
-                  "E:/data/errors/reg_12_12_3_beer_00-01-18200-53030.rds",
-                  "E:/data/errors/reg_52_12_3_beer_00-01-18200-53030.rds",
-                  "E:/data/errors/reg_52_52_3_beer_00-01-18200-53030.rds")
+    if (!is.null(upc))
+    {
+        res.files = c("E:/data/errors/ets_12_12_3_beer_00-01-18200-53030.rds",
+                      "E:/data/errors/ets_52_12_3_beer_00-01-18200-53030.rds",
+                      "E:/data/errors/ets_52_52_3_beer_00-01-18200-53030.rds",
+                      "E:/data/errors/reg_12_12_3_beer_00-01-18200-53030.rds",
+                      "E:/data/errors/reg_52_12_3_beer_00-01-18200-53030.rds",
+                      "E:/data/errors/reg_52_52_3_beer_00-01-18200-53030.rds")
+    } else {   
+        res.files = c("E:/data/errors/ets_12_12_3_beer_.rds",
+                      "E:/data/errors/ets_52_12_3_beer_.rds",
+                      "E:/data/errors/ets_52_52_3_beer_.rds",
+                      "E:/data/errors/reg_12_12_3_beer_.rds",
+                      "E:/data/errors/reg_52_12_3_beer_.rds",
+                      "E:/data/errors/reg_52_52_3_beer_.rds")
+    }
     
-    res.files = c("E:/data/errors/ets_12_12_3_beer_.rds",
-                  "E:/data/errors/ets_52_12_3_beer_.rds",
-                  "E:/data/errors/ets_52_52_3_beer_.rds",
-                  "E:/data/errors/reg_12_12_3_beer_.rds",
-                  "E:/data/errors/reg_52_12_3_beer_.rds",
-                  "E:/data/errors/reg_52_52_3_beer_.rds")
+    # this can be parallelised ****
     
-    res = rbindlist(lapply(res.files,function(x) {
+    results = rbindlist(lapply(res.files,function(x) {
         vars = strsplit(strsplit(x,"/")[[1]][4],"_")[[1]][1:3]
-        data.table(method = vars[1], freq = vars[2], freq.cycle = vars[3],f_results.load(x))}))[!(freq.cycle!=freq)]
+        data.table(method = vars[1], freq = vars[2], freq.cycle = vars[3],f_results.load(x))})) # filter the results??? -->> [!(freq.cycle!=freq)]
     
-    
-    
-    saveRDS(res, "E:/data/errors/all.rds")
+    if (opt.save == TRUE) saveRDS(res, "E:/data/errors/all.rds")
+    return(results)
 }
-f_consolidate.errors()
+
+stop()
+results = f_consolidate.errors()
+# now need to make sure we have only the records that are in both sets of errors (i.e.exclude NAs)
+
 
 ## load the consolidated results
+#results = readRDS("E:/data/errors/all.rds")
 
-res = readRDS("E:/data/errors/all.rds")
-
-res[,`:=`(freq = factor(freq, levels = c(12,52),labels=c("MONTH", "WEEK")),
+results[,`:=`(freq = factor(freq, levels = c(12,52),labels=c("MONTH", "WEEK")),
           freq.cycle = factor(freq.cycle,levels = c(12,52),labels=c("MONTH", "WEEK")))]
 
-res.counts = res[,.N,by=list(method,freq,freq.cycle, Level)]
-
+res.counts = results[,.N,by=list(method,freq,freq.cycle, Level)]
 dcast(res.counts, freq+freq.cycle+Level~method, fun.aggregate=sum,value.var="N")
 
 
- 24*13*2700
-dcast(res, Level+fc.item~method+freq+freq.cycle, fun.aggregate= median,na.rm=TRUE, value.var="ape")
+dcast(results, Level+fc.item~freq+freq.cycle+method, fun.aggregate= median,na.rm=TRUE, value.var="ape")
+dcast(results, Level+freq+freq.cycle~method, fun.aggregate= median,na.rm=TRUE, value.var="ape")
 
-dcast(res, freq+Level~method, fun.aggregate= median,na.rm=TRUE, value.var="ape")
-res.summary = f_results.summarise(res)
+res.summary = f_results.summarise(results)
 
 
 library(ggplot2)
@@ -104,5 +109,9 @@ ggplot(data=res[lvl==1], aes(x= fc.item, y=rae.naive)) + geom_boxplot() + coord_
 
 
 
-x = readRDS("E:/data/errors/reg_12_12_3_beer_.rds")
-x
+x = readRDS("E:/data/errors/ets_52_12_3_beer_00-01-18200-53030.rds")
+max(x$o) ;x
+
+x[,max(o),by=fc.item]
+tail(x,100)
+

@@ -30,12 +30,12 @@ price.terms = "PRICE_DIFF"
 
 # default parameter values
 par.category = "beer"
-par.upc =   NULL#  "00-01-18200-53030"      # NULL   #  
+par.upc =   NULL #"00-01-18200-53030"      # NULL   #  
 par.fc.item = NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
-freq = 12
+freq = 52
 freq.cycle = 12
 h.max = if(freq == 52) 13 else 3    # maximum length of the horizon
-Level = 1
+Level =3
 cores = 6
 TRACE = 0
 
@@ -77,7 +77,12 @@ this.time = system.time(reg.roll <- f_reg.roll.multiCORE(sp = sp,  par.category 
                                                          h.max = h.max,  cores = cores) )
 
 reg.roll
-reg.roll[,.N,by=fc.item][N<300]
+reg.roll[,.N,by=fc.item][N<300,fc.item]
+
+reg.roll[,.N, by=fc.item]
+
+dcast(reg.roll[fc.item %in% reg.roll[,.N,by=fc.item][N<300,fc.item]],fc.item~o)
+dcast(reg.roll[fc.item %in% reg.roll[,.N,by=fc.item][N<300,fc.item]],fc.item~t)
 
 saveResults = TRUE
 if (saveResults == TRUE){

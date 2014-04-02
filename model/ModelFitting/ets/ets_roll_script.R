@@ -15,10 +15,10 @@ print(paste("Platform = ", platform))
 par.category = "beer"
 par.upc =     "00-01-18200-53030"      # NULL   #  
 par.fc.item = NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
-freq = 12
+freq = 52
 freq.cycle = 12
-Level = 2
-cores = 1
+Level = 3
+cores = 6
 TRACE = 0
 
 # custom parameter values from command line
@@ -56,9 +56,9 @@ print(sp)
 
 
 this.time = system.time(res <- 
-                            f_ets.rolling.multicore(sp=sp, par.category=par.category,
-                                             freq=freq, freq.cycle = freq.cycle, h.max=h.max,
-                                             cores=cores, parMethod = NULL, TRACE))
+                            f_ets.roll.MULTICORE(sp=sp, par.category=par.category,
+                                                 freq=freq, freq.cycle = freq.cycle, h.max=h.max,
+                                                 cores=cores, parMethod = NULL, TRACE))
 
 
 
@@ -97,10 +97,17 @@ saveRDS(object = res, file = fil)
 
 TEST = FALSE
 if (TEST == TRUE) {
-    
+    library(microbenchmark)
+    f_load.calendar()
     y = ts(rnorm(312,100,20),start = 2001, freq=52)
-    microbenchmark(yhat <- f_ets.roll.fc.item(y, h.max=13,freq.cycle=52,reoptimise=FALSE), times=1)
-    yhat
+    
+    y[sample(208:312,5,replace=FALSE)]=NA
+    
+    
+    y
+    
+    microbenchmark(yhat <- f_ets.roll.fc.item(y, h.max=13,freq.cycle=52,reoptimise=FALSE, TRACE = TRUE), times=1)
+    yhat[,.N,by=o][N<13]
     # low level testing for a single item
     #sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity = "445", 
     #                      par.upc = "00-01-18200-53030", Level = 1,univariate = TRUE)
