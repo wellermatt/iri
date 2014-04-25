@@ -1,3 +1,5 @@
+## functions related to the modification of Hyndman's cross-validation of time series (ref. ??)
+
 meanForecast <- cmpfun(function(x,h,...) {
   require(forecast)
   meanf(x, h, ..., level=99)$mean

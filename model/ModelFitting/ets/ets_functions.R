@@ -57,6 +57,7 @@ f_ets.run.item = function(sp1, freq, h.max, freq.cycle, TRACE = 0)  #fc.item = "
 {    
     y = ts(sp1$UNITS, start=c(2001,1), frequency = freq)
     
+    # handling of NAs, including start and end of time series
     if (sum(is.na(y))>0) y = ts(na.approx(y, na.rm=FALSE), start = c(2001,1), freq=freq)
     if (sum(is.na(y))>0) y= ts(na.locf(na.locf(y,fromLast=TRUE, na.rm=FALSE),na.rm=FALSE),start = c(2001,1), freq=freq)
     
