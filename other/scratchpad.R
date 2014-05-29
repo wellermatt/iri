@@ -4,6 +4,19 @@ library("stringr"); library(reshape2)
 
 setwd(pth.dropbox.data)
 
+
+f <- function(x, ...)
+{
+    dots <- list(...)                   #1
+    if(length(dots) == 0) return(NULL) 
+    cat("The arguments in ... are\n")
+    print(dots)
+    f(...)                              #2
+}
+
+f(1,2,3,"a", list("monkey"))
+
+
 f_errors.calculate = function(dt)
 {
     # receives a data.table and adds the errors in various guises
