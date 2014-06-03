@@ -5,15 +5,29 @@ setwd(pth.dropbox.code) ; source("./results/results_prepare_functions.R")
 
 # prepare single product results to compare the 6 levels of aggregation for each forecasting method
 results = f_consolidate.errors()
+
+results = f_consolidate.errors(upc = NULL) # this should be loaded from file
+
 # taking data only for freq = freq.cycle
-res2 = results[freq == freq.cycle]
+res2 = results[freq == freq.cycle]  ; results = NULL
 
-
+# overall summary of accuracy MAPE
 dcast(res2, 
       lvl+Level~freq+method, 
       fun.aggregate = mean, na.rm = TRUE,
       value.var = "ape")
 
+# item level forecast accuracy MAPE for multiple items
+dcast(res2[lvl==1], 
+      lvl+Level+fc.item~freq+method, 
+      fun.aggregate = mean, na.rm = TRUE,
+      value.var = "ape")
+
+# prepare data for boxplots: MAE per item per method per periodicity/level
+plot.data = dcast(res2,lvl+Level+fc.item+freq+method~., fun.aggregate = median, na.rm = TRUE, value.var= "ape")
+names(plot.data)[6] = "MdAPE"
+p = ggplot(data=plot.data, aes(y=MdAPE,colour=method, x=method)) + geom_boxplot() + facet_grid(lvl+Level~freq,scales="free")
+p + ggtitle("Comparison of Accuracy (MdAPE) at each level of aggregation:\nTop 10 items in beer category")
 # counts of results at each level
 res.counts = res2[,.N, by = list(method,freq, freq.cycle, Level)]
 dcast(res.counts, freq + Level ~ method, fun.aggregate = sum,value.var="N")

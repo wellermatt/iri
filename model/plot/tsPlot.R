@@ -66,28 +66,32 @@ tsPlot.data = function(par.category="beer",par.periodicity = "weekly", par.upc =
     sp
 }
 
+if (TEST == TRUE) {
 
-#####  TESTING
-dt = tsPlot.data(par.periodicity = "445", par.upc = "00-01-18200-53030", par.Level = 1)
-
-dt = tsPlot.data(par.periodicity = "weekly", par.upc = "00-01-18200-53030", par.Level = 1)
-tsPlot(dt, plot.title = "Units Sold for item 00-01-18200-53030\n")
-
-
-# chains for a SKU
-dt = tsPlot.data(par.periodicity = "all", par.upc = "00-01-18200-53030", par.Level = 2)
-tsPlot.multi.item (dt, plot.title = "Units Sold for item 00-01-18200-53030\n")
-
-
-### top 10 per category - use apply/vectorisation!
-
-dt = tsPlot.data(par.category="milk", par.periodicity = "all", par.Level = 1)
-tsPlot.multi.item (dt, plot.title = "Units Sold for Top 10 milk SKUs\n")
-
-dt = tsPlot.data(par.category="carbbev", par.periodicity = "all", par.Level = 1)
-tsPlot.multi.item (dt, plot.title = "Units Sold for Top 10 carbbev SKUs\n")
-
-dt = tsPlot.data(par.category="beer", par.periodicity = "all", par.Level = 1)
-tsPlot.multi.item (dt, plot.title = "Units Sold for Top 10 beer SKUs\n")
-
-
+    #####  TESTING
+    dt = tsPlot.data(par.periodicity = "445", par.upc = "00-01-18200-53030", par.Level = 1)
+    tsPlot(dt, plot.title = "Units Sold for item 00-01-18200-53030\n")
+    
+    dt = tsPlot.data(par.periodicity = "weekly", par.upc = "00-01-18200-53030", par.Level = 1)
+    tsPlot(dt, plot.title = "Units Sold for item 00-01-18200-53030\n")
+    
+    
+    # chains for a SKU
+    dt = tsPlot.data(par.periodicity = "all", par.upc = "00-01-18200-53030", par.Level = 2)
+    tsPlot.multi.item (dt, plot.title = "Units Sold for item 00-01-18200-53030\n")
+    
+    
+    ### top 10 per category - use apply/vectorisation!
+    
+    dt = tsPlot.data(par.category="milk", par.periodicity = "all", par.Level = 1)
+    tsPlot.multi.item (dt, plot.title = "Units Sold for Top 10 milk SKUs\n")
+    
+    dt = tsPlot.data(par.category="carbbev", par.periodicity = "all", par.Level = 1)
+    tsPlot.multi.item (dt, plot.title = "Units Sold for Top 10 carbbev SKUs\n")
+    
+    dt = tsPlot.data(par.category="beer", par.periodicity = "all", par.Level = 1)
+    tsPlot.multi.item (dt, plot.title = "Units Sold for Top 10 beer SKUs\n")
+    
+    
+    
+}
