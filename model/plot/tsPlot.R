@@ -2,6 +2,7 @@
 # - actuals/forecast, in-sample, out-of-sample, full span
 # - x-axis as time scale, monthly, weekly, custom markers
 
+
 # need to consider adding markers, possibilities include discount % as size, promo y/n with colour for ABC,
 # display as shape: star types, hols as vertical bars
 # promo indicators are only really relevant at lowest level, otherwise a composite measure of period promo intensity must be developed
@@ -49,6 +50,14 @@ tsPlot.data = function(par.category="beer",par.periodicity = "weekly", par.upc =
         sp1 = f_load_data_sp(par.category=par.category, par.periodicity="weekly", par.upc=par.upc, par.fc.item = par.fc.item, par.Level = par.Level )[, periodicity := "weekly"]  
         sp1$Date = week.ends
         sp2 = f_load_data_sp(par.category=par.category, par.periodicity="445", par.upc=par.upc, par.fc.item = par.fc.item, par.Level = par.Level ) [, periodicity := "445"]  
+=======
+tsPlot.data = function(par.periodicity = "weekly", par.upc = NULL, par.fc.item = NULL, par.Level = NULL )
+{
+    if (par.periodicity == "all") 
+    {
+        sp1 = f_load_data_sp( par.periodicity="weekly", par.upc=par.upc, par.fc.item = par.fc.item, par.Level = par.Level )[, periodicity := "weekly"]  
+        sp1$Date = week.ends
+        sp2 = f_load_data_sp( par.periodicity="445", par.upc=par.upc, par.fc.item = par.fc.item, par.Level = par.Level ) [, periodicity := "445"]  
         sp2$Date = period.ends 
         common.cols = intersect(names(sp2) , names(sp1))
         
@@ -56,6 +65,7 @@ tsPlot.data = function(par.category="beer",par.periodicity = "weekly", par.upc =
                             sp2[,eval(common.cols), with=F]))
     } else {
         sp = f_load_data_sp(par.category=par.category,par.periodicity=par.periodicity, par.upc=par.upc, par.fc.item = par.fc.item, par.Level = par.Level  ) [, periodicity := par.periodicity] 
+        sp = f_load_data_sp(par.periodicity=par.periodicity, par.upc=par.upc, par.fc.item = par.fc.item, par.Level = par.Level  ) [, periodicity := par.periodicity] 
         sp$Date = if (par.periodicity == "445") period.ends else week.ends
     }
     
@@ -66,6 +76,7 @@ tsPlot.data = function(par.category="beer",par.periodicity = "weekly", par.upc =
     sp
 }
 
+<<<<<<< HEAD
 if (TEST == TRUE) {
 
     #####  TESTING
@@ -95,3 +106,13 @@ if (TEST == TRUE) {
     
     
 }
+
+#####  TESTING
+dt = tsPlot.data(par.periodicity = "445", par.upc = "00-01-18200-53030", par.Level = 2)
+
+dt = tsPlot.data(par.periodicity = "all", par.upc = "00-01-18200-53030", par.Level = 2)
+tsPlot(dt, plot.title = "Units Sold for item 00-01-18200-53030\n")
+
+dt = tsPlot.data(par.periodicity = "all")
+tsPlot.multi.item (dt, plot.title = "Units Sold for item 00-01-18200-53030\n")
+
