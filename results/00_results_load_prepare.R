@@ -124,12 +124,12 @@ f_load.res.ets.all = function(par.category)
     #print(ggplot(data=res[Level=="2 CHAIN"], aes(y = ape, x = Level, alpha = 0.5)) +  geom_jitter() + facet_wrap( ~km, ncol=1) + geom_boxplot() + coord_flip())
     res
 }
-categories = c("beer", "carbbev","milk")
-res = rbindlist(lapply(categories,f_load.res.ets.all))
-dcast(res,formula=category~Level,fun.aggregate=median,value.var="ape")
-dcast(res[Level=="1 ITEM"],formula=category+fc.item~km,fun.aggregate=median,value.var="ape")
+#categories = c("beer", "carbbev","milk")
+#res = rbindlist(lapply(categories,f_load.res.ets.all))
+#dcast(res,formula=category~Level,fun.aggregate=median,value.var="ape")
+#dcast(res[Level=="1 ITEM"],formula=category+fc.item~km,fun.aggregate=median,value.var="ape")
 
-f_load.res.ets.all(par.category = "carbbev")
+#f_load.res.ets.all(par.category = "carbbev")
 
 
 

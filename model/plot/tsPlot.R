@@ -50,7 +50,7 @@ tsPlot.data = function(par.category="beer",par.periodicity = "weekly", par.upc =
         sp1 = f_load_data_sp(par.category=par.category, par.periodicity="weekly", par.upc=par.upc, par.fc.item = par.fc.item, par.Level = par.Level )[, periodicity := "weekly"]  
         sp1$Date = week.ends
         sp2 = f_load_data_sp(par.category=par.category, par.periodicity="445", par.upc=par.upc, par.fc.item = par.fc.item, par.Level = par.Level ) [, periodicity := "445"]  
-=======
+#=======
 tsPlot.data = function(par.periodicity = "weekly", par.upc = NULL, par.fc.item = NULL, par.Level = NULL )
 {
     if (par.periodicity == "all") 
@@ -76,9 +76,9 @@ tsPlot.data = function(par.periodicity = "weekly", par.upc = NULL, par.fc.item =
     sp
 }
 
-<<<<<<< HEAD
+TEST = FALSE
 if (TEST == TRUE) {
-
+    library("ggplot2")
     #####  TESTING
     dt = tsPlot.data(par.periodicity = "445", par.upc = "00-01-18200-53030", par.Level = 1)
     tsPlot(dt, plot.title = "Units Sold for item 00-01-18200-53030\n")
@@ -102,9 +102,6 @@ if (TEST == TRUE) {
     
     dt = tsPlot.data(par.category="beer", par.periodicity = "all", par.Level = 1)
     tsPlot.multi.item (dt, plot.title = "Units Sold for Top 10 beer SKUs\n")
-    
-    
-    
 }
 
 #####  TESTING
