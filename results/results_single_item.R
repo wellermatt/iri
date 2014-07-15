@@ -1,4 +1,6 @@
 ## FUNCTIONS FOR RERIEVING & FORMATTING RESULTS
+
+
 library(ggplot2)  ;  library(reshape2)
 
 setwd(pth.dropbox.code) ; source("./results/results_prepare_functions.R")
@@ -24,22 +26,24 @@ dcast(res2[lvl==1],
       value.var = "sape")
 
 # prepare data for boxplots: MAE per item per method per periodicity/level
-plot.data = dcast(res2,lvl+Level+fc.item+freq+method~., fun.aggregate = median, na.rm = TRUE, value.var= "ape")
+plot.data = dcast(res2,lvl+Level+fc.item+freq+method~., fun.aggregate = mean, na.rm = TRUE, value.var= "sape")
 names(plot.data)[6] = "MdAPE"
 p = ggplot(data=plot.data, aes(y=MdAPE,colour=method, x=method)) + geom_boxplot() + facet_grid(lvl+Level~freq,scales="free")
 p + ggtitle("Comparison of Accuracy (MdAPE) at each level of aggregation:\nTop 10 items in beer category")
+
+
 # counts of results at each level
 res.counts = res2[,.N, by = list(method,freq, freq.cycle, Level)]
 dcast(res.counts, freq + Level ~ method, fun.aggregate = sum,value.var="N")
 
 # tabular summary of MdAPE for each level
-dcast(res2, Level + fc.item ~ freq + method, fun.aggregate = median,na.rm=TRUE, value.var="ape")
-dcast(res2, Level + freq ~ method, fun.aggregate = median,na.rm=TRUE, value.var="ape")
+dcast(res2, Level + fc.item ~ freq + method, fun.aggregate = mean,na.rm=TRUE, value.var="sape")
+dcast(res2, Level + freq ~ method, fun.aggregate = mean,na.rm=TRUE, value.var="sape")
 
 # summarise results to calculate the key error measures for each forecast item
 res.summary.fc.item = f_results.summarise(res2)
 
-ggplot(data = res.summary.fc.item, aes(x = mdape, y = fc.item, colour = method)) + geom_point(size=2.5) + facet_grid(lvl~freq,scales="free_y",space="free_y") + theme_bw()
+ggplot(data = res.summary.fc.item, aes(x = smape, y = fc.item, colour = method)) + geom_point(size=2.5) + facet_grid(lvl~freq,scales="free",space="free_y") + theme_bw()
 
 ggplot(data = res.summary[lvl==1], aes(x = method, y = mdape)) + geom_point() +  coord_flip() + facet_wrap(~freq)+
     ylim(0,0.5)

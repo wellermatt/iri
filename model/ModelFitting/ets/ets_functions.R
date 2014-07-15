@@ -128,7 +128,7 @@ f_ets.roll.fc.item = function(y, freq.cycle, h.max, TRACE = 0, reoptimise = FALS
             }
         }
         # do the forecasts,      
-        fcast <- as.numeric(forecast(fit, h = h)$mean)
+        fcast <- max(round(as.numeric(forecast(fit, h = h)$mean)),0)
         
         # get the in-sample (rolling) 1-step naive erros (or 1 cycle ahead errors)
         mae.naive = mean(abs(diff(yhist[1:o], 1)), na.rm = TRUE)
@@ -140,6 +140,7 @@ f_ets.roll.fc.item = function(y, freq.cycle, h.max, TRACE = 0, reoptimise = FALS
                    t = o + 1:length(yfuture), 
                    fc = fcast, 
                    act = as.numeric(yfuture),
+                   # ?? do the fc.naive and fc.snaive need to be cleansed for NAs ??
                    fc.naive = rep(yhist[o], h),
                    fc.snaive = yhist[(o-freq+1):(o-freq+h)],
                    mae.naive = mae.naive,
@@ -158,35 +159,35 @@ f_ets.roll.fc.item = function(y, freq.cycle, h.max, TRACE = 0, reoptimise = FALS
 
 ##====== EOF: redundant functions I believe
 
-f_ets.test.single = function(sp, freq = 12, h.max=3, Trace = TRUE) {
-    i = 1
-    items = unique(sp$fc.item)
-    this.item = items[i]
-    ss = sp[fc.item == this.item]
-    #print(ss)
-    this.roll = f_ets.run.item(ss=ss, freq = freq, h.max=h.max,Trace=TRUE)
-    this.roll
-}
-
-
-
-
-f_ets.test.multi = function(sp, freq = 12, h.max=3, Trace = TRUE) {
-    items = unique(sp$fc.item)
-    multi.item.results = rbindlist(
-        lapply(1:10,#length(items),
-               function(i) { this.item = items[i]
-                             print(this.item)
-                             ss = sp[fc.item == items[i]]
-                             this.roll = f_ets.run.item(ss, freq = 12, h.max = 3,Trace=TRUE)
-                             Err = this.roll$Err
-                             Err$fc.item = this.item
-                             Err
-               }))
-    setwd(pth.dropbox.data)
-    saveRDS(object = multi.item.results, file="./output/errors/ets_445_fast_all.rds")
-    
-    multi.item.results
-}
-
-
+# f_ets.test.single = function(sp, freq = 12, h.max=3, Trace = TRUE) {
+#     i = 1
+#     items = unique(sp$fc.item)
+#     this.item = items[i]
+#     ss = sp[fc.item == this.item]
+#     #print(ss)
+#     this.roll = f_ets.run.item(ss=ss, freq = freq, h.max=h.max,Trace=TRUE)
+#     this.roll
+# }
+# 
+# 
+# 
+# 
+# f_ets.test.multi = function(sp, freq = 12, h.max=3, Trace = TRUE) {
+#     items = unique(sp$fc.item)
+#     multi.item.results = rbindlist(
+#         lapply(1:10,#length(items),
+#                function(i) { this.item = items[i]
+#                              print(this.item)
+#                              ss = sp[fc.item == items[i]]
+#                              this.roll = f_ets.run.item(ss, freq = 12, h.max = 3,Trace=TRUE)
+#                              Err = this.roll$Err
+#                              Err$fc.item = this.item
+#                              Err
+#                }))
+#     setwd(pth.dropbox.data)
+#     saveRDS(object = multi.item.results, file="./output/errors/ets_445_fast_all.rds")
+#     
+#     multi.item.results
+# }
+# 
+# 

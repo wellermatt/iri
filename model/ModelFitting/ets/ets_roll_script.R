@@ -51,7 +51,7 @@ par.periodicity = if (freq == 52) "weekly" else "445"
 
 
 sp = f_adaptor.reg.cat.all(par.category = par.category, par.periodicity, 
-                           par.upc = par.upc, par.fc.item=par.fc.item, Level = Level, univariate = TRUE)
+                           par.upc = par.upc, par.fc.item=par.fc.item,  par.Level = Level, par.univariate = TRUE)
 print(sp)
 
 

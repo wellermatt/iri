@@ -109,9 +109,10 @@ f_reg.roll_fc.item = function(sp1, freq = 52, freq.cycle, h.max, model.pars = NU
             revised.model = lm(formula = frm.text, data=sp1[1:o])
     
             # make the predictions - could also use forecast (slower?)
-            fc = predict.lm(object=revised.model,newdata=xregnew[!is.null(xregnew$UNITS)])
+            fc = max(round(predict.lm(object=revised.model,newdata=xregnew[!is.null(xregnew$UNITS)])),0)
             
             # get the in-sample (rolling) 1-step naive erros (or 1 cycle ahead errors)
+            # ?? may wish to consider NA values in here
             mae.naive = mean(abs(diff(sp1[period %in% 1:o,UNITS], 1)), na.rm = TRUE)
             mae.snaive = mean(abs(diff(sp1[period %in% 1:o,UNITS], freq)), na.rm = TRUE)
             fc.comparison = data.table(o,
