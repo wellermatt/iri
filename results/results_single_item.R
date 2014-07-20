@@ -2,16 +2,20 @@
 
 
 library(ggplot2)  ;  library(reshape2)
-
 setwd(pth.dropbox.code) ; source("./results/results_prepare_functions.R")
 
+par.upc = NULL
+par.load.file = TRUE
+
 # prepare single product results to compare the 6 levels of aggregation for each forecasting method
-results = f_consolidate.errors()
+if (par.load.file == FALSE) {
+    results = f_consolidate.errors(upc = par.upc) # this should be loaded from file    
+    # taking data only for freq = freq.cycle
+    res2 = results[freq == freq.cycle]  ; results = NULL
+} else {
+    res2 = readRDS("E:/data/errors/beer_all.rds")    
+}
 
-#results = f_consolidate.errors(upc = NULL) # this should be loaded from file
-
-# taking data only for freq = freq.cycle
-res2 = results[freq == freq.cycle]  ; results = NULL
 # summary of the variable of interest
 summary(res2$sape)
 

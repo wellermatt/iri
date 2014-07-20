@@ -33,8 +33,8 @@ f_errors.rank = function(dt, error.measure, frm = NULL)
     # receives a data.table with forecast and actuals and aall the error measures per period/sku combination
     # purpose to rank the METHODS on a single error metric and summarise the analysis
     
-    if (is.null(frm)) frm = "fc.item+o+h~"
-    dcast(dt, frm,fun.aggregate=rank,value.var="sape")
+    if (is.null(frm)) frm = as.formula("freq+Level+Lvl+fc.item+o+h~method")
+    err = dcast(res2, frm,fun.aggregate=sum,value.var="sape",na.rm=TRUE)
 }
 
 
