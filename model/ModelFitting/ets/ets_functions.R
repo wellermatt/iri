@@ -128,7 +128,9 @@ f_ets.roll.fc.item = function(y, freq.cycle, h.max, TRACE = 0, reoptimise = FALS
             }
         }
         # do the forecasts,      
-        fcast <- max(round(as.numeric(forecast(fit, h = h)$mean)),0)
+        fcast <- as.numeric(forecast(fit, h = h)$mean)
+        fcast = round(fcast)
+        fcast[fcast<0] = 0
         
         # get the in-sample (rolling) 1-step naive erros (or 1 cycle ahead errors)
         mae.naive = mean(abs(diff(yhist[1:o], 1)), na.rm = TRUE)

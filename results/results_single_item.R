@@ -12,31 +12,38 @@ results = f_consolidate.errors()
 
 # taking data only for freq = freq.cycle
 res2 = results[freq == freq.cycle]  ; results = NULL
+# summary of the variable of interest
+summary(res2$sape)
 
-# overall summary of accuracy MAPE
+# overall summary of accuracy sMAPE
 dcast(res2, 
       lvl+Level~freq+method, 
       fun.aggregate = mean, na.rm = TRUE,
       value.var = "sape")
 
-# item level forecast accuracy MAPE for multiple items
-dcast(res2[lvl==1], 
+# item level forecast accuracy sMAPE for multiple items
+dcast(res2[], 
       lvl+Level+fc.item~freq+method, 
       fun.aggregate = mean, na.rm = TRUE,
       value.var = "sape")
 
-# prepare data for boxplots: MAE per item per method per periodicity/level
+##### prepare data for boxplots: sMAPE per item per method per periodicity/level
+# data step
 plot.data = dcast(res2,lvl+Level+fc.item+freq+method~., fun.aggregate = mean, na.rm = TRUE, value.var= "sape")
-names(plot.data)[6] = "MdAPE"
-p = ggplot(data=plot.data, aes(y=MdAPE,colour=method, x=method)) + geom_boxplot() + facet_grid(lvl+Level~freq,scales="free")
-p + ggtitle("Comparison of Accuracy (MdAPE) at each level of aggregation:\nTop 10 items in beer category")
+names(plot.data)[6] = "sMAPE"
+# plotting steps
+p = ggplot(data=plot.data, aes(y=sMAPE,colour=method, x=method)) + geom_boxplot() + facet_grid(freq+lvl+Level~.) + 
+    coord_flip() +xlab("") + theme_bw()
+p + ggtitle("Comparison of Accuracy (sMAPE) at each level of aggregation:\nTop 10 items in beer category")
+
+
 
 
 # counts of results at each level
 res.counts = res2[,.N, by = list(method,freq, freq.cycle, Level)]
 dcast(res.counts, freq + Level ~ method, fun.aggregate = sum,value.var="N")
 
-# tabular summary of MdAPE for each level
+# tabular summary of sMAPE for each level
 dcast(res2, Level + fc.item ~ freq + method, fun.aggregate = mean,na.rm=TRUE, value.var="sape")
 dcast(res2, Level + freq ~ method, fun.aggregate = mean,na.rm=TRUE, value.var="sape")
 
@@ -53,48 +60,6 @@ ggplot(data=res2, aes(x= fc.item, y=ase.naive, colour = method)) + geom_boxplot(
 ggplot(data=results[lvl==1], aes(x= fc.item, y=rae.naive)) + geom_boxplot() + coord_flip()
 
 
-#res=f_results.load("E:/data/errors/reg_52_52_beer_3_.rds")
-#res.summary = f_results.summarise(res)
-
-
-
-x = readRDS("E:/data/errors/ets_52_12_3_beer_00-01-18200-53030.rds")
-max(x$o) ;x
-
-x[,max(o),by=fc.item]
-tail(x,100)
-
-
-<<<<<<< HEAD
-=======
-
-
-
-
-
-
->>>>>>> 2f4c7aa04c41bde72bde5fad350d138224cae07a
->>>>>>> fd254f4ffc3e07bab225158f9aa0250bf0e5611c
-
-results = f_consolidate.errors()[freq.cycle=="MONTH"]
-res.counts = results[,.N,by=list(method,freq,freq.cycle, Level)]
-
-<<<<<<< HEAD
-# some summary output
-dcast(res.counts, freq+freq.cycle+Level~method, fun.aggregate=sum,value.var="N")
-dcast(results, Level+fc.item~freq+freq.cycle+method, fun.aggregate= median,na.rm=TRUE, value.var="ape")
-dcast(results, Level+freq+freq.cycle~method, fun.aggregate= median,na.rm=TRUE, value.var="ape")
-=======
-#res = readRDS("E:/data/errors/all.rds")
->>>>>>> fd254f4ffc3e07bab225158f9aa0250bf0e5611c
-
-
-res.summary = f_results.summarise(results)
-
-
-
-## ploting results
-
 library(ggplot2)
 ggplot(data = res.summary[lvl==3], aes(x=fc.item, y = mdape)) + 
     geom_point(aes(colour = method, shape=method, size = 6)) +  coord_flip() + facet_wrap(~freq, ncol=1) +
@@ -108,23 +73,6 @@ ggplot(data=results[lvl==2], aes(x= fc.item, y=ase.naive, colour = method)) +
     geom_boxplot() + facet_wrap(~freq,ncol=1) +coord_flip()
 
 ggplot(data=results[lvl==2], aes(x= fc.item, y=rae.naive, colour =method)) + geom_boxplot() + coord_flip()
-
-
-
-
-#res=f_results.load("E:/data/errors/reg_52_52_beer_3_.rds")
-#res.summary = f_results.summarise(res)
-
-x = readRDS("E:/data/errors/ets_52_12_3_beer_00-01-18200-53030.rds")
-max(x$o) ;x
-
-x[,max(o),by=fc.item]
-tail(x,100)
-
-
-
-
-
 
 
 

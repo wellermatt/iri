@@ -28,6 +28,15 @@ f_errors.calculate = function(dt)
              ase.snaive = ae/mae.snaive)]                   # ase.snaive = absolute error scaled to mae of snaive
 }
 
+f_errors.rank = function(dt, error.measure, frm = NULL)
+{
+    # receives a data.table with forecast and actuals and aall the error measures per period/sku combination
+    # purpose to rank the METHODS on a single error metric and summarise the analysis
+    
+    if (is.null(frm)) frm = "fc.item+o+h~"
+    dcast(dt, frm,fun.aggregate=rank,value.var="sape")
+}
+
 
 f_results.summarise = function(res) {
     
@@ -53,18 +62,14 @@ f_consolidate.errors = function(upc = "00-01-18200-53030", opt.save = FALSE)
     # get the files to read
     if (!is.null(upc))
     {
-        res.files = c("E:/data/errors/ets_12_12_3_beer_00-01-18200-53030.rds",
-                      "E:/data/errors/ets_52_12_3_beer_00-01-18200-53030.rds",
+        res.files = c("E:/data/errors/ets_12_12_3_beer_00-01-18200-53030.rds", #                      "E:/data/errors/ets_52_12_3_beer_00-01-18200-53030.rds",
                       "E:/data/errors/ets_52_52_3_beer_00-01-18200-53030.rds",
-                      "E:/data/errors/reg_12_12_3_beer_00-01-18200-53030.rds",
-                      "E:/data/errors/reg_52_12_3_beer_00-01-18200-53030.rds",
+                      "E:/data/errors/reg_12_12_3_beer_00-01-18200-53030.rds", #                      "E:/data/errors/reg_52_12_3_beer_00-01-18200-53030.rds",
                       "E:/data/errors/reg_52_52_3_beer_00-01-18200-53030.rds")
     } else {   
-        res.files = c("E:/data/errors/ets_12_12_3_beer_.rds",
-                      "E:/data/errors/ets_52_12_3_beer_.rds",
+        res.files = c("E:/data/errors/ets_12_12_3_beer_.rds", #                      "E:/data/errors/ets_52_12_3_beer_.rds",
                       "E:/data/errors/ets_52_52_3_beer_.rds",
-                      "E:/data/errors/reg_12_12_3_beer_.rds",
-                      "E:/data/errors/reg_52_12_3_beer_.rds",
+                      "E:/data/errors/reg_12_12_3_beer_.rds", #                      "E:/data/errors/reg_52_12_3_beer_.rds",
                       "E:/data/errors/reg_52_52_3_beer_.rds")
     }
     

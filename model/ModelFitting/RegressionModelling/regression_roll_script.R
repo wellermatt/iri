@@ -30,10 +30,10 @@ price.terms = "PRICE_DIFF"
 
 # default parameter values
 par.category = "beer"
-par.upc =   NULL #"00-01-18200-53030"      # NULL   #  
+par.upc =   "00-01-18200-53030"      # NULL   #  
 par.fc.item = NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
 freq = 52
-freq.cycle = 12
+freq.cycle = 52
 h.max = if(freq == 52) 13 else 3    # maximum length of the horizon
 Level =3
 cores = 6
@@ -66,7 +66,7 @@ for  (x in names(expt.design)) assign(x, expt.design[[x]])
 #============== DATA LOADING =====================
 # use the standard beer SKU
 sp = f_adaptor.reg.cat.all (par.category=par.category, par.periodicity=par.periodicity,
-                            Level = Level, univariate = FALSE, 
+                            par.Level = Level, par.univariate = FALSE, 
                             par.upc = par.upc, par.fc.item = par.fc.item)   # spw is the regression dataset, all nodes    
 
 print(paste(length(unique(sp$fc.item))," items and", nrow(sp), " data points"))
@@ -77,13 +77,13 @@ this.time = system.time(reg.roll <- f_reg.roll.multiCORE(sp = sp,  par.category 
                                                          h.max = h.max,  cores = cores) )
 
 reg.roll
-reg.roll[,.N,by=fc.item][N<300,fc.item]
-
 reg.roll[,.N, by=fc.item]
 
-dcast(reg.roll[fc.item %in% reg.roll[,.N,by=fc.item][N<300,fc.item]],fc.item~o)
-dcast(reg.roll[fc.item %in% reg.roll[,.N,by=fc.item][N<300,fc.item]],fc.item~t)
+#dcast(reg.roll[fc.item %in% reg.roll[,.N,by=fc.item][N<300,fc.item]],fc.item~o)
+#dcast(reg.roll[fc.item %in% reg.roll[,.N,by=fc.item][N<300,fc.item]],fc.item~t)
 
+
+# create a file name and save the results
 saveResults = TRUE
 if (saveResults == TRUE){
     
@@ -93,15 +93,7 @@ if (saveResults == TRUE){
     saveRDS(object = reg.roll, file = fil)    
 }
 
-
-
-#test.stats = data.table(method = "reg", periodicity = par.periodicity, item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
-
-
 print("======== OUTPUT FROM reg.roll =======")
-
-
-
 run.summary = data.table(method = "reg", freq, freq.cycle, h.max, 
                         par.category, Level, par.upc =  nz(par.upc), par.fc.item = nz(par.fc.item), 
                         item_count = length(unique(sp$fc.item)), cores = cores, this.time = this.time[3])
@@ -110,7 +102,6 @@ print(run.summary)
 
 
 
-# create a file name and save the results
 
 
 #==========================================================================
