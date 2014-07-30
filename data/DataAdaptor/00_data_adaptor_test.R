@@ -1,8 +1,4 @@
 
-#setwd(pth.dropbox.code) ; source("./data/DataAdaptor/10_load_data_various.R") 
-#setwd(pth.dropbox.data) ; f_load.calendar()
-#par.category = "beer" ; par.periodicity = "445"	
-
 
 f_adaptor.reg.cat.all = function(par.category, par.periodicity, 
                                  par.upc = NULL, par.fc.item = NULL, par.Level = 1, 

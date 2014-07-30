@@ -1,21 +1,7 @@
 # procedure to analyse 
 
 library("data.table") ; library("ggplot2") ; library("reshape2") ; library("scales")
-rm(list=ls())
-options(width=200)
-machine = (Sys.info()["nodename"])
 
-pth.dropbox = "/home/users/wellerm/"
-if (machine == "M11") pth.dropbox = "C:/Users/Matt/Dropbox/"
-if (machine == "DESKTOP") pth.dropbox = "D:/Dropbox/Dropbox/"
-if (machine == "IDEA-PC") pth.dropbox = "C:/Users/welle_000/Dropbox/"
-
-pth.dropbox.data = paste(pth.dropbox, "HEC/IRI_DATA/", sep = "")
-pth.dropbox.code = paste(pth.dropbox, "HEC/Code/exp1.1/", sep = "")
-if (pth.dropbox == "/home/users/wellerm/") {
-	pth.dropbox.data = paste(pth.dropbox, "IRI_DATA/", sep = "")
-	pth.dropbox.code = paste(pth.dropbox, "projects/exp1.1/", sep = "")
-}
 
 #============== load data ==================
 setwd(pth.dropbox.data)
@@ -34,10 +20,14 @@ ss = merge(subsets, fc.items[,list(fc.item,lvl,L9)], by ="fc.item")
 ss3 = ss[lvl == "ITEM"]  
 sdcols = c("PRICE","PR", grep("FEAT_|DISP_",names(ss3),value=TRUE))
 ss3.means = ss3[,lapply(.SD, mean,na.rm=TRUE),by = list(category,UPC,L9),.SDcols = sdcols]
-ss3.melt = data.table(melt(ss3.means))[variable!="PRICE"]
+ss3.melt = data.table(melt(ss3.means))[variable %in% c("PR","DISP_ANY","FEAT_ANY")]
 
 # quick plot of the means of the promotional variables by item (aggregated to item level)
-qplot(data=ss3.melt, x= value, y = L9, colour = variable, geom="point") + facet_grid(category~.,scales="free_y",drop=TRUE,space="free")
+qplot(data=ss3.melt, x= value, y = L9, colour = variable, geom="point") + scale_x_continuous(limits = c(0,1)) +
+    facet_grid(category~variable,scales="free_y",drop=TRUE,space="free") +
+    theme_bw()
+
+
 
 
 
