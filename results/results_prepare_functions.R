@@ -36,7 +36,7 @@ f_errors.rank = function(dt, value.var = "ae", frm = NULL, par.melt = FALSE, par
     ## which field to use as the value.var? ae? sape?
     
     #if (is.null(frm)) frm = as.formula("freq+Level+lvl+fc.item+o+h~method")
-    err = data.table(dcast(dt, freq+Level+lvl+fc.item+o+h~method,fun.aggregate=sum,na.rm=TRUE,value.var=value.var,fill=NA))
+    err = data.table(dcast(dt, freq+Level+lvl+fc.item+o+h~method,fun.aggregate=sum,na.rm=TRUE,value.var=value.var,fill=NA_real_))
     
     ### IMPROVE WITH DATA TABLE
     err$reg = abs((err$reg<err$ets)-2)
@@ -84,7 +84,7 @@ f_consolidate.errors = function(upc = "00-01-18200-53030", par.category, opt.sav
     # this can be parallelised ****
     # read each file and tidy it, adding the factors to describe
     results = rbindlist(lapply(res.files,function(x) {
-        vars = strsplit(strsplit(x,"/")[[1]][4],"_")[[1]][1:3]
+        vars = strsplit(strsplit(x,"/")[[1]][5],"_")[[1]][1:3]
         data.table(method = vars[1], freq = vars[2], freq.cycle = vars[3],f_results.load(x))})) # filter the results??? -->> [!(freq.cycle!=freq)]
     results[,`:=`(freq = factor(freq, levels = c(12,52),labels=c("MONTH", "WEEK")),
                   freq.cycle = factor(freq.cycle,levels = c(12,52),labels=c("MONTH", "WEEK")))]

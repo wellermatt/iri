@@ -4,32 +4,29 @@
 library(ggplot2)  ;  library(reshape2)
 setwd(pth.dropbox.code) ; source("./results/results_prepare_functions.R")
 
-par.category = "beer"
+par.category = "milk"
 par.upc = NULL  # 
 
-par.load.file = TRUE
+par.load.file = FALSE
 
 # prepare single product results to compare the 6 levels of aggregation for each forecasting method
 if (par.load.file == FALSE) {
-    results = f_consolidate.errors(upc = par.upc,par.category = "beer", opt.save = TRUE ) # this should be loaded from file    
+    results = f_consolidate.errors(upc = par.upc, par.category = par.category, opt.save = TRUE ) # this should be loaded from file    
     # taking data only for freq = freq.cycle
     res2 = results[freq == freq.cycle]
 } else {
-    res2 = readRDS("E:/data/output/errors/beer_.rds")    
+    res2 = readRDS(paste0("E:/data/output/errors/", par.category, "_.rds"))
 }
 results = NULL
 names(res2)[c(1,2,4,22:23,17)]
 
 # for rankings
 #res3 = dcast(data=res2,formula=lvl+Level+fc.item+freq+o+h~method,fun.aggregate=mean,na.rm=TRUE,value.var="sape")
-err.rank = f_errors.rank(res2[freq=="MONTH"],par.melt=TRUE,par.recast=TRUE)
-ggplot(err.rank,aes(y=value,x = method,fill=method))+geom_boxplot() +
-    scale_y_continuous(limits=c(1,2)) + facet_grid(Level~freq, scales="free") +
-    ggtitle("Rankings across items")
+err.rank = f_errors.rank(res2,par.melt=TRUE,par.recast=TRUE)
 
 ggplot(err.rank,aes(y=value,x = method,fill=method))+geom_boxplot() +
-    scale_y_continuous(limits=c(1,2)) + facet_grid(Level~freq, scales="free") +
-    ggtitle("Rankings across items")
+    scale_y_continuous(limits=c(1,2)) + facet_grid(Level~freq) +
+    ggtitle("Rankings across items") + coord_flip()
 
 
 # summary of the variable of interest
@@ -46,6 +43,7 @@ dcast(res2,
       lvl+Level+fc.item+freq+o+h~method, 
       fun.aggregate = mean, na.rm = TRUE,
       value.var = "sape")
+
 
 ##### prepare data for boxplots: sMAPE per item per method per periodicity/level
 # data step

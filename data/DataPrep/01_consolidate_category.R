@@ -1,30 +1,8 @@
-## FIRST STEP
-## convert the raw files to a more suitable format (rds) whilst also combining 
+## FIRST STEP to convert the raw files to a more suitable format (rds) whilst also combining 
 ## 4 columns into a UPC code and merging all the years into one consolidated file
-
-rm(list=ls())
-ptm = proc.time()
-library(plyr)  ;  library(data.table)
-
-machine = (Sys.info()["nodename"])
-
-pth.dropbox = "/home/users/wellerm/"
-if (machine == "M11") pth.dropbox = "C:/Users/Matt/Dropbox/"
-if (machine == "DESKTOP") pth.dropbox = "D:/Dropbox/Dropbox/"
-if (machine == "IDEA-PC") pth.dropbox = "C:/Users/welle_000/Dropbox/"
-
-pth.dropbox.data = paste(pth.dropbox, "HEC/IRI_DATA/", sep = "")
-pth.dropbox.code = paste(pth.dropbox, "HEC/Code/exp1.1/", sep = "")
-if (pth.dropbox == "/home/users/wellerm/") {
-	pth.dropbox.data = paste(pth.dropbox, "IRI_DATA/", sep = "")
-	pth.dropbox.code = paste(pth.dropbox, "projects/exp1.1/", sep = "")
-}
-
 
 ## libraries and sourcing additional R scripts for functions used in this script
 setwd(pth.dropbox.code)
-source("./scripts/memory_usage.R")
-
 
 ## Parameter definitions, will be defined as arguments passed in by scripts in the future
 args <- commandArgs(trailingOnly = TRUE)
@@ -34,7 +12,7 @@ print (args)
 par.category = args[1]  #par.category = "carbbev" "milk"  #
 #par.category = "blades"
 par.start.year = 1
-par.end.year = 6
+par.end.year = 7
 par.drug.opt = TRUE  ;  par.groc.opt = TRUE
 par.transform.data = TRUE   ;  par.merge.data = TRUE
 
@@ -46,7 +24,6 @@ pth.tf = "/scratch/hpc/29/wellerm/IRI sales consolidated/"
 colClasses = c("integer", "integer","integer","integer","integer","integer","integer","numeric", "character", "integer","integer")
 
 dir.create(file.path(pth.tf, par.category), showWarnings = FALSE)
-#setwd(file.path(mainDir, subDir))
 
 ################
 ## DATA - calendar is required to determine the IRI start and end weeks for each year
