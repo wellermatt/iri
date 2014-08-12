@@ -11,7 +11,6 @@ if (!exists("machine")) {
 require("forecast") ; require("data.table") ; require("reshape2")
 require("ggplot2") ; require("foreach") ; require("xtable")
 
-
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/02_regression_functions_modelling.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/regression_roll_functions.R")
 setwd(pth.dropbox.code) ; source("./model/ModelFitting/RegressionModelling/03_regression_functions_diagnostics.R")
@@ -21,12 +20,10 @@ setwd(pth.dropbox.code) ; source("./data/DataAdaptor/10_load_data_various.R")
 
 
 #=============== EXPT DESIGN - MODEL SELECTION PARS =========================
-
 log.model = FALSE
 include.AR.terms = FALSE 
 price.terms = "PRICE_DIFF"
 #categories = c("beer","carbbev","milk")
-
 
 # default parameter values
 par.category = "beer"
@@ -34,8 +31,7 @@ par.upc =   "00-01-18200-53030"      # NULL   #
 par.fc.item = NULL # 00-01-41383-09036/12#  NULL # "00-02-28000-24610/99"   #NULL #"00-01-18200-53030/104/228694" # NULL# "00-01-18200-53030/57" #"00-01-18200-53030/104/228694"
 freq = 52
 freq.cycle = 52
-h.max = if(freq == 52) 13 else 3    # maximum length of the horizon
-Level =3
+Level = 3
 cores = 6
 TRACE = 0
 
@@ -53,9 +49,9 @@ if (length(args) > 0) for(i in 1:length(args)) eval(parse(text=args[[i]]))
     #par.fc.item = args[6] ; if(par.fc.item == "NULL") par.fc.item = NULL
     #cores = as.integer(args[7])
 
-print(ls())
-
+h.max = if(freq == 52) 13 else 3    # maximum length of the horizon
 par.periodicity = if (freq == 52) "weekly" else "445"
+print(ls())
 
 print.options = list(opt.print.summary = TRUE, opt.print.aov = FALSE, opt.print.diag = FALSE, opt.print.stats = TRUE, opt.print.coef = FALSE)
 expt.design.master = data.table(id = 1:3, include.AR.terms = FALSE, log.model = FALSE, 

@@ -1,12 +1,10 @@
-## FUNCTIONS FOR RERIEVING & FORMATTING RESULTS
-
+## FUNCTIONS FOR RETRIEVING & CALCULTATING ERROS, FORMATTING & DISPLAYING RESULTS
 
 library(ggplot2)  ;  library(reshape2)
 setwd(pth.dropbox.code) ; source("./results/results_prepare_functions.R")
 
-par.category = "milk"
-par.upc = NULL  # 
-
+par.category = "beer"
+par.upc = "00-01-18200-53030"
 par.load.file = FALSE
 
 # prepare single product results to compare the 6 levels of aggregation for each forecasting method
@@ -19,10 +17,13 @@ if (par.load.file == FALSE) {
 }
 results = NULL
 names(res2)[c(1,2,4,22:23,17)]
+res2=res2[lvl==1 & o==48]
+dt = res2
+
 
 # for rankings
 #res3 = dcast(data=res2,formula=lvl+Level+fc.item+freq+o+h~method,fun.aggregate=mean,na.rm=TRUE,value.var="sape")
-err.rank = f_errors.rank(res2,par.melt=TRUE,par.recast=TRUE)
+err.rank = f_errors.rank(res2,par.melt=FALSE,par.recast=FALSE)
 
 ggplot(err.rank,aes(y=value,x = method,fill=method))+geom_boxplot() +
     scale_y_continuous(limits=c(1,2)) + facet_grid(Level~freq) +

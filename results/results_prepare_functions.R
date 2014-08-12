@@ -30,11 +30,10 @@ f_errors.calculate = function(dt)
 
 f_errors.rank = function(dt, value.var = "ae", frm = NULL, par.melt = FALSE, par.recast = FALSE)
 {
-    # receives a data.table with forecast and actuals and aall the error measures per period/sku combination
-    # purpose to rank the METHODS on a single error metric and summarise the analysis
+    # receives a data.table with forecast and actuals and all the error measures per period/sku combination
+    # purpose to rank the METHODS on a single error metric and summarise the analysis in several alternative ways
     
     ## which field to use as the value.var? ae? sape?
-    
     #if (is.null(frm)) frm = as.formula("freq+Level+lvl+fc.item+o+h~method")
     err = data.table(dcast(dt, freq+Level+lvl+fc.item+o+h~method,fun.aggregate=sum,na.rm=TRUE,value.var=value.var,fill=NA_real_))
     
@@ -46,9 +45,12 @@ f_errors.rank = function(dt, value.var = "ae", frm = NULL, par.melt = FALSE, par
     #err$reg_diff_val = (err$reg-err$ets)
     #err$reg_diff_perc = err$reg_diff_val/err$ets    
     if (par.melt == TRUE) err = melt(err, id.vars = c("freq","Level","lvl","fc.item","o","h"),variable.name="method" )
-    if (par.recast == TRUE) err = dcast(err,freq+Level+lvl+fc.item+method~.,fun.aggregate=mean,na.rm=TRUE)
-    names(err)[length(err)] = "value"
-    data.table(err)
+    if (par.recast == TRUE) {
+        err = dcast(err,freq+Level+lvl+fc.item+method~.,fun.aggregate=mean,na.rm=TRUE)
+        names(err)[length(err)] = "value"
+    }
+    
+    return(data.table(err))
 }
 
 
