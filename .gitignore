@@ -1,5 +1,22 @@
-.Rproj.user
-.Rhistory
-.RData
+
 *.html
+*.htm
+*.pdf
+*.jpg
+*.jpeg
 *.tex
+=======
+
+# History files
+.Rhistory
+
+# Example code in package build process
+*-Ex.R
+
+# R data files from past sessions
+.Rdata
+.RData
+
+# RStudio files
+.Rproj.user/
+.Rproj.user
